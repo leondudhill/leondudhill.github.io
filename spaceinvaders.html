@@ -613,44 +613,60 @@ loop();
 })();
 </script>
 
-<script>
-(function(){
-  var c=document.getElementById('c');
-  var lastX=null, tapTime=0;
-  c.addEventListener('touchstart',function(e){
-    e.preventDefault();
-    tapTime=Date.now();
-    var t=e.touches[0]; lastX=t.clientX;
-    if(typeof state!=='undefined'&&(state==='idle'||state==='gameover')){ startGame&&startGame(); return; }
-    if(typeof state!=='undefined'&&state==='paused'){ state='playing'; return; }
-  },{passive:false});
-  c.addEventListener('touchmove',function(e){
-    e.preventDefault();
-    if(typeof state==='undefined'||state!=='playing') return;
-    var t=e.touches[0];
-    var dx=t.clientX-lastX;
-    lastX=t.clientX;
-    if(typeof player!=='undefined'){ player.x+=dx*(c.width/c.getBoundingClientRect().width); player.x=Math.max(0,Math.min(c.width-player.w,player.x)); }
-  },{passive:false});
-  c.addEventListener('touchend',function(e){
-    e.preventDefault();
-    if(Date.now()-tapTime<200&&typeof shoot==='function') shoot();
-  },{passive:false});
-})();
-</script>
 
 <!-- overlay-tap-fix -->
 
+
 <script>
-(function(){
-  var ov = document.getElementById('overlay');
-  if (!ov) return;
-  ov.addEventListener('touchstart', function(e) {
-    e.preventDefault();
-    if (state === 'idle' || state === 'gameover') startGame();
-    else if (state === 'paused') state = 'playing';
-  }, {passive: false});
-})();
+const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+// Tap overlay to start
+document.getElementById('overlay').addEventListener('touchstart', function(e) {
+  e.preventDefault();
+  if (state === 'idle' || state === 'gameover') startGame();
+  else if (state === 'paused') { state = 'playing'; firePressed = false; }
+}, {passive: false});
+
+// Canvas touch controls
+var _lastTouchX = null;
+var _touchStartX = null;
+var _touchStartTime = 0;
+var _didDrag = false;
+
+document.getElementById('c').addEventListener('touchstart', function(e) {
+  e.preventDefault();
+  var t = e.touches[0];
+  _lastTouchX = t.clientX;
+  _touchStartX = t.clientX;
+  _touchStartTime = Date.now();
+  _didDrag = false;
+
+  if (state === 'idle' || state === 'gameover') { startGame(); return; }
+  if (state === 'paused') { state = 'playing'; firePressed = false; return; }
+}, {passive: false});
+
+document.getElementById('c').addEventListener('touchmove', function(e) {
+  e.preventDefault();
+  if (state !== 'playing') return;
+  var t = e.touches[0];
+  var dx = t.clientX - _lastTouchX;
+  _lastTouchX = t.clientX;
+  if (Math.abs(dx) > 1) _didDrag = true;
+  // Move ship — scale dx from screen pixels to canvas pixels
+  var scaleX = canvas.width / document.getElementById('c').getBoundingClientRect().width;
+  ship.x += dx * scaleX;
+  ship.x = Math.max(ship.w / 2, Math.min(W - ship.w / 2, ship.x));
+}, {passive: false});
+
+document.getElementById('c').addEventListener('touchend', function(e) {
+  e.preventDefault();
+  if (state !== 'playing') return;
+  // Short tap without drag = fire
+  var elapsed = Date.now() - _touchStartTime;
+  if (!_didDrag && elapsed < 250) {
+    firePressed = true;
+  }
+}, {passive: false});
 </script>
 </body>
 </html>
