@@ -589,5 +589,19 @@ loop();
   },{passive:false});
 })();
 </script>
+
+<!-- overlay-tap-fix -->
+
+<script>
+(function(){
+  var ov = document.getElementById('overlay');
+  if (!ov) return;
+  ov.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    document.dispatchEvent(new KeyboardEvent('keydown', {key: ' ', bubbles: true}));
+    setTimeout(function(){ document.dispatchEvent(new KeyboardEvent('keyup', {key: ' ', bubbles: true})); }, 100);
+  }, {passive: false});
+})();
+</script>
 </body>
 </html>
