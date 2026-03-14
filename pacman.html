@@ -572,42 +572,6 @@ loop();
 </script>
 
 
-<!-- overlay-tap-fix -->
-
-
-<script>
-const isMobile = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
-if (isMobile) {
-  document.querySelectorAll('.ov-sub, .overlay-sub, #start-hint').forEach(function(el) {
-    el.textContent = 'Tap to start';
-  });
-}
-function _dispatchSpace() {
-  document.dispatchEvent(new KeyboardEvent('keydown', {key:' ', bubbles:true, cancelable:true}));
-  setTimeout(function() { document.dispatchEvent(new KeyboardEvent('keyup', {key:' ', bubbles:true})); }, 80);
-}
-var _swipeX, _swipeY;
-document.getElementById('overlay').addEventListener('touchstart', function(e) {
-  e.preventDefault(); _dispatchSpace();
-}, {passive:false});
-document.getElementById('c').addEventListener('touchstart', function(e) {
-  e.preventDefault();
-  var t = e.touches[0]; _swipeX = t.clientX; _swipeY = t.clientY;
-  _dispatchSpace();
-}, {passive:false});
-document.getElementById('c').addEventListener('touchend', function(e) {
-  e.preventDefault();
-  var t = e.changedTouches[0];
-  var dx = t.clientX - _swipeX, dy = t.clientY - _swipeY;
-  if (Math.abs(dx) < 12 && Math.abs(dy) < 12) return;
-  var key;
-  if (Math.abs(dx) > Math.abs(dy)) { key = dx > 0 ? 'ArrowRight' : 'ArrowLeft'; }
-  else { key = dy > 0 ? 'ArrowDown' : 'ArrowUp'; }
-  document.dispatchEvent(new KeyboardEvent('keydown', {key:key, bubbles:true}));
-  setTimeout(function() { document.dispatchEvent(new KeyboardEvent('keyup', {key:key, bubbles:true})); }, 80);
-}, {passive:false});
-</script>
-
 <script>
 // ── MOBILE CONTROLS ───────────────────────────────────────────────────────────
 const isMobile = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
@@ -619,12 +583,13 @@ if (isMobile) {
 
 var _psx, _psy;
 
-// Tap overlay to start/unpause
+// Tap overlay to start — only fires when overlay is visible (game not playing)
 document.getElementById('overlay').addEventListener('touchstart', function(e) {
   e.preventDefault();
-  // dispatch space to start or unpause
-  document.dispatchEvent(new KeyboardEvent('keydown', {key:' ', bubbles:true, cancelable:true}));
-  setTimeout(function(){ document.dispatchEvent(new KeyboardEvent('keyup', {key:' ', bubbles:true})); }, 80);
+  if (state === 'idle' || state === 'gameover' || state === 'dead' || state === 'paused') {
+    document.dispatchEvent(new KeyboardEvent('keydown', {key:' ', bubbles:true, cancelable:true}));
+    setTimeout(function(){ document.dispatchEvent(new KeyboardEvent('keyup', {key:' ', bubbles:true})); }, 80);
+  }
 }, {passive:false});
 
 // Canvas: record swipe start
