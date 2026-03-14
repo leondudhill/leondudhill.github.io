@@ -492,49 +492,47 @@ renderLoop();
 })();
 </script>
 
-<script>
-(function(){
-  var c=document.getElementById('c');
-  var sx,sy;
-  c.addEventListener('touchstart',function(e){
-    e.preventDefault();
-    var t=e.touches[0]; sx=t.clientX; sy=t.clientY;
-    if(state==='idle'||state==='dead'){ state='playing'; hideOverlay(); initGame(); }
-    else if(state==='paused'){ state='playing'; startLoop(); hideOverlay(); }
-  },{passive:false});
-  c.addEventListener('touchend',function(e){
-    e.preventDefault();
-    if(state!=='playing') return;
-    var t=e.changedTouches[0];
-    var dx=t.clientX-sx, dy=t.clientY-sy;
-    if(Math.abs(dx)<10&&Math.abs(dy)<10) return;
-    if(Math.abs(dx)>Math.abs(dy)){
-      if(dx>0&&currentDirName!=='LEFT'){ nextDir=DIRS.RIGHT; currentDirName='RIGHT'; }
-      else if(dx<0&&currentDirName!=='RIGHT'){ nextDir=DIRS.LEFT; currentDirName='LEFT'; }
-    } else {
-      if(dy>0&&currentDirName!=='UP'){ nextDir=DIRS.DOWN; currentDirName='DOWN'; }
-      else if(dy<0&&currentDirName!=='DOWN'){ nextDir=DIRS.UP; currentDirName='UP'; }
-    }
-  },{passive:false});
-})();
-</script>
 
-<!-- overlay-tap-fix -->
 
 <script>
-(function(){
-  // Tap overlay to start — overlay blocks canvas on mobile
-  var ov = document.getElementById('overlay');
-  if (!ov) return;
-  ov.addEventListener('touchstart', function(e) {
+// ── TOUCH CONTROLS ────────────────────────────────────────────────────────────
+var _swipeX, _swipeY;
+
+// Tap overlay OR canvas to start
+['overlay', 'c'].forEach(function(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('touchstart', function(e) {
     e.preventDefault();
+    var t = e.touches[0];
+    _swipeX = t.clientX; _swipeY = t.clientY;
     if (state === 'idle' || state === 'dead') {
-      state = 'playing'; hideOverlay(); initGame();
+      state = 'playing';
+      hideOverlay();
+      initGame();
     } else if (state === 'paused') {
-      state = 'playing'; startLoop(); hideOverlay();
+      state = 'playing';
+      startLoop();
+      hideOverlay();
     }
   }, {passive: false});
-})();
+});
+
+// Swipe on canvas to change direction
+document.getElementById('c').addEventListener('touchend', function(e) {
+  e.preventDefault();
+  if (state !== 'playing') return;
+  var t = e.changedTouches[0];
+  var dx = t.clientX - _swipeX, dy = t.clientY - _swipeY;
+  if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+  if (Math.abs(dx) > Math.abs(dy)) {
+    if (dx > 0 && currentDirName !== 'LEFT')  { nextDir = DIRS.RIGHT; currentDirName = 'RIGHT'; }
+    if (dx < 0 && currentDirName !== 'RIGHT') { nextDir = DIRS.LEFT;  currentDirName = 'LEFT';  }
+  } else {
+    if (dy > 0 && currentDirName !== 'UP')   { nextDir = DIRS.DOWN; currentDirName = 'DOWN'; }
+    if (dy < 0 && currentDirName !== 'DOWN') { nextDir = DIRS.UP;   currentDirName = 'UP';   }
+  }
+}, {passive: false});
 </script>
 </body>
 </html>
