@@ -518,5 +518,23 @@ renderLoop();
   },{passive:false});
 })();
 </script>
+
+<!-- overlay-tap-fix -->
+
+<script>
+(function(){
+  // Tap overlay to start — overlay blocks canvas on mobile
+  var ov = document.getElementById('overlay');
+  if (!ov) return;
+  ov.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    if (state === 'idle' || state === 'dead') {
+      state = 'playing'; hideOverlay(); initGame();
+    } else if (state === 'paused') {
+      state = 'playing'; startLoop(); hideOverlay();
+    }
+  }, {passive: false});
+})();
+</script>
 </body>
 </html>
