@@ -130,11 +130,12 @@
   #leon-splash .ls-name{font-size:42px;color:#fff;text-shadow:0 0 20px #0ff,0 0 60px #0ff;letter-spacing:4px;font-family:'Share Tech Mono',monospace;}
   #leon-splash .ls-name span{color:#00ffcc;text-shadow:0 0 20px #00ffcc,0 0 60px #00ffcc;}
 
-  /* ── MOBILE SCALING ── */
+  /* ── MOBILE ── */
   @media (max-width: 900px) {
-    body { padding: 50px 8px 16px !important; justify-content: flex-start !important; overflow-y: auto !important; overflow-x: hidden !important; }
-    canvas { max-width: 96vw !important; height: auto !important; }
-    #layout, #hud, #scoreboard, #labels, #side-left, #side-right { max-width: 96vw !important; }
+    body { padding: 50px 4px 12px !important; justify-content: flex-start !important; overflow: hidden !important; }
+    #hud { width: min(560px, 96vw) !important; }
+    canvas { width: min(560px, 96vw) !important; height: min(560px, 96vw) !important; }
+    #controls { display: none !important; }
   }
 
 </style>
@@ -163,7 +164,7 @@
   <div id="overlay">
     <h1>SNAKE</h1>
     <div class="overlay-detail">Eat food · Don't crash</div>
-    <div class="overlay-sub">Press SPACE to start</div>
+    <div class="overlay-sub" id="start-hint">Press SPACE to start</div>
   </div>
 </div>
 
@@ -177,6 +178,7 @@ const ctx = canvas.getContext('2d');
 const W = canvas.width, H = canvas.height;
 
 const CELL = 20;
+const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 const COLS = W / CELL, ROWS = H / CELL; // 30x30
 
 let state = 'idle'; // idle, playing, paused, dead
@@ -297,7 +299,7 @@ function die() {
   if (score > hiScore) hiScore = score;
   updateHUD();
   state = 'dead';
-  setTimeout(() => showOverlay('GAME OVER', `Score: ${score}`, 'Press SPACE to try again'), 600);
+  setTimeout(() => showOverlay('GAME OVER', `Score: ${score}`, isMobile ? 'Tap to try again' : 'Press SPACE to try again'), 600);
 }
 
 function updateHUD() {
@@ -457,7 +459,7 @@ function draw() {
     ctx.shadowColor = '#0ff'; ctx.shadowBlur = 20;
     ctx.fillText('PAUSED', W/2, H/2 - 10);
     ctx.font = '13px Share Tech Mono';
-    ctx.fillText('SPACE to resume', W/2, H/2 + 26);
+    ctx.fillText(isMobile ? 'Tap to resume' : 'SPACE to resume', W/2, H/2 + 26);
     ctx.shadowBlur = 0;
   }
 }
@@ -493,37 +495,39 @@ renderLoop();
 </script>
 
 
-
 <script>
-// ── TOUCH CONTROLS ────────────────────────────────────────────────────────────
-var _swipeX, _swipeY;
+// Update hint text on mobile
+if (isMobile) {
+  var hint = document.getElementById('start-hint');
+  if (hint) hint.textContent = 'Tap to start';
+}
 
-// Tap overlay OR canvas to start
-['overlay', 'c'].forEach(function(id) {
-  var el = document.getElementById(id);
-  if (!el) return;
-  el.addEventListener('touchstart', function(e) {
-    e.preventDefault();
-    var t = e.touches[0];
-    _swipeX = t.clientX; _swipeY = t.clientY;
-    if (state === 'idle' || state === 'dead') {
-      state = 'playing';
-      hideOverlay();
-      initGame();
-    } else if (state === 'paused') {
-      state = 'playing';
-      startLoop();
-      hideOverlay();
-    }
-  }, {passive: false});
-});
+// Touch to start / swipe to steer
+var _tx, _ty;
 
-// Swipe on canvas to change direction
+function _snakeTouch(e) {
+  e.preventDefault();
+  var t = e.touches[0];
+  _tx = t.clientX; _ty = t.clientY;
+  if (state === 'idle' || state === 'dead') {
+    state = 'playing';
+    hideOverlay();
+    initGame();
+  } else if (state === 'paused') {
+    state = 'playing';
+    startLoop();
+    hideOverlay();
+  }
+}
+
+document.getElementById('overlay').addEventListener('touchstart', _snakeTouch, {passive:false});
+document.getElementById('c').addEventListener('touchstart', _snakeTouch, {passive:false});
+
 document.getElementById('c').addEventListener('touchend', function(e) {
   e.preventDefault();
   if (state !== 'playing') return;
   var t = e.changedTouches[0];
-  var dx = t.clientX - _swipeX, dy = t.clientY - _swipeY;
+  var dx = t.clientX - _tx, dy = t.clientY - _ty;
   if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
   if (Math.abs(dx) > Math.abs(dy)) {
     if (dx > 0 && currentDirName !== 'LEFT')  { nextDir = DIRS.RIGHT; currentDirName = 'RIGHT'; }
@@ -532,7 +536,7 @@ document.getElementById('c').addEventListener('touchend', function(e) {
     if (dy > 0 && currentDirName !== 'UP')   { nextDir = DIRS.DOWN; currentDirName = 'DOWN'; }
     if (dy < 0 && currentDirName !== 'DOWN') { nextDir = DIRS.UP;   currentDirName = 'UP';   }
   }
-}, {passive: false});
+}, {passive:false});
 </script>
 </body>
 </html>
