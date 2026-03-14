@@ -130,13 +130,19 @@
   #leon-splash .ls-name{font-size:42px;color:#fff;text-shadow:0 0 20px #0ff,0 0 60px #0ff;letter-spacing:4px;font-family:'Share Tech Mono',monospace;}
   #leon-splash .ls-name span{color:#00ffcc;text-shadow:0 0 20px #00ffcc,0 0 60px #00ffcc;}
 
-  /* ── MOBILE SCALING ── */
-  @media (max-width: 900px) {
-    body { padding: 50px 8px 16px !important; justify-content: flex-start !important; overflow-y: auto !important; overflow-x: hidden !important; }
-    canvas { max-width: 96vw !important; height: auto !important; }
-    #layout, #hud, #scoreboard, #labels, #side-left, #side-right { max-width: 96vw !important; }
-  }
 
+  /* ── MOBILE ── */
+  @media (max-width: 900px) {
+    body { padding: 0 !important; overflow: hidden !important; height: 100dvh !important; display: flex !important; flex-direction: column !important; justify-content: flex-start !important; align-items: center !important; }
+    #hud, #scoreboard, #labels { width: min(800px, 96vw) !important; padding: 44px 8px 4px !important; flex-shrink: 0; box-sizing: border-box; }
+    #controls { display: none !important; }
+    #game-wrapper { flex: 1; display: flex !important; align-items: center !important; justify-content: center !important; width: 100vw !important; min-height: 0; }
+    canvas {
+      width: min(96vw, calc((100dvh - 76px) * 1.6000)) !important;
+      height: auto !important;
+      display: block;
+    }
+  }
 </style>
 </head>
 <body>
@@ -388,44 +394,42 @@ loop();
 })();
 </script>
 
-<script>
-(function(){
-  var c=document.getElementById('c');
-  var lastY=null;
-  c.addEventListener('touchstart',function(e){
-    e.preventDefault();
-    var t=e.touches[0];
-    lastY=t.clientY;
-    // tap to start/unpause
-    if(gameState==='idle'||gameState==='scored'){ startRound(); }
-    else if(gameState==='paused'){ gameState='playing'; }
-  },{passive:false});
-  c.addEventListener('touchmove',function(e){
-    e.preventDefault();
-    if(gameState!=='playing') return;
-    var t=e.touches[0];
-    var rect=c.getBoundingClientRect();
-    var scaleY=c.height/rect.height;
-    var relY=(t.clientY-rect.top)*scaleY;
-    p1.y=relY-90/2;
-    p1.y=Math.max(0,Math.min(H-90,p1.y));
-    lastY=t.clientY;
-  },{passive:false});
-})();
-</script>
 
 <!-- overlay-tap-fix -->
 
+
 <script>
-(function(){
-  var msg = document.getElementById('message');
-  if (!msg) return;
-  msg.addEventListener('touchstart', function(e) {
-    e.preventDefault();
-    if (gameState === 'idle' || gameState === 'scored') startRound();
-    else if (gameState === 'paused') gameState = 'playing';
-  }, {passive: false});
-})();
+// ── MOBILE CONTROLS ───────────────────────────────────────────────────────────
+const isMobile = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+if (isMobile) {
+  document.querySelectorAll('.ov-sub, .overlay-sub, #start-hint, .ov-sub-mobile').forEach(function(el) {
+    if (el.textContent.indexOf('SPACE') !== -1 || el.textContent.indexOf('start') !== -1 || el.textContent.indexOf('again') !== -1 || el.textContent.indexOf('continue') !== -1) {
+      el.textContent = el.textContent.replace('Press SPACE to start', 'Tap to start').replace('Press SPACE to play again', 'Tap to play again').replace('Press SPACE to try again', 'Tap to try again').replace('Press SPACE to continue', 'Tap to continue');
+    }
+  });
+}
+
+document.getElementById('message').addEventListener('touchstart', function(e) {
+  e.preventDefault();
+    if (gameState==='idle'||gameState==='scored') { startRound(); return; }
+  if (gameState==='paused') { gameState='playing'; return; }
+}, {passive:false});
+document.getElementById('c').addEventListener('touchstart', function(e) {
+  e.preventDefault();
+    if (gameState==='idle'||gameState==='scored') { startRound(); return; }
+  if (gameState==='paused') { gameState='playing'; return; }
+}, {passive:false});
+
+document.getElementById('c').addEventListener('touchmove', function(e) {
+  e.preventDefault();
+  if (gameState !== 'playing') return;
+  var t = e.touches[0];
+  var rect = document.getElementById('c').getBoundingClientRect();
+  var scaleY = canvas.height / rect.height;
+  var relY = (t.clientY - rect.top) * scaleY;
+  p1.y = relY - 90/2; p1.y = Math.max(0, Math.min(H - 90, p1.y));
+}, {passive:false});
+
 </script>
 </body>
 </html>
