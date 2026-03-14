@@ -33,9 +33,14 @@
 
   /* ── MOBILE SCALING ── */
   @media (max-width: 900px) {
-    body { padding: 50px 8px 16px !important; justify-content: flex-start !important; overflow-y: auto !important; overflow-x: hidden !important; }
-    canvas { max-width: 96vw !important; height: auto !important; }
-    #layout, #hud, #scoreboard, #labels, #side-left, #side-right { max-width: 96vw !important; }
+    body { padding: 0 !important; overflow: hidden !important; height: 100dvh; display: flex; flex-direction: column; justify-content: flex-start; }
+    #hud { width: min(700px, 96vw) !important; padding: 44px 8px 4px !important; flex-shrink: 0; }
+    #controls { display: none !important; }
+    #game-wrapper { flex: 1; display: flex; align-items: center; justify-content: center; width: 100vw; }
+    canvas {
+      width: min(96vw, calc((100dvh - 80px) * 700 / 580)) !important;
+      height: auto !important;
+    }
   }
 
 </style>
@@ -57,7 +62,7 @@
     <div class="ov-row"><canvas id="prev-b" width="32" height="24"></canvas><span class="ov-pts">= 20 PTS</span></div>
     <div class="ov-row"><canvas id="prev-c" width="32" height="24"></canvas><span class="ov-pts">= 10 PTS</span></div>
     <div class="ov-row"><canvas id="prev-ufo" width="40" height="24"></canvas><span class="ov-pts">= ???  PTS</span></div>
-    <div class="ov-sub">Press SPACE to start</div>
+    <div class="ov-sub" id="start-hint">Press SPACE to start</div>
   </div>
 </div>
 <div id="controls">← → &nbsp;·&nbsp; Move &nbsp;&nbsp;|&nbsp;&nbsp; SPACE &nbsp;·&nbsp; Fire &nbsp;&nbsp;|&nbsp;&nbsp; P &nbsp;·&nbsp; Pause</div>
@@ -403,10 +408,10 @@ function shipDeath() {
   if (lives<=0) {
     if (score>hiScore) hiScore=score;
     state='gameover';
-    showOverlay('GAME OVER','Score: '+score,'Press SPACE to try again');
+    showOverlay('GAME OVER','Score: '+score, isMobile ? 'Tap to try again' : 'Press SPACE to try again');
   } else {
     state='dead';
-    showOverlay('DESTROYED!',lives+(lives===1?' life':' lives')+' remaining','Press SPACE to continue');
+    showOverlay('DESTROYED!',lives+(lives===1?' life':' lives')+' remaining', isMobile ? 'Tap to continue' : 'Press SPACE to continue');
   }
 }
 
@@ -619,6 +624,10 @@ loop();
 
 <script>
 const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+if (isMobile) {
+  var hint = document.getElementById('start-hint');
+  if (hint) hint.textContent = 'Tap to start';
+}
 
 // Tap overlay to start
 document.getElementById('overlay').addEventListener('touchstart', function(e) {
