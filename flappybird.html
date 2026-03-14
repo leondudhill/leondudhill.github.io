@@ -30,13 +30,19 @@
   #leon-splash .ls-name{font-size:42px;color:#fff;text-shadow:0 0 20px #0ff,0 0 60px #0ff;letter-spacing:4px;font-family:'Share Tech Mono',monospace;}
   #leon-splash .ls-name span{color:#00ffcc;text-shadow:0 0 20px #00ffcc,0 0 60px #00ffcc;}
 
-  /* ── MOBILE SCALING ── */
-  @media (max-width: 900px) {
-    body { padding: 50px 8px 16px !important; justify-content: flex-start !important; overflow-y: auto !important; overflow-x: hidden !important; }
-    canvas { max-width: 96vw !important; height: auto !important; }
-    #layout, #hud, #scoreboard, #labels, #side-left, #side-right { max-width: 96vw !important; }
-  }
 
+  /* ── MOBILE ── */
+  @media (max-width: 900px) {
+    body { padding: 0 !important; overflow: hidden !important; height: 100dvh !important; display: flex !important; flex-direction: column !important; justify-content: flex-start !important; align-items: center !important; }
+    #hud, #scoreboard, #labels { width: min(400px, 96vw) !important; padding: 44px 8px 4px !important; flex-shrink: 0; box-sizing: border-box; }
+    #controls { display: none !important; }
+    #game-wrapper { flex: 1; display: flex !important; align-items: center !important; justify-content: center !important; width: 100vw !important; min-height: 0; }
+    canvas {
+      width: min(96vw, calc((100dvh - 76px) * 0.6667)) !important;
+      height: auto !important;
+      display: block;
+    }
+  }
 </style>
 </head>
 <body>
@@ -433,15 +439,19 @@ loop();
 
 <!-- overlay-tap-fix -->
 
+
 <script>
-(function(){
-  var ov = document.getElementById('overlay');
-  if (!ov) return;
-  ov.addEventListener('touchstart', function(e) {
-    e.preventDefault();
-    flap();
-  }, {passive: false});
-})();
+// ── MOBILE: tap to start / play ───────────────────────────────────────────────
+const isMobile = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+if (isMobile) {
+  document.querySelectorAll('.ov-sub, .overlay-sub, #start-hint').forEach(function(el) {
+    el.textContent = 'Tap to start';
+  });
+}
+['overlay','c'].forEach(function(id) {
+  var el = document.getElementById(id);
+  if (el) el.addEventListener('touchstart', function(e) { e.preventDefault(); flap(); }, {passive:false});
+});
 </script>
 </body>
 </html>
