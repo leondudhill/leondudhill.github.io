@@ -234,6 +234,12 @@ document.addEventListener('keyup', e=>{ KEYS[e.key]=false; });
 const DRAG_CELL = CELL;   // pixels per cell of movement
 let touch = null;         // active touch state
 
+// Tap overlay to start — overlay sits on top of canvas so canvas never sees the touch
+document.getElementById('overlay').addEventListener('touchstart', e => {
+  e.preventDefault();
+  if (state==='idle'||state==='gameover') startGame();
+}, { passive:false });
+
 canvas.addEventListener('touchstart', e => {
   e.preventDefault();
   if (state==='idle'||state==='gameover') { startGame(); return; }
