@@ -65,21 +65,21 @@
 
   <script>
     const intro = document.getElementById('intro');
-    const introText = document.getElementById('intro-text');
     const site = document.getElementById('site');
 
-    // Phase 1: fade in text (CSS handles this via animation)
-    // Phase 2: hold, then fade out overlay, reveal site
+    // Lock scroll and hide site while intro plays
+    document.body.classList.add('intro-active');
 
     setTimeout(() => {
-      // Start fading out the intro
+      // Fade out the intro overlay
       intro.classList.add('fade-out');
       setTimeout(() => {
         intro.style.display = 'none';
+        document.body.classList.remove('intro-active');
         site.classList.remove('hidden');
         site.classList.add('reveal');
       }, 1000);
-    }, 3200); // 1.2s fade-in + 1s hold + a bit of buffer
+    }, 3200);
   </script>
 </body>
 </html>
