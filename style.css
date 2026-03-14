@@ -543,3 +543,20 @@ footer {
 @media (max-width: 640px) {
   .games-grid { grid-template-columns: 1fr; }
 }
+
+/* ===== GAME PREVIEW EMOJI ===== */
+.gp-emoji {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+  opacity: 0.6;
+  filter: drop-shadow(0 0 12px rgba(0,255,204,0.4));
+  transition: opacity 0.25s, transform 0.25s;
+}
+.game-card:hover .gp-emoji {
+  opacity: 0.9;
+  transform: scale(1.1);
+}
