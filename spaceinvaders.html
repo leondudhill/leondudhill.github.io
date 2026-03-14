@@ -613,9 +613,12 @@ loop();
 
 (function(){
   var s=document.getElementById('leon-splash');
+  // Hide canvas on mobile to prevent flash at native size before CSS scales it
+  var _cv=document.getElementById('c');
+  if(('ontouchstart' in window)||navigator.maxTouchPoints>0){ _cv.style.visibility='hidden'; }
   setTimeout(function(){s.style.opacity='1';},50);
   setTimeout(function(){s.style.opacity='0';},3000);
-  setTimeout(function(){s.style.display='none';s.style.pointerEvents='none';},3900);
+  setTimeout(function(){s.style.display='none';s.style.pointerEvents='none';if(_cv)_cv.style.visibility='visible';},3900);
 })();
 </script>
 
