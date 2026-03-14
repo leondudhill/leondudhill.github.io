@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Games | Leon Dudhill</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<nav>
+  <a href="index.html">Home</a>
+  <a href="games.html">Games</a>
+  <a href="apps.html">Apps</a>
+  <a href="experiments.html">Experiments</a>
+  <a href="about.html">About</a>
+  <a href="contact.html">Contact</a>
+</nav>
+
+<!-- Page Heading -->
+<header>
+  <h1>Experiments</h1>
+  <p>My video game projects</p>
+</header>
+
+<section>
+  <div class="card-container">
+    <div class="card">
+      <img src="images/placeholder1.png" alt="Game 1">
+      <h3>Clay-Verse</h3>
+      <p>3D puzzle platformer with real clay scanning.</p>
+    </div>
+    <div class="card">
+      <img src="images/placeholder2.png" alt="Game 2">
+      <h3>Retro Platformer</h3>
+      <p>80s inspired rhythm-based game prototype.</p>
+    </div>
+    <div class="card">
+      <img src="images/placeholder3.png" alt="Game 3">
+      <h3>Puzzle Quest</h3>
+      <p>Logic puzzle game built in Unity.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 Leon Dudhill</p>
+</footer>
+
+</body>
+</html>
