@@ -4,12 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>TETRIS</title>
+<link rel="icon" href="favicon.png" type="image/png" />
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
   body { background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; font-family:'Share Tech Mono',monospace; overflow:hidden; }
   body::before { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,180,0.012) 2px,rgba(0,255,180,0.012) 4px); pointer-events:none; z-index:10; }
- 
+
   /* ── LAYOUT ── */
   #layout { display:flex; gap:20px; align-items:flex-start; }
   #side-left, #side-right { display:flex; flex-direction:column; gap:16px; width:120px; padding-top:8px; }
@@ -19,53 +20,53 @@
   #game-wrapper { position:relative; }
   canvas { display:block; border:1px solid rgba(0,255,255,0.2); box-shadow:0 0 30px rgba(0,255,255,0.12),0 0 80px rgba(0,255,255,0.04); border-radius:2px; }
   #next-canvas { border:1px solid rgba(0,255,255,0.15); border-radius:2px; }
- 
+
   /* ── OVERLAY ── */
   #overlay { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(0,0,0,0.88); text-align:center; gap:10px; }
   #overlay h1 { font-size:46px; color:#fff; text-shadow:0 0 20px #0ff,0 0 60px #0ff; letter-spacing:12px; text-transform:uppercase; }
   .ov-detail { font-size:11px; color:#0ff; opacity:0.6; letter-spacing:4px; }
   .ov-sub { font-size:12px; color:#0ff; opacity:0.65; letter-spacing:5px; animation:blink 1.2s step-start infinite; margin-top:8px; }
   @keyframes blink { 0%,100%{opacity:.65} 50%{opacity:0} }
- 
+
   /* ── DESKTOP CONTROLS HINT ── */
   #controls { margin-top:10px; font-size:10px; color:rgba(0,255,255,0.3); letter-spacing:2px; text-align:center; line-height:2; }
- 
+
   /* ── BACK BUTTON ── */
   #back-btn { position:fixed; top:16px; left:16px; font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:3px; color:rgba(0,255,255,0.5); text-decoration:none; text-transform:uppercase; border:1px solid rgba(0,255,255,0.2); padding:6px 14px; border-radius:4px; transition:color 0.2s, border-color 0.2s; z-index:100; }
   #back-btn:hover, #back-btn:active { color:#0ff; border-color:#0ff; }
- 
+
   /* ── TOUCH D-PAD (hidden on desktop) ── */
   #touch-controls { display:none; }
- 
+
   /* ── SPLASH ── */
   #leon-splash { position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#000; text-align:center; gap:14px; z-index:9999; opacity:0; transition:opacity 0.8s ease; pointer-events:none; }
   #leon-splash .ls-by { font-size:13px; color:rgba(0,255,255,0.5); letter-spacing:8px; text-transform:uppercase; }
   #leon-splash .ls-name { font-size:42px; color:#fff; text-shadow:0 0 20px #0ff,0 0 60px #0ff; letter-spacing:4px; }
   #leon-splash .ls-name span { color:#00ffcc; text-shadow:0 0 20px #00ffcc,0 0 60px #00ffcc; }
- 
+
   /* ══════════════════════════════════════
      MOBILE STYLES
   ══════════════════════════════════════ */
   @media (max-width:600px) {
     body { justify-content:flex-start; padding-top:54px; overflow-y:auto; overflow-x:hidden; }
- 
+
     #layout { flex-direction:column; align-items:center; gap:8px; width:100vw; }
- 
+
     /* Score row above board */
     #side-left { flex-direction:row; width:auto; gap:20px; padding-top:0; order:1; }
     .panel-value { font-size:20px; }
- 
+
     /* Board */
     #game-wrapper { order:2; width:min(300px, 94vw); }
     #c { width:100% !important; height:auto !important; aspect-ratio:1/2; }
- 
+
     /* Next + Best row below board */
     #side-right { flex-direction:row; width:auto; gap:20px; order:3; align-items:center; }
     #next-canvas { width:60px !important; height:60px !important; }
- 
+
     /* Hide keyboard hint */
     #controls { display:none; }
- 
+
     /* D-pad */
     #touch-controls {
       display:grid;
@@ -98,24 +99,24 @@
     #tc-drop   { grid-area:drop; font-size:11px; letter-spacing:1px; width:64px; height:44px; }
     #tc-right  { grid-area:right; }
     #tc-down   { grid-area:down; }
- 
+
     /* Tap-to-start hint in overlay */
     .ov-sub-mobile { font-size:12px; color:#0ff; opacity:0.65; letter-spacing:4px; animation:blink 1.2s step-start infinite; margin-top:8px; }
   }
 </style>
 </head>
 <body>
- 
+
 <a href="games.html" id="back-btn">← Back</a>
 <div id="leon-splash"><div class="ls-by">A game by</div><div class="ls-name"><span>Leon Dudhill</span></div></div>
- 
+
 <div id="layout">
   <div id="side-left">
     <div class="panel"><span class="panel-label">Score</span><span class="panel-value" id="score-el">0</span></div>
     <div class="panel"><span class="panel-label">Level</span><span class="panel-value" id="level-el">1</span></div>
     <div class="panel"><span class="panel-label">Lines</span><span class="panel-value" id="lines-el">0</span></div>
   </div>
- 
+
   <div id="game-wrapper">
     <canvas id="c" width="300" height="600"></canvas>
     <div id="overlay">
@@ -124,15 +125,15 @@
       <div class="ov-sub" id="ov-start-hint">Press SPACE to start</div>
     </div>
   </div>
- 
+
   <div id="side-right">
     <div class="panel"><span class="panel-label">Next</span><canvas id="next-canvas" width="100" height="100"></canvas></div>
     <div class="panel"><span class="panel-label">Best</span><span class="panel-value" id="best-el">0</span></div>
   </div>
 </div>
- 
+
 <div id="controls">← → Move &nbsp;|&nbsp; ↑ / Z Rotate &nbsp;|&nbsp; ↓ Soft drop &nbsp;|&nbsp; SPACE Hard drop &nbsp;|&nbsp; P Pause</div>
- 
+
 <!-- Touch D-pad (shown on mobile only via CSS) -->
 <div id="touch-controls">
   <button class="tc-btn" id="tc-rotate">↻</button>
@@ -141,7 +142,7 @@
   <button class="tc-btn" id="tc-right">→</button>
   <button class="tc-btn" id="tc-down">↓</button>
 </div>
- 
+
 <script>
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
@@ -149,7 +150,7 @@ const nextCanvas = document.getElementById('next-canvas');
 const nctx = nextCanvas.getContext('2d');
 const W = canvas.width, H = canvas.height;
 const COLS = 10, ROWS = 20, CELL = 30;
- 
+
 const PIECES = {
   I: { cells:[[0,1],[1,1],[2,1],[3,1]], color:'#00ffff' },
   O: { cells:[[0,0],[1,0],[0,1],[1,1]], color:'#ffff00' },
@@ -160,7 +161,7 @@ const PIECES = {
   L: { cells:[[2,0],[0,1],[1,1],[2,1]], color:'#ff8800' },
 };
 const PIECE_KEYS = Object.keys(PIECES);
- 
+
 let state = 'idle';
 let board = Array.from({length:ROWS}, ()=>Array(COLS).fill(null));
 let current = null, next = null;
@@ -168,22 +169,22 @@ let score = 0, best = 0, level = 1, lines = 0;
 let dropTimer = 0, dropInterval = 48;
 let particles = [], floaters = [], lineClearAnim = [];
 let tick = 0, lockDelay = 0;
- 
+
 const KEYS = {};
 const SCORE_TABLE = [0, 100, 300, 500, 800];
- 
+
 const stars = Array.from({length:60}, ()=>({
   x:Math.random()*W, y:Math.random()*H,
   r:Math.random()*1.1+0.2, b:Math.random()*0.4+0.2, t:Math.random()*Math.PI*2
 }));
- 
+
 // ── Detect mobile to update overlay hint ─────────────────────────────────────
 const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 if (isMobile) {
   document.getElementById('ov-controls-hint').textContent = 'Use the buttons below to play';
   document.getElementById('ov-start-hint').textContent = 'Tap the board to start';
 }
- 
+
 // ── KEYBOARD ─────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   if (KEYS[e.key]) return;
@@ -204,20 +205,20 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowUp' || e.key === 'z' || e.key === 'Z') { e.preventDefault(); rotate(); }
 });
 document.addEventListener('keyup', e => { KEYS[e.key] = false; });
- 
+
 // ── TAP CANVAS TO START ───────────────────────────────────────────────────────
 canvas.addEventListener('touchstart', e => {
   e.preventDefault();
   if (state === 'idle' || state === 'gameover') { startGame(); }
 }, { passive: false });
- 
+
 // ── SWIPE ON CANVAS ───────────────────────────────────────────────────────────
 let swipeStartX = 0, swipeStartY = 0, swipeStartTime = 0;
 canvas.addEventListener('touchstart', e => {
   const t = e.touches[0];
   swipeStartX = t.clientX; swipeStartY = t.clientY; swipeStartTime = Date.now();
 }, { passive: true });
- 
+
 canvas.addEventListener('touchend', e => {
   if (state !== 'playing') return;
   const t = e.changedTouches[0];
@@ -236,7 +237,7 @@ canvas.addEventListener('touchend', e => {
     else if (dy < -20) rotate();
   }
 }, { passive: true });
- 
+
 // ── D-PAD BUTTONS ─────────────────────────────────────────────────────────────
 function tcBind(id, fn) {
   const btn = document.getElementById(id);
@@ -244,11 +245,11 @@ function tcBind(id, fn) {
   btn.addEventListener('touchstart', e => { e.preventDefault(); fn(); }, { passive: false });
   btn.addEventListener('click', fn); // fallback for mouse testing
 }
- 
+
 // Held left/right with repeat
 let holdLeft = false, holdRight = false, holdDown = false;
 let holdInterval = null;
- 
+
 function startHold(dir) {
   if (state !== 'playing') return;
   if (dir === 'l') { holdLeft = true; moveH(-1); }
@@ -267,7 +268,7 @@ function stopHold() {
   holdLeft = false; holdRight = false; holdDown = false;
   clearInterval(holdInterval); holdInterval = null;
 }
- 
+
 ['tc-left','tc-right','tc-down'].forEach(id => {
   const btn = document.getElementById(id);
   if (!btn) return;
@@ -276,19 +277,19 @@ function stopHold() {
   btn.addEventListener('touchend',   e => { e.preventDefault(); stopHold(); }, { passive:false });
   btn.addEventListener('touchcancel',e => { stopHold(); }, { passive:false });
 });
- 
+
 document.getElementById('tc-rotate').addEventListener('touchstart', e => {
   e.preventDefault();
   if (state === 'idle' || state === 'gameover') { startGame(); return; }
   if (state === 'playing') rotate();
 }, { passive: false });
- 
+
 document.getElementById('tc-drop').addEventListener('touchstart', e => {
   e.preventDefault();
   if (state === 'idle' || state === 'gameover') { startGame(); return; }
   if (state === 'playing') hardDrop();
 }, { passive: false });
- 
+
 // ── GAME FLOW ─────────────────────────────────────────────────────────────────
 function startGame() {
   board = Array.from({length:ROWS}, ()=>Array(COLS).fill(null));
@@ -301,13 +302,13 @@ function startGame() {
   hideOverlay();
   updateHUD();
 }
- 
+
 function randomPiece() {
   const k = PIECE_KEYS[Math.floor(Math.random() * PIECE_KEYS.length)];
   const p = PIECES[k];
   return { cells: p.cells.map(c=>[...c]), color: p.color, key: k };
 }
- 
+
 function spawnPiece() {
   current = next; next = randomPiece();
   const maxC = Math.max(...current.cells.map(([c])=>c));
@@ -317,7 +318,7 @@ function spawnPiece() {
   drawNext();
   if (!isValid(current.cells)) gameOver();
 }
- 
+
 function gameOver() {
   if (score > best) best = score;
   state = 'gameover';
@@ -326,7 +327,7 @@ function gameOver() {
   const restartHint = isMobile ? 'Tap to play again' : 'Press SPACE to play again';
   setTimeout(()=> showOverlay('GAME OVER', 'Score: '+score+'  ·  Best: '+best, restartHint), 600);
 }
- 
+
 function moveH(dx) {
   const moved = current.cells.map(([c,r])=>[c+dx,r]);
   if (isValid(moved)) { current.cells = moved; lockDelay = 0; }
@@ -354,7 +355,7 @@ function rotate() {
   }
 }
 function isValid(cells) { return cells.every(([c,r]) => c>=0 && c<COLS && r<ROWS && (r<0 || !board[r][c])); }
- 
+
 function lockPiece() {
   current.cells.forEach(([c,r])=>{ if(r>=0) board[r][c]=current.color; });
   spawnLockParticles(); clearLines(); spawnPiece(); dropTimer = 0;
@@ -371,7 +372,7 @@ function clearLines() {
   dropInterval = Math.max(4, 48-(level-1)*4);
   updateHUD(); addFloater(W/2, H/2, '+'+pts); spawnLineClearParticles(cleared.length);
 }
- 
+
 function update() {
   tick++;
   if (state !== 'playing') { updateParticles(); updateFloaters(); return; }
@@ -389,7 +390,7 @@ function update() {
   lineClearAnim=lineClearAnim.filter(a=>a.life>0);
   updateParticles(); updateFloaters();
 }
- 
+
 function spawnLockParticles() {
   current.cells.forEach(([c,r])=>{
     for(let i=0;i<2;i++){
@@ -414,7 +415,7 @@ function spawnHardDropParticles() {
 function updateParticles(){ particles=particles.filter(p=>p.life>0); particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.12;p.life-=p.decay;}); }
 function addFloater(x,y,val){ floaters.push({x,y,val,life:1}); }
 function updateFloaters(){ floaters=floaters.filter(f=>f.life>0); floaters.forEach(f=>{f.y-=0.6;f.life-=0.02;}); }
- 
+
 function updateHUD() {
   document.getElementById('score-el').textContent = score;
   document.getElementById('level-el').textContent = level;
@@ -461,11 +462,11 @@ function draw() {
 }
 function showOverlay(title,detail,sub){ const ov=document.getElementById('overlay'); ov.style.display='flex'; ov.innerHTML=`<h1>${title}</h1><div class="ov-detail">${detail}</div><div class="ov-sub">${sub}</div>`; }
 function hideOverlay(){ document.getElementById('overlay').style.display='none'; }
- 
+
 updateHUD();
 function loop(){ update(); draw(); requestAnimationFrame(loop); }
 loop();
- 
+
 (function(){
   var s=document.getElementById('leon-splash');
   setTimeout(function(){s.style.opacity='1';},50);
@@ -475,4 +476,3 @@ loop();
 </script>
 </body>
 </html>
- 
