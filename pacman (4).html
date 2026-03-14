@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PAC-MAN</title>
+<link rel="icon" href="favicon.png" type="image/png" />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; font-family:'Share Tech Mono',monospace; overflow:hidden; }
+  body::before { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,180,0.012) 2px,rgba(0,255,180,0.012) 4px); pointer-events:none; z-index:10; }
+  #hud { display:flex; justify-content:space-between; align-items:flex-end; width:504px; margin-bottom:8px; padding:0 4px; }
+  .hud-block { display:flex; flex-direction:column; gap:2px; }
+  .hud-block.right { align-items:flex-end; } .hud-block.center { align-items:center; }
+  .hud-label { font-size:10px; letter-spacing:5px; color:rgba(0,255,255,0.4); text-transform:uppercase; }
+  .hud-value { font-size:28px; color:#fff; text-shadow:0 0 15px #0ff,0 0 35px #0ff; letter-spacing:3px; }
+  #lives-row { display:flex; gap:5px; align-items:center; margin-top:2px; }
+  #game-wrapper { position:relative; }
+  canvas { display:block; border:1px solid rgba(0,255,255,0.2); box-shadow:0 0 30px rgba(0,255,255,0.12),0 0 80px rgba(0,255,255,0.04); border-radius:2px; }
+  #overlay { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(0,0,0,0.82); text-align:center; gap:8px; }
+  #overlay h1 { font-size:48px; color:#ffff00; text-shadow:0 0 20px #ffff00,0 0 60px #ffaa00; letter-spacing:10px; text-transform:uppercase; }
+  .ov-detail { font-size:12px; color:#0ff; opacity:0.6; letter-spacing:4px; }
+  .ov-sub { font-size:12px; color:#0ff; opacity:0.65; letter-spacing:5px; animation:blink 1.2s step-start infinite; margin-top:6px; }
+  @keyframes blink { 0%,100%{opacity:.65} 50%{opacity:0} }
+  #controls { margin-top:10px; font-size:10px; color:rgba(0,255,255,0.3); letter-spacing:3px; text-align:center; line-height:2; }
+
+  #leon-splash{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;text-align:center;gap:14px;z-index:9999;opacity:0;transition:opacity 0.8s ease;pointer-events:none;}
+  #leon-splash .ls-by{font-size:13px;color:rgba(0,255,255,0.5);letter-spacing:8px;text-transform:uppercase;font-family:'Share Tech Mono',monospace;}
+  #leon-splash .ls-name{font-size:42px;color:#fff;text-shadow:0 0 20px #0ff,0 0 60px #0ff;letter-spacing:4px;font-family:'Share Tech Mono',monospace;}
+  #leon-splash .ls-name span{color:#00ffcc;text-shadow:0 0 20px #00ffcc,0 0 60px #00ffcc;}
+
+  /* ── MOBILE SCALING ── */
+  @media (max-width: 900px) {
+    body { padding: 50px 8px 16px !important; justify-content: flex-start !important; overflow-y: auto !important; overflow-x: hidden !important; }
+    canvas { max-width: 96vw !important; height: auto !important; }
+    #layout, #hud, #scoreboard, #labels, #side-left, #side-right { max-width: 96vw !important; }
+  }
+
+</style>
+</head>
+<body>
+<a href="games.html" id="back-btn" style="position:fixed;top:16px;left:16px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:3px;color:rgba(0,255,255,0.5);text-decoration:none;text-transform:uppercase;border:1px solid rgba(0,255,255,0.2);padding:6px 14px;border-radius:4px;z-index:10000;transition:color 0.2s,border-color 0.2s;" onmouseover="this.style.color='#0ff';this.style.borderColor='#0ff'" onmouseout="this.style.color='rgba(0,255,255,0.5)';this.style.borderColor='rgba(0,255,255,0.2)'">← Back</a>
+<div id="leon-splash"><div class="ls-by">A game by</div><div class="ls-name"><span>Leon Dudhill</span></div></div>
+<div id="hud">
+  <div class="hud-block"><span class="hud-label">Score</span><span class="hud-value" id="score-el">0</span></div>
+  <div class="hud-block center"><span class="hud-label">Level</span><span class="hud-value" id="level-el">1</span></div>
+  <div class="hud-block right"><span class="hud-label">Lives</span><div id="lives-row"></div></div>
+</div>
+<div id="game-wrapper">
+  <canvas id="c"></canvas>
+  <div id="overlay">
+    <h1>PAC-MAN</h1>
+    <div class="ov-detail">Eat all dots · Avoid ghosts</div>
+    <div class="ov-detail" style="color:#ff3366;opacity:0.8">Power pellets make ghosts edible!</div>
+    <div class="ov-sub">Press SPACE to start</div>
+  </div>
+</div>
+<div id="controls">Arrow keys / WASD · SPACE to pause</div>
+
+<script>
+// ── MAZE ─────────────────────────────────────────────────────────────────────
+// 0=dot 1=wall 2=empty 3=power 4=ghost-door 5=ghost-house
+const BASE_MAP = [
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1],
+  [1,3,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,3,1],
+  [1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,0,1],
+  [1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,0,1],
+  [1,0,0,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0,1],
+  [1,1,1,1,1,1,0,1,1,1,1,1,2,1,1,2,1,1,1,1,1,0,1,1,1,1,1,1],
+  [1,1,1,1,1,1,0,1,1,1,1,1,2,1,1,2,1,1,1,1,1,0,1,1,1,1,1,1],
+  [1,1,1,1,1,1,0,1,1,2,2,2,2,2,2,2,2,2,2,1,1,0,1,1,1,1,1,1],
+  [1,1,1,1,1,1,0,1,1,2,1,1,1,4,4,1,1,1,2,1,1,0,1,1,1,1,1,1],
+  [1,1,1,1,1,1,0,1,1,2,1,5,5,5,5,5,5,1,2,1,1,0,1,1,1,1,1,1],
+  [2,2,2,2,2,2,0,2,2,2,1,5,5,5,5,5,5,1,2,2,2,0,2,2,2,2,2,2],
+  [1,1,1,1,1,1,0,1,1,2,1,5,5,5,5,5,5,1,2,1,1,0,1,1,1,1,1,1],
+  [1,1,1,1,1,1,0,1,1,2,1,1,1,1,1,1,1,1,2,1,1,0,1,1,1,1,1,1],
+  [1,1,1,1,1,1,0,1,1,2,2,2,2,2,2,2,2,2,2,1,1,0,1,1,1,1,1,1],
+  [1,1,1,1,1,1,0,1,1,2,1,1,1,1,1,1,1,1,2,1,1,0,1,1,1,1,1,1],
+  [1,1,1,1,1,1,0,1,1,2,1,1,1,1,1,1,1,1,2,1,1,0,1,1,1,1,1,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1],
+  [1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1],
+  [1,3,0,0,1,1,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,1,1,0,0,3,1],
+  [1,1,1,0,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,0,1,1,1],
+  [1,1,1,0,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,0,1,1,1],
+  [1,0,0,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0,1],
+  [1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1],
+  [1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+];
+const ROWS=31, COLS=28;
+const CELL=18; // smaller cell = fits on screen better
+
+const canvas=document.getElementById('c');
+canvas.width=COLS*CELL; canvas.height=ROWS*CELL;
+document.getElementById('hud').style.width=canvas.width+'px';
+const ctx=canvas.getContext('2d');
+const CW=canvas.width, CH=canvas.height;
+
+let map=[], totalDots=0;
+function initMap(){
+  map=BASE_MAP.map(r=>[...r]);
+  totalDots=0;
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(map[r][c]===0||map[r][c]===3) totalDots++;
+}
+
+// Cell type — always safe integer access
+function T(r,c){
+  if(r<0||r>=ROWS||c<0||c>=COLS) return 0; // out of bounds = open (tunnel wraps)
+  return map[r][c]??1;
+}
+function isWall(r,c){return T(r,c)===1;}
+// Pac can walk on 0,2,3 only
+function pacWalkable(r,c){const t=T(r,c);return t===0||t===2||t===3;}
+// Ghost can walk on 0,2,3,4,5 (everywhere except solid walls)
+function ghostWalkable(r,c){return T(r,c)!==1;}
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let state='idle', score=0, hi=0, lives=3, level=1, dots=0;
+let powerTimer=0;
+const POWER=420;
+let particles=[], floaters=[], tick=0;
+let mouthA=0.25, mouthDir=1;
+
+// Global scatter/chase schedule (frames each phase lasts)
+const SCHED=[300,900,250,900,200,900,180,99999];
+let schedIdx=0, schedTick=0, gMode='scatter'; // 'scatter' or 'chase'
+
+// Pac-Man — integer tile position + sub-pixel offset for smooth movement
+const PAC={
+  col:13, row:23,       // current tile (integers!)
+  px:13*CELL+CELL/2,   // pixel x centre
+  py:23*CELL+CELL/2,   // pixel y centre
+  dx:0, dy:0,          // current movement direction (tile deltas)
+  qdx:0, qdy:0,        // queued next direction
+  spd:1.8,             // pixels per frame
+  moving:false
+};
+
+// Ghosts — tile-based movement, move one tile at a time
+function makeGhosts(){
+  schedIdx=0; schedTick=0; gMode='scatter';
+  return [
+    {name:'blinky',color:'#ff2222',col:13,row:11,dx:1,dy:0,
+     phase:'normal',  frightened:0,releaseIn:0,
+     sx:27,sy:0,  // scatter target col,row
+     px:0,py:0,progress:0},
+    {name:'pinky', color:'#ffb8ff',col:13,row:14,dx:0,dy:1,
+     phase:'house',   frightened:0,releaseIn:40,
+     sx:0,sy:0,
+     px:0,py:0,progress:0},
+    {name:'inky',  color:'#00ffff',col:11,row:14,dx:0,dy:-1,
+     phase:'house',   frightened:0,releaseIn:80,
+     sx:27,sy:30,
+     px:0,py:0,progress:0},
+    {name:'clyde', color:'#ffb852',col:15,row:14,dx:0,dy:1,
+     phase:'house',   frightened:0,releaseIn:120,
+     sx:0,sy:30,
+     px:0,py:0,progress:0},
+  ];
+}
+let ghosts=[];
+
+// Initialise ghost pixel positions
+function syncGhostPixels(g){
+  g.px=g.col*CELL+CELL/2;
+  g.py=g.row*CELL+CELL/2;
+}
+
+// ── INPUT ─────────────────────────────────────────────────────────────────────
+const KEYS={};
+document.addEventListener('keydown',e=>{
+  KEYS[e.key]=true;
+  if(e.key===' '){e.preventDefault();
+    if(state==='idle'||state==='gameover') startGame();
+    else if(state==='dead') revive();
+    else if(state==='playing') state='paused';
+    else if(state==='paused') state='playing';
+  }
+});
+document.addEventListener('keyup',e=>KEYS[e.key]=false);
+function readInput(){
+  if(KEYS.ArrowUp   ||KEYS.w||KEYS.W){PAC.qdx=0;PAC.qdy=-1;}
+  if(KEYS.ArrowDown ||KEYS.s||KEYS.S){PAC.qdx=0;PAC.qdy=1;}
+  if(KEYS.ArrowLeft ||KEYS.a||KEYS.A){PAC.qdx=-1;PAC.qdy=0;}
+  if(KEYS.ArrowRight||KEYS.d||KEYS.D){PAC.qdx=1;PAC.qdy=0;}
+}
+
+// ── GAME FLOW ─────────────────────────────────────────────────────────────────
+function startGame(){score=0;lives=3;level=1;initMap();resetRound();state='playing';hideOv();updateHUD();}
+function resetRound(){
+  dots=0;powerTimer=0;particles=[];floaters=[];
+  PAC.col=13;PAC.row=23;PAC.dx=0;PAC.dy=0;PAC.qdx=0;PAC.qdy=0;
+  PAC.px=PAC.col*CELL+CELL/2; PAC.py=PAC.row*CELL+CELL/2;
+  ghosts=makeGhosts();
+  ghosts.forEach(syncGhostPixels);
+}
+function revive(){powerTimer=0;PAC.col=13;PAC.row=23;PAC.dx=0;PAC.dy=0;PAC.qdx=0;PAC.qdy=0;PAC.px=PAC.col*CELL+CELL/2;PAC.py=PAC.row*CELL+CELL/2;ghosts=makeGhosts();ghosts.forEach(syncGhostPixels);state='playing';hideOv();}
+
+// ── UPDATE ────────────────────────────────────────────────────────────────────
+function update(){
+  if(state!=='playing') return;
+  tick++;
+
+  // Chase/scatter schedule
+  schedTick++;
+  if(schedTick>=(SCHED[schedIdx]||99999)){
+    schedTick=0; schedIdx++;
+    gMode=schedIdx%2===0?'scatter':'chase';
+    // Reverse all free non-frightened ghosts
+    ghosts.forEach(g=>{if(g.phase==='normal'&&!g.frightened){g.dx*=-1;g.dy*=-1;}});
+  }
+
+  mouthA+=0.16*mouthDir;
+  if(mouthA>0.35||mouthA<0.02) mouthDir*=-1;
+
+  readInput();
+  movePac();
+  eatCell();
+  ghosts.forEach(moveGhost);
+  checkHits();
+  if(powerTimer>0&&--powerTimer===0) ghosts.forEach(g=>{if(g.frightened>0)g.frightened=0;});
+  updateParticles();updateFloaters();
+}
+
+// ── PAC MOVEMENT ─────────────────────────────────────────────────────────────
+// Pac moves smoothly in pixels; when he reaches centre of next tile, he commits
+function movePac(){
+  const spd=PAC.spd;
+  // At a tile centre — pick direction
+  const atCentreX=Math.abs(PAC.px-(PAC.col*CELL+CELL/2))<spd+0.5;
+  const atCentreY=Math.abs(PAC.py-(PAC.row*CELL+CELL/2))<spd+0.5;
+  if(atCentreX&&atCentreY){
+    // Snap to centre
+    PAC.px=PAC.col*CELL+CELL/2; PAC.py=PAC.row*CELL+CELL/2;
+    // Try queued direction
+    const qr=PAC.row+PAC.qdy, qc=PAC.col+PAC.qdx;
+    if((PAC.qdx||PAC.qdy)&&pacWalkable(qr,qc)){PAC.dx=PAC.qdx;PAC.dy=PAC.qdy;}
+    // Try to continue current direction
+    const nr=PAC.row+PAC.dy, nc=PAC.col+PAC.dx;
+    if((PAC.dx||PAC.dy)&&pacWalkable(nr,nc)){
+      const newRow=((nr%ROWS)+ROWS)%ROWS;
+      const newCol=((nc%COLS)+COLS)%COLS;
+      // If tile wrapped, snap pixel instantly so there's no cross-screen glide
+      if(newCol!==nc) PAC.px=newCol*CELL+CELL/2;
+      if(newRow!==nr) PAC.py=newRow*CELL+CELL/2;
+      PAC.row=newRow; PAC.col=newCol;
+    } else {
+      PAC.dx=0;PAC.dy=0; // hit wall, stop
+    }
+  }
+  // Wrap tile+pixel BEFORE computing target — instant teleport
+  if(PAC.col<0)    { PAC.col=COLS-1; PAC.px=(COLS-1)*CELL+CELL/2; }
+  if(PAC.col>=COLS){ PAC.col=0;      PAC.px=CELL/2; }
+  if(PAC.row<0)    { PAC.row=ROWS-1; PAC.py=(ROWS-1)*CELL+CELL/2; }
+  if(PAC.row>=ROWS){ PAC.row=0;      PAC.py=CELL/2; }
+  // Move pixels toward target tile centre
+  const tx=PAC.col*CELL+CELL/2, ty=PAC.row*CELL+CELL/2;
+  const dxp=tx-PAC.px, dyp=ty-PAC.py;
+  if(Math.abs(dxp)>0.5) PAC.px+=Math.sign(dxp)*Math.min(spd,Math.abs(dxp));
+  else PAC.px=tx;
+  if(Math.abs(dyp)>0.5) PAC.py+=Math.sign(dyp)*Math.min(spd,Math.abs(dyp));
+  else PAC.py=ty;
+}
+
+function eatCell(){
+  const t=T(PAC.row,PAC.col);
+  if(t===0){map[PAC.row][PAC.col]=2;score+=10;dots++;addFloater(PAC.col,PAC.row,10);checkWin();}
+  else if(t===3){
+    map[PAC.row][PAC.col]=2;score+=50;dots++;addFloater(PAC.col,PAC.row,50);checkWin();
+    powerTimer=POWER;
+    ghosts.forEach(g=>{if(g.phase==='normal'){g.frightened=POWER;g.dx*=-1;g.dy*=-1;}});
+  }
+  updateHUD();
+}
+function checkWin(){
+  if(dots>=totalDots){level++;initMap();resetRound();PAC.spd=Math.min(2.2,1.8+level*0.08);}
+}
+
+// ── GHOST MOVEMENT ────────────────────────────────────────────────────────────
+// Ghosts also use tile-based movement: choose next tile at each intersection
+const D4=[{x:0,y:-1},{x:-1,y:0},{x:0,y:1},{x:1,y:0}]; // up left down right
+
+function moveGhost(g){
+  const spd = g.phase==='returning'?2.2 : g.frightened?1.0 : 1.4;
+
+  // Move pixel position toward current target tile
+  const tx=g.col*CELL+CELL/2, ty=g.row*CELL+CELL/2;
+  const dxp=tx-g.px, dyp=ty-g.py;
+  const dist=Math.sqrt(dxp*dxp+dyp*dyp);
+
+  if(dist>spd){
+    // Still travelling to next tile
+    g.px+=dxp/dist*spd; g.py+=dyp/dist*spd;
+    return;
+  }
+
+  // Arrived at tile centre — snap and pick next tile
+  g.px=tx; g.py=ty;
+
+  // Phase-specific logic
+  if(g.phase==='returning'){
+    if(g.col===13&&g.row===14){
+      g.phase='house'; g.frightened=0; g.releaseIn=150; g.dx=0;g.dy=1; return;
+    }
+    // Pathfind directly to house centre (13,14)
+    const best=pickDir(g,13,14,true,true); // allow door, allow house
+    g.col+=best.x; g.row+=best.y; g.dx=best.x; g.dy=best.y; return;
+  }
+
+  if(g.phase==='house'){
+    g.releaseIn--;
+    // Release when timer hits 0
+    if(g.releaseIn<=0){
+      g.phase='exiting'; g.col=13; g.row=13; syncGhostPixels(g); return;
+    }
+    // Bob up and down while waiting
+    const nr=g.row+g.dy;
+    if(g.dy===1&&nr>15){g.dy=-1;}
+    else if(g.dy===-1&&nr<13){g.dy=1;}
+    g.row+=g.dy; return;
+  }
+
+  if(g.phase==='exiting'){
+    // Move to row 11 (above door), then switch to normal
+    if(g.row<=11){g.row=11;g.col=13;g.phase='normal';g.dx=-1;g.dy=0;syncGhostPixels(g);return;}
+    // Move up
+    if(g.col!==13){g.col=13;syncGhostPixels(g);}
+    g.row--; return;
+  }
+
+  // ── NORMAL — pick next tile ──
+  const frightened=g.frightened>0;
+  if(frightened) g.frightened--;
+  if(g.frightened===0&&frightened) {}// just ended
+
+  let chosen;
+  if(frightened){
+    // Random walk, no reversing
+    const opts=D4.filter(d=>!(d.x===-g.dx&&d.y===-g.dy)&&ghostWalkable(g.row+d.y,g.col+d.x)&&T(g.row+d.y,g.col+d.x)!==4);
+    chosen=opts.length?opts[Math.floor(Math.random()*opts.length)]:{x:-g.dx,y:-g.dy};
+  } else {
+    // Compute target
+    let tc,tr;
+    if(gMode==='scatter'){tc=g.sx;tr=g.sy;}
+    else {
+      const blinky=ghosts[0];
+      if(g.name==='blinky'){
+        tc=PAC.col;tr=PAC.row;
+      } else if(g.name==='pinky'){
+        tc=PAC.col+PAC.dx*4;tr=PAC.row+PAC.dy*4;
+        if(PAC.dy===-1)tc-=4; // faithful up-bug
+      } else if(g.name==='inky'){
+        const px2=PAC.col+PAC.dx*2,py2=PAC.row+PAC.dy*2;
+        const bx=blinky?blinky.col:13,by=blinky?blinky.row:11;
+        tc=px2+(px2-bx);tr=py2+(py2-by);
+      } else { // clyde
+        const d=Math.hypot(g.col-PAC.col,g.row-PAC.row);
+        if(d>8){tc=PAC.col;tr=PAC.row;}else{tc=g.sx;tr=g.sy;}
+      }
+    }
+    chosen=pickDir(g,tc,tr,false,false);
+  }
+  g.col+=chosen.x; g.row+=chosen.y;
+  g.dx=chosen.x; g.dy=chosen.y;
+
+  // Tunnel
+  if(g.col<0) g.col=COLS-1;
+  if(g.col>=COLS) g.col=0;
+  g.row=Math.max(0,Math.min(ROWS-1,g.row));
+}
+
+function pickDir(g,tc,tr,allowDoor,allowHouse){
+  // No reversing; pick direction minimising distance to target
+  let best=Infinity,chosen=null;
+  D4.forEach(d=>{
+    if(d.x===-g.dx&&d.y===-g.dy) return; // no u-turn
+    const nr=g.row+d.y,nc=g.col+d.x;
+    const t=T(nr,nc);
+    if(t===1) return;
+    if(t===4&&!allowDoor) return;
+    if(t===5&&!allowHouse) return;
+    const dist=Math.hypot(nc-tc,nr-tr);
+    if(dist<best){best=dist;chosen=d;}
+  });
+  if(!chosen) chosen=D4.find(d=>{const t=T(g.row+d.y,g.col+d.x);return t!==1;})||{x:g.dx,y:g.dy};
+  return chosen;
+}
+
+// ── COLLISIONS ────────────────────────────────────────────────────────────────
+function checkHits(){
+  let combo=0;
+  ghosts.forEach(g=>{
+    if(g.phase!=='normal') return;
+    if(Math.hypot(g.px-PAC.px,g.py-PAC.py)>CELL*0.85) return;
+    if(g.frightened>0){
+      g.phase='returning';g.frightened=0;combo++;
+      const pts=200*Math.pow(2,combo-1);score+=pts;updateHUD();
+      addFloater(g.col,g.row,pts);
+      spawnParticles(g.px,g.py,g.color,14);
+    } else {pacDeath();}
+  });
+}
+function pacDeath(){
+  spawnParticles(PAC.px,PAC.py,'#ffff00',22);lives--;updateHUD();
+  if(lives<=0){if(score>hi)hi=score;state='gameover';showOv('GAME OVER','Score: '+score,'Press SPACE to try again');}
+  else{state='dead';showOv('BUSTED!',lives+(lives===1?' life':' lives')+' remaining','Press SPACE to continue');}
+}
+
+// ── PARTICLES & FLOATERS ─────────────────────────────────────────────────────
+function spawnParticles(x,y,color,n){
+  for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=1.5+Math.random()*4;particles.push({x,y,dx:Math.cos(a)*s,dy:Math.sin(a)*s,life:1,decay:0.025+Math.random()*0.03,size:2+Math.random()*3,color});}
+}
+function updateParticles(){particles=particles.filter(p=>p.life>0);particles.forEach(p=>{p.x+=p.dx;p.y+=p.dy;p.dy+=0.08;p.life-=p.decay;});}
+function addFloater(c,r,val){floaters.push({x:c*CELL+CELL/2,y:r*CELL,val,life:1});}
+function updateFloaters(){floaters=floaters.filter(f=>f.life>0);floaters.forEach(f=>{f.y-=0.7;f.life-=0.02;});}
+
+// ── HUD ───────────────────────────────────────────────────────────────────────
+function updateHUD(){
+  document.getElementById('score-el').textContent=score;
+  document.getElementById('level-el').textContent=level;
+  const lr=document.getElementById('lives-row');lr.innerHTML='';
+  for(let i=0;i<lives;i++){const d=document.createElement('div');d.style.cssText='width:12px;height:12px;background:#ffff00;border-radius:50%;box-shadow:0 0 6px #ffff00;';lr.appendChild(d);}
+}
+
+// ── DRAW ──────────────────────────────────────────────────────────────────────
+function drawMaze(){
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    const t=map[r][c],x=c*CELL,y=r*CELL;
+    if(t===1){
+      ctx.fillStyle='#000d3a';ctx.fillRect(x,y,CELL,CELL);
+      ctx.strokeStyle='rgba(0,90,255,0.8)';ctx.lineWidth=1.5;ctx.shadowColor='#0055ff';ctx.shadowBlur=4;
+      [{dr:-1,dc:0,x1:x,y1:y,x2:x+CELL,y2:y},{dr:1,dc:0,x1:x,y1:y+CELL,x2:x+CELL,y2:y+CELL},
+       {dr:0,dc:-1,x1:x,y1:y,x2:x,y2:y+CELL},{dr:0,dc:1,x1:x+CELL,y1:y,x2:x+CELL,y2:y+CELL}
+      ].forEach(s=>{if(!isWall(r+s.dr,c+s.dc)){ctx.beginPath();ctx.moveTo(s.x1,s.y1);ctx.lineTo(s.x2,s.y2);ctx.stroke();}});
+      ctx.shadowBlur=0;
+    } else if(t===0){
+      ctx.fillStyle='#cceeff';ctx.shadowColor='#88ffee';ctx.shadowBlur=4;
+      ctx.beginPath();ctx.arc(x+CELL/2,y+CELL/2,1.8,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+    } else if(t===3){
+      const p=0.8+Math.sin(tick*0.12)*0.2;
+      ctx.fillStyle='#ff3366';ctx.shadowColor='#ff3366';ctx.shadowBlur=14*p;
+      ctx.beginPath();ctx.arc(x+CELL/2,y+CELL/2,4.5*p,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+    } else if(t===4){
+      ctx.strokeStyle='#ff66cc';ctx.lineWidth=2;ctx.shadowColor='#ff66cc';ctx.shadowBlur=4;
+      ctx.beginPath();ctx.moveTo(x+2,y+CELL/2);ctx.lineTo(x+CELL-2,y+CELL/2);ctx.stroke();ctx.shadowBlur=0;
+    }
+  }
+}
+
+function drawPac(){
+  const x=PAC.px,y=PAC.py;
+  const ang=Math.atan2(PAC.dy,PAC.dx),open=mouthA*Math.PI;
+  ctx.save();ctx.shadowColor='#ffff00';ctx.shadowBlur=18;ctx.fillStyle='#ffff00';
+  ctx.beginPath();ctx.moveTo(x,y);
+  ctx.arc(x,y,CELL/2-1,ang+open,ang+Math.PI*2-open);
+  ctx.closePath();ctx.fill();ctx.restore();
+}
+
+function drawGhost(g){
+  const x=g.px,y=g.py,r=CELL/2-1;
+  const frightened=g.frightened>0;
+  const flash=frightened&&powerTimer<120&&Math.floor(tick/8)%2===0;
+
+  if(g.phase==='returning'){
+    // Ghost eyes only — two glowing dots
+    ctx.save();ctx.globalAlpha=0.8;
+    ctx.fillStyle='#fff';ctx.shadowColor='#fff';ctx.shadowBlur=6;
+    ctx.beginPath();ctx.arc(x-3,y-2,3,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(x+3,y-2,3,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#00c';ctx.shadowBlur=0;
+    ctx.beginPath();ctx.arc(x-3+(g.dx||0)*2,y-2+(g.dy||0)*2,1.5,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(x+3+(g.dx||0)*2,y-2+(g.dy||0)*2,1.5,0,Math.PI*2);ctx.fill();
+    ctx.restore();return;
+  }
+
+  const color=frightened?(flash?'#fff':'#2222cc'):g.color;
+  ctx.save();
+  ctx.shadowColor=frightened?'#0000ff':g.color;
+  ctx.shadowBlur=frightened?10:20;
+
+  // Circle body
+  ctx.fillStyle=color;
+  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+
+  // Inner highlight ring
+  ctx.strokeStyle=frightened?'rgba(100,100,255,0.4)':'rgba(255,255,255,0.25)';
+  ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.arc(x,y,r*0.65,0,Math.PI*2);ctx.stroke();
+
+  if(!frightened){
+    // Eyes
+    ctx.shadowBlur=0;
+    [-3,3].forEach(ox=>{
+      ctx.fillStyle='#fff';
+      ctx.beginPath();ctx.ellipse(x+ox,y-2,2.5,3,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#003';
+      ctx.beginPath();ctx.arc(x+ox+(g.dx||0)*1.5,y-2+(g.dy||0)*1.5,1.5,0,Math.PI*2);ctx.fill();
+    });
+  } else {
+    // Scared face
+    ctx.fillStyle=flash?'#f88':'#66f';ctx.shadowBlur=0;
+    ctx.font='bold '+(CELL-4)+'px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('x',x,y);
+    ctx.textBaseline='alphabetic';
+  }
+  ctx.restore();
+}
+
+function drawParticles(){
+  particles.forEach(p=>{
+    ctx.save();ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.shadowColor=p.color;ctx.shadowBlur=8;
+    ctx.beginPath();ctx.arc(p.x,p.y,Math.max(0.1,p.size*p.life),0,Math.PI*2);ctx.fill();ctx.restore();
+  });
+}
+function drawFloaters(){
+  floaters.forEach(f=>{
+    ctx.save();ctx.globalAlpha=Math.max(0,f.life);ctx.fillStyle='#fff';ctx.shadowColor='#fff';ctx.shadowBlur=6;
+    ctx.font='bold 11px Share Tech Mono';ctx.textAlign='center';ctx.fillText(f.val,f.x,f.y);ctx.restore();
+  });
+}
+function drawStatusBar(){
+  if(state!=='playing') return;
+  const labels={blinky:'Shadow',pinky:'Speedy',inky:'Bashful',clyde:'Pokey'};
+  ghosts.forEach((g,i)=>{
+    ctx.save();ctx.globalAlpha=0.5;
+    ctx.fillStyle=g.frightened>0?'#4444ff':g.phase!=='normal'?'#555':g.color;
+    ctx.font='8px Share Tech Mono';ctx.textAlign='left';
+    const ms=g.phase==='house'?'WAIT':g.phase==='exiting'?'EXIT':g.phase==='returning'?'RTN':g.frightened>0?'FEAR':gMode==='scatter'?'SCAT':'HUNT';
+    ctx.fillText(labels[g.name]+' ['+ms+']',4+i*126,CH-4);
+    ctx.restore();
+  });
+}
+
+function draw(){
+  ctx.clearRect(0,0,CW,CH);ctx.fillStyle='#000';ctx.fillRect(0,0,CW,CH);
+  drawMaze();
+  if(state!=='idle'){drawPac();ghosts.forEach(drawGhost);drawParticles();drawFloaters();drawStatusBar();}
+  if(state==='paused'){
+    ctx.fillStyle='rgba(0,0,0,0.55)';ctx.fillRect(0,0,CW,CH);
+    ctx.fillStyle='#fff';ctx.textAlign='center';ctx.shadowColor='#0ff';ctx.shadowBlur=20;
+    ctx.font='28px Share Tech Mono';ctx.fillText('PAUSED',CW/2,CH/2-10);
+    ctx.font='12px Share Tech Mono';ctx.fillText('SPACE to resume',CW/2,CH/2+22);ctx.shadowBlur=0;
+  }
+}
+
+function showOv(t,d,s){const o=document.getElementById('overlay');o.style.display='flex';o.innerHTML='<h1>'+t+'</h1><div class="ov-detail">'+d+'</div><div class="ov-sub">'+s+'</div>';}
+function hideOv(){document.getElementById('overlay').style.display='none';}
+
+initMap();updateHUD();
+function loop(){update();draw();requestAnimationFrame(loop);}
+loop();
+
+(function(){
+  var s=document.getElementById('leon-splash');
+  setTimeout(function(){s.style.opacity='1';},50);
+  setTimeout(function(){s.style.opacity='0';},3000);
+  setTimeout(function(){s.style.display='none';s.style.pointerEvents='none';},3900);
+})();
+</script>
+
+<script>
+(function(){
+  var c=document.getElementById('c');
+  var sx,sy;
+  c.addEventListener('touchstart',function(e){
+    e.preventDefault();
+    var t=e.touches[0]; sx=t.clientX; sy=t.clientY;
+    // tap to start
+    document.dispatchEvent(new KeyboardEvent('keydown',{key:' ',bubbles:true}));
+    setTimeout(function(){ document.dispatchEvent(new KeyboardEvent('keyup',{key:' ',bubbles:true})); },100);
+  },{passive:false});
+  c.addEventListener('touchend',function(e){
+    e.preventDefault();
+    var t=e.changedTouches[0];
+    var dx=t.clientX-sx, dy=t.clientY-sy;
+    if(Math.abs(dx)<12&&Math.abs(dy)<12) return;
+    var key;
+    if(Math.abs(dx)>Math.abs(dy)){ key=dx>0?'ArrowRight':'ArrowLeft'; }
+    else { key=dy>0?'ArrowDown':'ArrowUp'; }
+    document.dispatchEvent(new KeyboardEvent('keydown',{key:key,bubbles:true}));
+    setTimeout(function(){ document.dispatchEvent(new KeyboardEvent('keyup',{key:key,bubbles:true})); },100);
+  },{passive:false});
+})();
+</script>
+</body>
+</html>
