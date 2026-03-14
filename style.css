@@ -434,3 +434,112 @@ footer {
   /* Footer */
   footer { padding: 1.5rem 1.2rem; }
 }
+
+/* ===== GAMES GRID ===== */
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.game-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color 0.25s, transform 0.25s;
+  display: flex;
+  flex-direction: column;
+}
+
+.game-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-4px);
+}
+
+.game-preview {
+  height: 160px;
+  background: #020a0a;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+}
+
+.tetris-preview {
+  background: radial-gradient(ellipse at 50% 100%, rgba(0,255,204,0.08) 0%, #020a0a 70%);
+}
+
+.preview-blocks {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pb {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 2px;
+  box-shadow: 0 0 8px currentColor;
+  animation: pbFloat 3s ease-in-out infinite;
+}
+
+.pb:nth-child(odd)  { animation-delay: -1.5s; }
+.pb:nth-child(3n)   { animation-delay: -0.8s; }
+
+@keyframes pbFloat {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+
+.game-info {
+  padding: 1.4rem 1.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.game-meta {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.game-tag {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid rgba(232,255,71,0.3);
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+}
+
+.game-info h2 {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  letter-spacing: 0.05em;
+}
+
+.game-info p {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.6;
+  flex: 1;
+}
+
+.play-btn {
+  display: inline-block;
+  margin-top: 0.8rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+@media (max-width: 640px) {
+  .games-grid { grid-template-columns: 1fr; }
+}
