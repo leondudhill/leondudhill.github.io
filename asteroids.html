@@ -660,5 +660,19 @@ loop();
   },{passive:false});
 })();
 </script>
+
+<!-- overlay-tap-fix -->
+
+<script>
+(function(){
+  var ov = document.getElementById('overlay');
+  if (!ov) return;
+  ov.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    if (state === 'idle' || state === 'gameover') startGame();
+    else if (state === 'paused') state = 'playing';
+  }, {passive: false});
+})();
+</script>
 </body>
 </html>
