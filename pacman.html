@@ -607,5 +607,50 @@ document.getElementById('c').addEventListener('touchend', function(e) {
   setTimeout(function() { document.dispatchEvent(new KeyboardEvent('keyup', {key:key, bubbles:true})); }, 80);
 }, {passive:false});
 </script>
+
+<script>
+// ── MOBILE CONTROLS ───────────────────────────────────────────────────────────
+const isMobile = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+if (isMobile) {
+  document.querySelectorAll('.ov-sub, .overlay-sub, #start-hint').forEach(function(el) {
+    el.textContent = el.textContent.replace(/Press SPACE.*/, 'Tap to start');
+  });
+}
+
+var _psx, _psy;
+
+// Tap overlay to start/unpause
+document.getElementById('overlay').addEventListener('touchstart', function(e) {
+  e.preventDefault();
+  // dispatch space to start or unpause
+  document.dispatchEvent(new KeyboardEvent('keydown', {key:' ', bubbles:true, cancelable:true}));
+  setTimeout(function(){ document.dispatchEvent(new KeyboardEvent('keyup', {key:' ', bubbles:true})); }, 80);
+}, {passive:false});
+
+// Canvas: record swipe start
+document.getElementById('c').addEventListener('touchstart', function(e) {
+  e.preventDefault();
+  var t = e.touches[0]; _psx = t.clientX; _psy = t.clientY;
+  // if idle/gameover, start game
+  if (state === 'idle' || state === 'gameover' || state === 'waiting') {
+    document.dispatchEvent(new KeyboardEvent('keydown', {key:' ', bubbles:true, cancelable:true}));
+    setTimeout(function(){ document.dispatchEvent(new KeyboardEvent('keyup', {key:' ', bubbles:true})); }, 80);
+  }
+}, {passive:false});
+
+// Canvas: swipe to steer
+document.getElementById('c').addEventListener('touchend', function(e) {
+  e.preventDefault();
+  var t = e.changedTouches[0];
+  var dx = t.clientX - _psx, dy = t.clientY - _psy;
+  // Need a meaningful swipe
+  if (Math.abs(dx) < 12 && Math.abs(dy) < 12) return;
+  var key;
+  if (Math.abs(dx) > Math.abs(dy)) { key = dx > 0 ? 'ArrowRight' : 'ArrowLeft'; }
+  else { key = dy > 0 ? 'ArrowDown' : 'ArrowUp'; }
+  document.dispatchEvent(new KeyboardEvent('keydown', {key:key, bubbles:true, cancelable:true}));
+  setTimeout(function(){ document.dispatchEvent(new KeyboardEvent('keyup', {key:key, bubbles:true})); }, 80);
+}, {passive:false});
+</script>
 </body>
 </html>
