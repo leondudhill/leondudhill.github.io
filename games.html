@@ -11,9 +11,9 @@
   <header>
     <a href="index.html" class="logo">LD</a>
     <button class="nav-toggle" id="navToggle" aria-label="Menu">
-        <span></span><span></span><span></span>
-      </button>
-      <nav id="navMenu">
+      <span></span><span></span><span></span>
+    </button>
+    <nav id="navMenu">
       <a href="games.html" class="active">Games</a>
       <a href="apps.html">Apps</a>
       <a href="experiments.html">Experiments</a>
@@ -25,14 +25,40 @@
   <div class="page-header">
     <span class="tag">🎮 Play</span>
     <h1>Games</h1>
-    <p>Things I've built that you can actually play. More coming soon.</p>
+    <p>Things I've built that you can actually play.</p>
   </div>
 
   <div class="page-content">
-    <div class="empty-state">
-      <div class="big">🎮</div>
-      <h2>Nothing here yet</h2>
-      <p>Games are in the works — check back soon.</p>
+    <div class="games-grid">
+
+      <a href="tetris.html" class="game-card">
+        <div class="game-preview tetris-preview">
+          <div class="preview-blocks">
+            <div class="pb" style="background:#00ffff;left:10px;top:20px"></div>
+            <div class="pb" style="background:#00ffff;left:30px;top:20px"></div>
+            <div class="pb" style="background:#00ffff;left:50px;top:20px"></div>
+            <div class="pb" style="background:#00ffff;left:70px;top:20px"></div>
+            <div class="pb" style="background:#cc44ff;left:30px;top:40px"></div>
+            <div class="pb" style="background:#cc44ff;left:10px;top:60px"></div>
+            <div class="pb" style="background:#cc44ff;left:30px;top:60px"></div>
+            <div class="pb" style="background:#cc44ff;left:50px;top:60px"></div>
+            <div class="pb" style="background:#ff8800;left:50px;top:80px"></div>
+            <div class="pb" style="background:#ff8800;left:10px;top:100px"></div>
+            <div class="pb" style="background:#ff8800;left:30px;top:100px"></div>
+            <div class="pb" style="background:#ff8800;left:50px;top:100px"></div>
+          </div>
+        </div>
+        <div class="game-info">
+          <div class="game-meta">
+            <span class="game-tag">Puzzle</span>
+            <span class="game-tag">Keyboard</span>
+          </div>
+          <h2>Tetris</h2>
+          <p>Classic block-stacking game with particle effects, ghost pieces, and increasing speed.</p>
+          <span class="play-btn">Play →</span>
+        </div>
+      </a>
+
     </div>
   </div>
 
