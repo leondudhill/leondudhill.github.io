@@ -55,13 +55,19 @@
   #leon-splash .ls-name{font-size:42px;color:#fff;text-shadow:0 0 20px #0ff,0 0 60px #0ff;letter-spacing:4px;font-family:'Share Tech Mono',monospace;}
   #leon-splash .ls-name span{color:#00ffcc;text-shadow:0 0 20px #00ffcc,0 0 60px #00ffcc;}
 
-  /* ── MOBILE SCALING ── */
-  @media (max-width: 900px) {
-    body { padding: 50px 8px 16px !important; justify-content: flex-start !important; overflow-y: auto !important; overflow-x: hidden !important; }
-    canvas { max-width: 96vw !important; height: auto !important; }
-    #layout, #hud, #scoreboard, #labels, #side-left, #side-right { max-width: 96vw !important; }
-  }
 
+  /* ── MOBILE ── */
+  @media (max-width: 900px) {
+    body { padding: 0 !important; overflow: hidden !important; height: 100dvh !important; display: flex !important; flex-direction: column !important; justify-content: flex-start !important; align-items: center !important; }
+    #hud, #scoreboard, #labels { width: min(800px, 96vw) !important; padding: 44px 8px 4px !important; flex-shrink: 0; box-sizing: border-box; }
+    #controls { display: none !important; }
+    #game-wrapper { flex: 1; display: flex !important; align-items: center !important; justify-content: center !important; width: 100vw !important; min-height: 0; }
+    canvas {
+      width: min(96vw, calc((100dvh - 76px) * 1.6667)) !important;
+      height: auto !important;
+      display: block;
+    }
+  }
 </style>
 </head>
 <body>
@@ -829,12 +835,39 @@ loop();
 })();
 </script>
 
+
+<!-- overlay-tap-fix -->
+
+
 <script>
-(function(){
-  if(!('ontouchstart' in window)) return;
-  var btns=document.createElement('div');
-  btns.style.cssText='position:fixed;bottom:20px;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-end;padding:0 16px;z-index:500;pointer-events:none;';
-  btns.innerHTML=`
+// ── MOBILE CONTROLS ───────────────────────────────────────────────────────────
+const isMobile = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+if (isMobile) {
+  document.querySelectorAll('.ov-sub, .overlay-sub, #start-hint, .ov-sub-mobile').forEach(function(el) {
+    if (el.textContent.indexOf('SPACE') !== -1 || el.textContent.indexOf('start') !== -1 || el.textContent.indexOf('again') !== -1 || el.textContent.indexOf('continue') !== -1) {
+      el.textContent = el.textContent.replace('Press SPACE to start', 'Tap to start').replace('Press SPACE to play again', 'Tap to play again').replace('Press SPACE to try again', 'Tap to try again').replace('Press SPACE to continue', 'Tap to continue');
+    }
+  });
+}
+
+document.getElementById('overlay').addEventListener('touchstart', function(e) {
+  e.preventDefault();
+    if (gameState==='idle'||gameState==='gameover'||gameState==='win') { (function(){gameState='playing';initGame();hideOverlay();})(); return; }
+  if (gameState==='dead') { (function(){gameState='playing';initLevel();hideOverlay();})(); return; }
+  if (gameState==='paused') { gameState='playing'; return; }
+}, {passive:false});
+document.getElementById('c').addEventListener('touchstart', function(e) {
+  e.preventDefault();
+    if (gameState==='idle'||gameState==='gameover'||gameState==='win') { (function(){gameState='playing';initGame();hideOverlay();})(); return; }
+  if (gameState==='dead') { (function(){gameState='playing';initLevel();hideOverlay();})(); return; }
+  if (gameState==='paused') { gameState='playing'; return; }
+}, {passive:false});
+
+
+if (isMobile) {
+  var btns = document.createElement('div');
+  btns.style.cssText = 'position:fixed;bottom:20px;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-end;padding:0 16px;z-index:500;pointer-events:none;';
+  btns.innerHTML = `
     <div style="display:flex;gap:10px;pointer-events:all;">
       <button id="tb-left"  style="width:68px;height:68px;background:rgba(0,255,204,0.08);border:1px solid rgba(0,255,204,0.3);border-radius:12px;color:#0ff;font-size:24px;touch-action:manipulation;">←</button>
       <button id="tb-right" style="width:68px;height:68px;background:rgba(0,255,204,0.08);border:1px solid rgba(0,255,204,0.3);border-radius:12px;color:#0ff;font-size:24px;touch-action:manipulation;">→</button>
@@ -843,33 +876,14 @@ loop();
       <button id="tb-jump" style="width:90px;height:68px;background:rgba(255,220,0,0.1);border:1px solid rgba(255,220,0,0.4);border-radius:12px;color:#ffdd00;font-size:11px;letter-spacing:2px;touch-action:manipulation;">JUMP</button>
     </div>`;
   document.body.appendChild(btns);
-  function press(k){ document.dispatchEvent(new KeyboardEvent('keydown',{key:k,bubbles:true,cancelable:true})); }
-  function release(k){ document.dispatchEvent(new KeyboardEvent('keyup',{key:k,bubbles:true,cancelable:true})); }
-  var map={'tb-left':'ArrowLeft','tb-right':'ArrowRight','tb-jump':'ArrowUp'};
-  Object.keys(map).forEach(function(id){
-    var btn=document.getElementById(id);
-    btn.addEventListener('touchstart',function(e){e.preventDefault();press(map[id]);},{passive:false});
-    btn.addEventListener('touchend',function(e){e.preventDefault();release(map[id]);},{passive:false});
-    btn.addEventListener('touchcancel',function(){release(map[id]);},{passive:false});
+  var _map2 = {'tb-left':'ArrowLeft','tb-right':'ArrowRight','tb-jump':'ArrowUp'};
+  Object.keys(_map2).forEach(function(id) {
+    var btn = document.getElementById(id);
+    btn.addEventListener('touchstart', function(e) { e.preventDefault(); document.dispatchEvent(new KeyboardEvent('keydown',{key:_map2[id],bubbles:true,cancelable:true})); }, {passive:false});
+    btn.addEventListener('touchend',   function(e) { e.preventDefault(); document.dispatchEvent(new KeyboardEvent('keyup',  {key:_map2[id],bubbles:true,cancelable:true})); }, {passive:false});
+    btn.addEventListener('touchcancel',function()  { document.dispatchEvent(new KeyboardEvent('keyup',  {key:_map2[id],bubbles:true,cancelable:true})); });
   });
-  document.getElementById('c').addEventListener('touchstart',function(e){
-    e.preventDefault(); press(' '); setTimeout(function(){release(' ');},100);
-  },{passive:false});
-})();
-</script>
-
-<!-- overlay-tap-fix -->
-
-<script>
-(function(){
-  var ov = document.getElementById('overlay');
-  if (!ov) return;
-  ov.addEventListener('touchstart', function(e) {
-    e.preventDefault();
-    document.dispatchEvent(new KeyboardEvent('keydown', {key: ' ', bubbles: true}));
-    setTimeout(function(){ document.dispatchEvent(new KeyboardEvent('keyup', {key: ' ', bubbles: true})); }, 100);
-  }, {passive: false});
-})();
+}
 </script>
 </body>
 </html>
