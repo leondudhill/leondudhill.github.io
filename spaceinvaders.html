@@ -31,18 +31,19 @@
   #leon-splash .ls-name{font-size:42px;color:#fff;text-shadow:0 0 20px #0ff,0 0 60px #0ff;letter-spacing:4px;font-family:'Share Tech Mono',monospace;}
   #leon-splash .ls-name span{color:#00ffcc;text-shadow:0 0 20px #00ffcc,0 0 60px #00ffcc;}
 
-  /* ── MOBILE SCALING ── */
+
+  /* ── MOBILE ── */
   @media (max-width: 900px) {
-    body { padding: 0 !important; overflow: hidden !important; height: 100dvh; display: flex; flex-direction: column; justify-content: flex-start; }
-    #hud { width: min(700px, 96vw) !important; padding: 44px 8px 4px !important; flex-shrink: 0; }
+    body { padding: 0 !important; overflow: hidden !important; height: 100dvh !important; display: flex !important; flex-direction: column !important; justify-content: flex-start !important; align-items: center !important; }
+    #hud, #scoreboard, #labels { width: min(700px, 96vw) !important; padding: 44px 8px 4px !important; flex-shrink: 0; box-sizing: border-box; }
     #controls { display: none !important; }
-    #game-wrapper { flex: 1; display: flex; align-items: center; justify-content: center; width: 100vw; }
+    #game-wrapper { flex: 1; display: flex !important; align-items: center !important; justify-content: center !important; width: 100vw !important; min-height: 0; }
     canvas {
-      width: min(96vw, calc((100dvh - 80px) * 700 / 580)) !important;
+      width: min(96vw, calc((100dvh - 76px) * 1.2069)) !important;
       height: auto !important;
+      display: block;
     }
   }
-
 </style>
 </head>
 <body>
@@ -619,63 +620,47 @@ loop();
 </script>
 
 
-<!-- overlay-tap-fix -->
-
 
 <script>
-const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+// ── MOBILE CONTROLS ───────────────────────────────────────────────────────────
+const isMobile = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
 if (isMobile) {
-  var hint = document.getElementById('start-hint');
-  if (hint) hint.textContent = 'Tap to start';
+  document.querySelectorAll('.ov-sub, .overlay-sub, #start-hint, .ov-sub-mobile').forEach(function(el) {
+    if (el.textContent.indexOf('SPACE') !== -1 || el.textContent.indexOf('start') !== -1 || el.textContent.indexOf('again') !== -1 || el.textContent.indexOf('continue') !== -1) {
+      el.textContent = el.textContent.replace('Press SPACE to start', 'Tap to start').replace('Press SPACE to play again', 'Tap to play again').replace('Press SPACE to try again', 'Tap to try again').replace('Press SPACE to continue', 'Tap to continue');
+    }
+  });
 }
 
-// Tap overlay to start
 document.getElementById('overlay').addEventListener('touchstart', function(e) {
   e.preventDefault();
-  if (state === 'idle' || state === 'gameover') startGame();
-  else if (state === 'paused') { state = 'playing'; firePressed = false; }
-}, {passive: false});
+    if (state==='idle'||state==='gameover') { startGame(); return; }
+  if (state==='paused') { state='playing';firePressed=false; return; }
+}, {passive:false});
 
-// Canvas touch controls
-var _lastTouchX = null;
-var _touchStartX = null;
-var _touchStartTime = 0;
-var _didDrag = false;
-
+var _touchStartTime = 0, _touchDidDrag = false, _touchLastX = null;
 document.getElementById('c').addEventListener('touchstart', function(e) {
   e.preventDefault();
-  var t = e.touches[0];
-  _lastTouchX = t.clientX;
-  _touchStartX = t.clientX;
-  _touchStartTime = Date.now();
-  _didDrag = false;
-
-  if (state === 'idle' || state === 'gameover') { startGame(); return; }
-  if (state === 'paused') { state = 'playing'; firePressed = false; return; }
-}, {passive: false});
-
+  var t = e.touches[0]; _touchLastX = t.clientX; _touchStartTime = Date.now(); _touchDidDrag = false;
+    if (state==='idle'||state==='gameover') { startGame(); return; }
+  if (state==='paused') { state='playing';firePressed=false; return; }
+}, {passive:false});
 document.getElementById('c').addEventListener('touchmove', function(e) {
   e.preventDefault();
   if (state !== 'playing') return;
   var t = e.touches[0];
-  var dx = t.clientX - _lastTouchX;
-  _lastTouchX = t.clientX;
-  if (Math.abs(dx) > 1) _didDrag = true;
-  // Move ship — scale dx from screen pixels to canvas pixels
-  var scaleX = canvas.width / document.getElementById('c').getBoundingClientRect().width;
-  ship.x += dx * scaleX;
-  ship.x = Math.max(ship.w / 2, Math.min(W - ship.w / 2, ship.x));
-}, {passive: false});
-
+  var dx = t.clientX - _touchLastX; _touchLastX = t.clientX;
+  if (Math.abs(dx) > 2) _touchDidDrag = true;
+  var rect = document.getElementById('c').getBoundingClientRect();
+  var scaleX = canvas.width / rect.width;
+  ship.x += dx * scaleX; ship.x = Math.max(ship.w/2, Math.min(W - ship.w/2, ship.x));
+}, {passive:false});
 document.getElementById('c').addEventListener('touchend', function(e) {
   e.preventDefault();
   if (state !== 'playing') return;
-  // Short tap without drag = fire
-  var elapsed = Date.now() - _touchStartTime;
-  if (!_didDrag && elapsed < 250) {
-    firePressed = true;
-  }
-}, {passive: false});
+  if (!_touchDidDrag && Date.now() - _touchStartTime < 250) { firePressed = true; }
+}, {passive:false});
+
 </script>
 </body>
 </html>
