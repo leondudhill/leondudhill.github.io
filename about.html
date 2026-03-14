@@ -7,10 +7,13 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
- 
+
   <header>
     <a href="index.html" class="logo">LD</a>
-    <nav>
+    <button class="nav-toggle" id="navToggle" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <nav id="navMenu">
       <a href="games.html">Games</a>
       <a href="apps.html">Apps</a>
       <a href="experiments.html">Experiments</a>
@@ -18,13 +21,13 @@
       <a href="contact.html">Contact</a>
     </nav>
   </header>
- 
+
   <div class="page-header">
     <span class="tag">👤 Me</span>
     <h1>About</h1>
     <p>The person behind the screen.</p>
   </div>
- 
+
   <div class="page-content">
     <div class="about-grid">
       <div class="about-bio">
@@ -58,10 +61,18 @@
       </div>
     </div>
   </div>
- 
+
   <footer>
     <p>© 2025 Leon Dudhill</p>
   </footer>
- 
+
+  <script>
+    const toggle = document.getElementById("navToggle");
+    const menu = document.getElementById("navMenu");
+    toggle.addEventListener("click", () => {
+      toggle.classList.toggle("open");
+      menu.classList.toggle("open");
+    });
+  </script>
 </body>
 </html>
