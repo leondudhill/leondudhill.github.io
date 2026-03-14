@@ -413,5 +413,19 @@ loop();
   },{passive:false});
 })();
 </script>
+
+<!-- overlay-tap-fix -->
+
+<script>
+(function(){
+  var msg = document.getElementById('message');
+  if (!msg) return;
+  msg.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    if (gameState === 'idle' || gameState === 'scored') startRound();
+    else if (gameState === 'paused') gameState = 'playing';
+  }, {passive: false});
+})();
+</script>
 </body>
 </html>
