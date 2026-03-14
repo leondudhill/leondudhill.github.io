@@ -29,12 +29,18 @@
   #splash .splash-title { font-size:44px; color:#fff; text-shadow:0 0 20px #0ff,0 0 60px #0ff; letter-spacing:4px; margin-top:8px; }
   #splash .splash-title span { color:#00ffcc; text-shadow:0 0 20px #00ffcc,0 0 60px #00ffcc; }
   #controls { margin-top:10px; font-size:11px; color:rgba(0,255,255,0.3); letter-spacing:3px; text-align:center; line-height:2; }
+
   /* ── MOBILE ── */
-  @media (max-width:900px) {
-    body { padding:50px 8px 16px !important; justify-content:flex-start !important; overflow-y:auto !important; overflow-x:hidden !important; }
-    canvas { max-width:96vw !important; height:auto !important; }
-    #hud { max-width:96vw !important; }
-    #controls { display:none; }
+  @media (max-width: 900px) {
+    body { padding: 0 !important; overflow: hidden !important; height: 100dvh !important; display: flex !important; flex-direction: column !important; justify-content: flex-start !important; align-items: center !important; }
+    #hud, #scoreboard, #labels { width: min(560px, 96vw) !important; padding: 44px 8px 4px !important; flex-shrink: 0; box-sizing: border-box; }
+    #controls { display: none !important; }
+    #game-wrapper { flex: 1; display: flex !important; align-items: center !important; justify-content: center !important; width: 100vw !important; min-height: 0; }
+    canvas {
+      width: min(96vw, calc((100dvh - 76px) * 1.0000)) !important;
+      height: auto !important;
+      display: block;
+    }
   }
 </style>
 </head>
@@ -372,6 +378,44 @@ laneObjs=LANES.map(()=>[]);
 resetFrog();updateHUD();
 function loop(){update();draw();requestAnimationFrame(loop);}
 loop();
+</script>
+
+<script>
+// ── MOBILE CONTROLS ───────────────────────────────────────────────────────────
+const isMobile = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+if (isMobile) {
+  document.querySelectorAll('.ov-sub, .overlay-sub, #start-hint, .ov-sub-mobile').forEach(function(el) {
+    if (el.textContent.indexOf('SPACE') !== -1 || el.textContent.indexOf('start') !== -1 || el.textContent.indexOf('again') !== -1 || el.textContent.indexOf('continue') !== -1) {
+      el.textContent = el.textContent.replace('Press SPACE to start', 'Tap to start').replace('Press SPACE to play again', 'Tap to play again').replace('Press SPACE to try again', 'Tap to try again').replace('Press SPACE to continue', 'Tap to continue');
+    }
+  });
+}
+
+document.getElementById('overlay').addEventListener('touchstart', function(e) {
+  e.preventDefault();
+    if (gameState==='idle'||gameState==='gameover') { startGame(); return; }
+  if (gameState==='waiting') { respawn(); return; }
+  if (gameState==='paused') { gameState='playing'; return; }
+}, {passive:false});
+
+var _sx, _sy;
+document.getElementById('c').addEventListener('touchstart', function(e) {
+  e.preventDefault();
+  var t = e.touches[0]; _sx = t.clientX; _sy = t.clientY;
+    if (gameState==='idle'||gameState==='gameover') { startGame(); return; }
+  if (gameState==='waiting') { respawn(); return; }
+  if (gameState==='paused') { gameState='playing'; return; }
+}, {passive:false});
+document.getElementById('c').addEventListener('touchend', function(e) {
+  e.preventDefault();
+  if (gameState !== 'playing') return;
+  var t = e.changedTouches[0];
+  var dx = t.clientX - _sx, dy = t.clientY - _sy;
+  if (Math.abs(dx) < 12 && Math.abs(dy) < 12) return;
+  if (Math.abs(dx) > Math.abs(dy)) { moveFrog(dx>0?1:-1, 0); }
+  else { moveFrog(0, dy>0?1:-1); }
+}, {passive:false});
+
 </script>
 </body>
 </html>
