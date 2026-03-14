@@ -162,10 +162,14 @@
 
   /* ── MOBILE SCALING ── */
   @media (max-width: 900px) {
-    body { padding: 50px 4px 12px !important; justify-content: flex-start !important; overflow: hidden !important; }
-    #hud { width: min(800px, 96vw) !important; }
+    body { padding: 0 !important; justify-content: flex-start !important; overflow: hidden !important; height: 100dvh; display: flex; flex-direction: column; }
+    #hud { width: min(800px, 96vw) !important; padding: 44px 8px 6px !important; flex-shrink: 0; }
     #controls { display: none !important; }
-    canvas { width: min(800px, 96vw) !important; height: auto !important; }
+    #game-wrapper { flex: 1; display: flex; align-items: center; justify-content: center; width: 100vw; }
+    canvas {
+      width: min(96vw, calc((100dvh - 80px) * 800 / 540)) !important;
+      height: auto !important;
+    }
   }
 
 </style>
@@ -629,9 +633,20 @@ document.getElementById('overlay').addEventListener('touchstart', function(e) {
   _breakoutStart();
 }, {passive: false});
 
+// Canvas tap: only act if ball is on paddle (launch) or game is not playing (start/unpause)
+// Do NOT pause on touchstart — that was causing pause every time you dragged
 document.getElementById('c').addEventListener('touchstart', function(e) {
   e.preventDefault();
-  _breakoutStart();
+  if (state === 'idle' || state === 'win' || state === 'gameover') {
+    level = 1; score = 0; lives = MAX_LIVES; startLevel();
+  } else if (state === 'dead') {
+    startRound();
+  } else if (state === 'paused') {
+    state = 'playing';
+  } else if (state === 'playing' && ball.onPaddle) {
+    launchBall(); // tap to launch when ball is sitting on paddle
+  }
+  // deliberately no pause on touchstart — dragging would always trigger it
 }, {passive: false});
 
 // Drag finger to move paddle
