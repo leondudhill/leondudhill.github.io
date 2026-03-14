@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Leon Dudhill</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- INTRO OVERLAY -->
+  <div id="intro">
+    <p id="intro-text">A website by Leon Dudhill</p>
+  </div>
+
+  <!-- MAIN SITE -->
+  <div id="site" class="hidden">
+
+    <header>
+      <a href="index.html" class="logo">LD</a>
+      <nav>
+        <a href="games.html">Games</a>
+        <a href="apps.html">Apps</a>
+        <a href="experiments.html">Experiments</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+    </header>
+
+    <main class="home-hero">
+      <div class="hero-content">
+        <span class="hero-tag">Welcome</span>
+        <h1>Leon<br>Dudhill</h1>
+        <p class="hero-sub">Games · Apps · Experiments</p>
+      </div>
+      <div class="hero-grid">
+        <a href="games.html" class="card">
+          <div class="card-icon">🎮</div>
+          <h2>Games</h2>
+          <p>Play stuff I've built</p>
+        </a>
+        <a href="apps.html" class="card">
+          <div class="card-icon">📱</div>
+          <h2>Apps</h2>
+          <p>Tools that actually work</p>
+        </a>
+        <a href="experiments.html" class="card">
+          <div class="card-icon">🧪</div>
+          <h2>Experiments</h2>
+          <p>Weird ideas I tried</p>
+        </a>
+        <a href="about.html" class="card">
+          <div class="card-icon">👤</div>
+          <h2>About</h2>
+          <p>Who even am I</p>
+        </a>
+      </div>
+    </main>
+
+    <footer>
+      <p>© 2025 Leon Dudhill</p>
+    </footer>
+
+  </div>
+
+  <script>
+    const intro = document.getElementById('intro');
+    const introText = document.getElementById('intro-text');
+    const site = document.getElementById('site');
+
+    // Phase 1: fade in text (CSS handles this via animation)
+    // Phase 2: hold, then fade out overlay, reveal site
+
+    setTimeout(() => {
+      // Start fading out the intro
+      intro.classList.add('fade-out');
+      setTimeout(() => {
+        intro.style.display = 'none';
+        site.classList.remove('hidden');
+        site.classList.add('reveal');
+      }, 1000);
+    }, 3200); // 1.2s fade-in + 1s hold + a bit of buffer
+  </script>
+</body>
+</html>
