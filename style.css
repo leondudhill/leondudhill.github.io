@@ -13,6 +13,7 @@ nav {
   top: 0;
   z-index: 100;
   text-align: center;
+  border-bottom: 2px solid #00d9ff;
 }
 
 nav a {
@@ -25,16 +26,19 @@ nav a {
 
 nav a:hover {
   color: #00d9ff;
+  text-shadow: 0 0 5px #00d9ff;
 }
 
 header {
   text-align: center;
   padding: 120px 20px 60px 20px;
+  background: linear-gradient(to bottom, #0f0f0f 0%, #1a1a1a 100%);
 }
 
 h1 {
   font-size: 50px;
   margin-bottom: 10px;
+  color: #00d9ff;
 }
 
 h2, h3 {
@@ -83,4 +87,5 @@ footer {
   padding: 20px;
   text-align: center;
   color: #aaa;
+  border-top: 2px solid #00d9ff;
 }
