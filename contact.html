@@ -1,3 +1,6 @@
+Contact · HTML
+Copy
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,7 +13,10 @@
  
   <header>
     <a href="index.html" class="logo">LD</a>
-    <nav>
+    <button class="nav-toggle" id="navToggle" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <nav id="navMenu">
       <a href="games.html">Games</a>
       <a href="apps.html">Apps</a>
       <a href="experiments.html">Experiments</a>
@@ -55,5 +61,14 @@
     <p>© 2025 Leon Dudhill</p>
   </footer>
  
+  <script>
+    const toggle = document.getElementById("navToggle");
+    const menu = document.getElementById("navMenu");
+    toggle.addEventListener("click", () => {
+      toggle.classList.toggle("open");
+      menu.classList.toggle("open");
+    });
+  </script>
 </body>
 </html>
+ 
