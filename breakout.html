@@ -162,9 +162,10 @@
 
   /* ── MOBILE SCALING ── */
   @media (max-width: 900px) {
-    body { padding: 50px 8px 16px !important; justify-content: flex-start !important; overflow-y: auto !important; overflow-x: hidden !important; }
-    canvas { max-width: 96vw !important; height: auto !important; }
-    #layout, #hud, #scoreboard, #labels, #side-left, #side-right { max-width: 96vw !important; }
+    body { padding: 50px 4px 12px !important; justify-content: flex-start !important; overflow: hidden !important; }
+    #hud { width: min(800px, 96vw) !important; }
+    #controls { display: none !important; }
+    canvas { width: min(800px, 96vw) !important; height: auto !important; }
   }
 
 </style>
@@ -192,7 +193,7 @@
   <canvas id="c" width="800" height="540"></canvas>
   <div id="overlay">
     <h1>BREAKOUT</h1>
-    <div class="sub">Press SPACE to start</div>
+    <div class="sub" id="start-hint">Press SPACE to start</div>
   </div>
 </div>
 
@@ -225,6 +226,7 @@ const ROW_COLORS = [
 ];
 
 let state = 'idle'; // idle, playing, paused, dead, win, gameover
+const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 let score = 0, lives = MAX_LIVES, level = 1;
 let bricks = [], particles = [];
 
@@ -453,10 +455,10 @@ function update() {
     level++;
     if (level > 5) {
       state = 'win';
-      showOverlay('YOU WIN!', 'Press SPACE to play again', `Final Score: ${score}`);
+      showOverlay('YOU WIN!', isMobile ? 'Tap to play again' : 'Press SPACE to play again', `Final Score: ${score}`);
     } else {
       state = 'idle';
-      showOverlay(`LEVEL ${level}`, 'Press SPACE to continue', `Score: ${score}`);
+      showOverlay(`LEVEL ${level}`, isMobile ? 'Tap to continue' : 'Press SPACE to continue', `Score: ${score}`);
       setTimeout(() => { if (state === 'idle') { startLevel(); } }, 100);
       // actually just wait for space
     }
@@ -469,10 +471,10 @@ function update() {
     updateLivesUI();
     if (lives <= 0) {
       state = 'gameover';
-      showOverlay('GAME OVER', 'Press SPACE to try again', `Score: ${score}`);
+      showOverlay('GAME OVER', isMobile ? 'Tap to try again' : 'Press SPACE to try again', `Score: ${score}`);
     } else {
       state = 'dead';
-      showOverlay('BALL LOST', 'Press SPACE to continue', `${lives} ${lives === 1 ? 'life' : 'lives'} remaining`);
+      showOverlay('BALL LOST', isMobile ? 'Tap to continue' : 'Press SPACE to continue', `${lives} ${lives === 1 ? 'life' : 'lives'} remaining`);
     }
   }
 
@@ -597,42 +599,52 @@ loop();
 })();
 </script>
 
-<script>
-(function(){
-  var c=document.getElementById('c');
-  c.addEventListener('touchstart',function(e){
-    e.preventDefault();
-    if(typeof gameState!=='undefined'){
-      if(gameState==='idle'||gameState==='over'||gameState==='win'){ startGame&&startGame(); }
-      else if(gameState==='paused'){ gameState='playing'; }
-    }
-  },{passive:false});
-  c.addEventListener('touchmove',function(e){
-    e.preventDefault();
-    var t=e.touches[0];
-    var rect=c.getBoundingClientRect();
-    var scaleX=c.width/rect.width;
-    var relX=(t.clientX-rect.left)*scaleX;
-    if(typeof paddle!=='undefined'){ paddle.x=relX-paddle.w/2; paddle.x=Math.max(0,Math.min(c.width-paddle.w,paddle.x)); }
-  },{passive:false});
-})();
-</script>
 
 <!-- overlay-tap-fix -->
 
+
 <script>
-(function(){
-  var ov = document.getElementById('overlay');
-  if (!ov) return;
-  ov.addEventListener('touchstart', function(e) {
-    e.preventDefault();
-    if (state === 'idle' || state === 'gameover' || state === 'win' || state === 'dead') {
-      startRound();
-    } else if (state === 'paused') {
-      state = 'playing';
-    }
-  }, {passive: false});
-})();
+// Mobile hint
+if (isMobile) {
+  var hint = document.getElementById('start-hint');
+  if (hint) hint.textContent = 'Tap to start';
+}
+
+// Tap overlay or canvas to start
+function _breakoutStart() {
+  if (state === 'idle' || state === 'win' || state === 'gameover') {
+    level = 1; score = 0; lives = MAX_LIVES; startLevel();
+  } else if (state === 'dead') {
+    startRound();
+  } else if (state === 'playing') {
+    if (ball.onPaddle) launchBall();
+    else state = 'paused';
+  } else if (state === 'paused') {
+    state = 'playing';
+  }
+}
+
+document.getElementById('overlay').addEventListener('touchstart', function(e) {
+  e.preventDefault();
+  _breakoutStart();
+}, {passive: false});
+
+document.getElementById('c').addEventListener('touchstart', function(e) {
+  e.preventDefault();
+  _breakoutStart();
+}, {passive: false});
+
+// Drag finger to move paddle
+document.getElementById('c').addEventListener('touchmove', function(e) {
+  e.preventDefault();
+  if (state !== 'playing') return;
+  var t = e.touches[0];
+  var rect = document.getElementById('c').getBoundingClientRect();
+  var scaleX = canvas.width / rect.width;
+  var relX = (t.clientX - rect.left) * scaleX;
+  paddle.x = relX - paddle.w / 2;
+  paddle.x = Math.max(0, Math.min(canvas.width - paddle.w, paddle.x));
+}, {passive: false});
 </script>
 </body>
 </html>
