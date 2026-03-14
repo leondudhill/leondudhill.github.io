@@ -430,5 +430,18 @@ loop();
   setTimeout(function(){s.style.display='none';s.style.pointerEvents='none';},3900);
 })();
 </script>
+
+<!-- overlay-tap-fix -->
+
+<script>
+(function(){
+  var ov = document.getElementById('overlay');
+  if (!ov) return;
+  ov.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    flap();
+  }, {passive: false});
+})();
+</script>
 </body>
 </html>
