@@ -38,10 +38,15 @@
     #hud, #scoreboard, #labels { width: min(700px, 96vw) !important; padding: 44px 8px 4px !important; flex-shrink: 0; box-sizing: border-box; }
     #controls { display: none !important; }
     #game-wrapper { flex: 1; display: flex !important; align-items: center !important; justify-content: center !important; width: 100vw !important; min-height: 0; }
-    canvas {
+    #c {
       width: min(96vw, calc((100dvh - 76px) * 1.2069)) !important;
       height: auto !important;
       display: block;
+    }
+    /* Preview canvases in overlay — keep their original small size */
+    #prev-a, #prev-b, #prev-c, #prev-ufo {
+      width: auto !important;
+      height: auto !important;
     }
   }
 </style>
