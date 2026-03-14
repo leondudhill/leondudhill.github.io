@@ -270,7 +270,7 @@ function update(){
   if(hammerTimer>0) hammerTimer--;
 
   const dkx=450, dky=PLATFORMS[4].y-62;
-  if(!p.dead){
+  if(!p.dead && !kongDead){
     if(Math.abs(p.x+p.w/2-dkx)<40 && Math.abs(p.y+p.h/2-(dky+30))<44){
       if(hammerTimer>0){
         score+=5000; updateHUD();
@@ -287,7 +287,7 @@ function update(){
   }
 
   barrelTimer--;
-  if(barrelTimer<=0){
+  if(barrelTimer<=0 && !kongDead){
     barrelTimer=barrelInterval+Math.floor(Math.random()*40);
     barrels.push({x:420,y:PLATFORMS[4].y-20,vx:-(BARREL_SPD_BASE+level*0.3+Math.random()*0.5),vy:0,onGround:false,rot:0,frame:0});
   }
