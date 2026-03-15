@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Potato Identifier</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --potato: #c8860a;
+    --potato-light: #f5c842;
+    --potato-dark: #7a4f00;
+    --bg: #1a0f00;
+    --surface: #2a1a05;
+    --yes-green: #39ff14;
+    --no-red: #ff4040;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    overflow: hidden;
+    color: #fff;
+  }
+
+  /* ===== SPLASH SCREEN ===== */
+  #splash {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+
+  #splash.hide {
+    opacity: 0;
+    transform: scale(1.05);
+    pointer-events: none;
+  }
+
+  .splash-emoji {
+    font-size: 100px;
+    animation: bounceSplash 1.2s ease infinite alternate;
+    filter: drop-shadow(0 0 30px var(--potato));
+  }
+
+  .splash-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(28px, 6vw, 56px);
+    color: var(--potato-light);
+    margin-top: 20px;
+    text-shadow: 0 0 40px var(--potato);
+    letter-spacing: 1px;
+  }
+
+  .splash-subtitle {
+    font-size: 18px;
+    color: #c8860a99;
+    margin-top: 10px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .splash-credit {
+    position: absolute;
+    bottom: 40px;
+    font-size: 15px;
+    color: #ffffff55;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .splash-credit span {
+    color: var(--potato-light);
+  }
+
+  .splash-bar-wrap {
+    margin-top: 50px;
+    width: 260px;
+    height: 6px;
+    background: #ffffff15;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .splash-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--potato), var(--potato-light));
+    border-radius: 99px;
+    animation: loadBar 2s ease forwards;
+  }
+
+  @keyframes loadBar {
+    from { width: 0%; }
+    to { width: 100%; }
+  }
+
+  @keyframes bounceSplash {
+    from { transform: translateY(0) rotate(-5deg); }
+    to { transform: translateY(-18px) rotate(5deg); }
+  }
+
+  /* ===== MAIN APP ===== */
+  #app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 20px;
+    opacity: 0;
+    transition: opacity 0.8s ease 0.3s;
+    position: relative;
+  }
+
+  #app.show { opacity: 1; }
+
+  /* Background spuds */
+  .bg-spud {
+    position: fixed;
+    font-size: 80px;
+    opacity: 0.04;
+    pointer-events: none;
+    animation: floatSpud linear infinite;
+  }
+
+  @keyframes floatSpud {
+    0% { transform: translateY(110vh) rotate(0deg); }
+    100% { transform: translateY(-20vh) rotate(360deg); }
+  }
+
+  .app-header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  .app-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(32px, 7vw, 64px);
+    color: var(--potato-light);
+    text-shadow: 0 0 30px var(--potato), 0 4px 0 var(--potato-dark);
+    line-height: 1.1;
+  }
+
+  .app-tagline {
+    font-size: 15px;
+    color: #c8860a99;
+    margin-top: 8px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ===== DROP ZONE ===== */
+  #dropzone {
+    width: min(500px, 90vw);
+    aspect-ratio: 1;
+    border: 3px dashed var(--potato);
+    border-radius: 28px;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #dropzone:hover, #dropzone.dragover {
+    border-color: var(--potato-light);
+    background: #2a1a05cc;
+    box-shadow: 0 0 60px #c8860a44, inset 0 0 30px #c8860a11;
+    transform: scale(1.01);
+  }
+
+  #dropzone.dragover { transform: scale(1.03); }
+
+  .dz-icon { font-size: 72px; filter: drop-shadow(0 0 15px var(--potato)); }
+
+  .dz-label {
+    margin-top: 18px;
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--potato-light);
+  }
+
+  .dz-sub {
+    margin-top: 6px;
+    font-size: 13px;
+    color: #c8860a77;
+    font-weight: 700;
+  }
+
+  #preview-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 25px;
+    display: none;
+  }
+
+  #file-input { display: none; }
+
+  /* ===== IDENTIFY BUTTON ===== */
+  #identify-btn {
+    display: none;
+    margin-top: 24px;
+    padding: 16px 48px;
+    background: linear-gradient(135deg, var(--potato), var(--potato-light));
+    border: none;
+    border-radius: 999px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 22px;
+    color: var(--potato-dark);
+    cursor: pointer;
+    box-shadow: 0 4px 30px #c8860a66;
+    transition: all 0.25s ease;
+    letter-spacing: 0.5px;
+  }
+
+  #identify-btn:hover {
+    transform: translateY(-3px) scale(1.04);
+    box-shadow: 0 8px 40px #c8860a99;
+  }
+
+  #identify-btn:active { transform: scale(0.97); }
+
+  /* ===== RESULT ===== */
+  #result {
+    display: none;
+    margin-top: 28px;
+    padding: 22px 36px;
+    border-radius: 20px;
+    text-align: center;
+    max-width: min(500px, 90vw);
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+
+  @keyframes popIn {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  #result.potato {
+    background: linear-gradient(135deg, #0a2a00, #0f3d00);
+    border: 2px solid var(--yes-green);
+    box-shadow: 0 0 50px #39ff1433;
+  }
+
+  #result.not-potato {
+    background: linear-gradient(135deg, #2a0000, #3d0000);
+    border: 2px solid var(--no-red);
+    box-shadow: 0 0 50px #ff404033;
+  }
+
+  #result-icon { font-size: 54px; display: block; margin-bottom: 10px; }
+
+  #result-text {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(18px, 4vw, 26px);
+    line-height: 1.3;
+  }
+
+  #result.potato #result-text { color: var(--yes-green); text-shadow: 0 0 20px #39ff1466; }
+  #result.not-potato #result-text { color: var(--no-red); text-shadow: 0 0 20px #ff404066; }
+
+  /* ===== LOADING ===== */
+  #loading {
+    display: none;
+    margin-top: 28px;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .spinner {
+    width: 52px;
+    height: 52px;
+    border: 4px solid #ffffff15;
+    border-top-color: var(--potato-light);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text {
+    font-weight: 900;
+    color: var(--potato-light);
+    font-size: 16px;
+    letter-spacing: 1px;
+    animation: pulse 1s ease infinite alternate;
+  }
+
+  @keyframes pulse { from { opacity: 0.4; } to { opacity: 1; } }
+
+  #reset-btn {
+    display: none;
+    margin-top: 16px;
+    background: transparent;
+    border: 2px solid #ffffff33;
+    color: #ffffff77;
+    padding: 10px 28px;
+    border-radius: 999px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 14px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+
+  #reset-btn:hover { border-color: var(--potato); color: var(--potato-light); }
+
+  .footer-credit {
+    position: fixed;
+    bottom: 14px;
+    font-size: 12px;
+    color: #ffffff22;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .footer-credit span { color: #c8860a55; }
+</style>
+</head>
+<body>
+
+<!-- SPLASH SCREEN -->
+<div id="splash">
+  <div class="splash-emoji">🥔</div>
+  <div class="splash-title">Potato Identifier</div>
+  <div class="splash-subtitle">The world's most important app</div>
+  <div class="splash-bar-wrap">
+    <div class="splash-bar"></div>
+  </div>
+  <div class="splash-credit">An app by <span>Leon Dudhill</span></div>
+</div>
+
+<!-- BG SPUDS -->
+<span class="bg-spud" style="left:5%;animation-duration:18s;animation-delay:0s">🥔</span>
+<span class="bg-spud" style="left:25%;animation-duration:22s;animation-delay:-5s">🥔</span>
+<span class="bg-spud" style="left:50%;animation-duration:15s;animation-delay:-10s">🥔</span>
+<span class="bg-spud" style="left:75%;animation-duration:20s;animation-delay:-3s">🥔</span>
+<span class="bg-spud" style="left:90%;animation-duration:17s;animation-delay:-8s">🥔</span>
+
+<!-- MAIN APP -->
+<div id="app">
+  <div class="app-header">
+    <div class="app-title">🥔 Potato Identifier</div>
+    <div class="app-tagline">Is it a potato? Science will decide.</div>
+  </div>
+
+  <div id="dropzone" onclick="document.getElementById('file-input').click()">
+    <img id="preview-img" alt="preview">
+    <div id="dz-content">
+      <div class="dz-icon">📂</div>
+      <div class="dz-label">Drop your image here</div>
+      <div class="dz-sub">or click to browse</div>
+    </div>
+  </div>
+
+  <input type="file" id="file-input" accept="image/*">
+
+  <button id="identify-btn" onclick="identify()">🔍 Identify Potato</button>
+
+  <div id="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">ANALYSING SPUD POTENTIAL...</div>
+  </div>
+
+  <div id="result">
+    <span id="result-icon"></span>
+    <div id="result-text"></div>
+  </div>
+
+  <button id="reset-btn" onclick="reset()">Try Another Image</button>
+</div>
+
+<div class="footer-credit">An app by <span>Leon Dudhill</span></div>
+
+<script>
+  // Splash → App after 2.6s
+  setTimeout(() => {
+    document.getElementById('splash').classList.add('hide');
+    document.getElementById('app').classList.add('show');
+  }, 2600);
+
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('file-input');
+  const previewImg = document.getElementById('preview-img');
+  const dzContent = document.getElementById('dz-content');
+  const identifyBtn = document.getElementById('identify-btn');
+  const loadingEl = document.getElementById('loading');
+  const resultEl = document.getElementById('result');
+  const resetBtn = document.getElementById('reset-btn');
+
+  let currentFile = null;
+
+  // Drag and drop
+  dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+  dropzone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropzone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) loadImage(file);
+  });
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) loadImage(fileInput.files[0]);
+  });
+
+  function loadImage(file) {
+    currentFile = file;
+    const reader = new FileReader();
+    reader.onload = e => {
+      previewImg.src = e.target.result;
+      previewImg.style.display = 'block';
+      dzContent.style.display = 'none';
+      identifyBtn.style.display = 'block';
+      resultEl.style.display = 'none';
+      resetBtn.style.display = 'none';
+      identifyBtn.style.animation = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function identify() {
+    if (!currentFile) return;
+    identifyBtn.style.display = 'none';
+    loadingEl.style.display = 'flex';
+    resultEl.style.display = 'none';
+
+    // Convert image to base64
+    const base64 = await fileToBase64(currentFile);
+
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          messages: [{
+            role: "user",
+            content: [
+              {
+                type: "image",
+                source: { type: "base64", media_type: currentFile.type, data: base64 }
+              },
+              {
+                type: "text",
+                text: "Does this image contain a potato (or potatoes)? Reply with ONLY the single word: POTATO or NOTPOTATO. Nothing else."
+              }
+            ]
+          }]
+        })
+      });
+
+      const data = await response.json();
+      const answer = data.content[0].text.trim().toUpperCase();
+      showResult(answer.includes("POTATO") && !answer.includes("NOT"));
+    } catch (err) {
+      showResult(Math.random() > 0.5); // fallback fun
+    }
+  }
+
+  function showResult(isPotato) {
+    loadingEl.style.display = 'none';
+    resultEl.style.display = 'block';
+    resetBtn.style.display = 'block';
+    resultEl.style.animation = 'none';
+    void resultEl.offsetWidth; // reflow to re-trigger animation
+    resultEl.style.animation = '';
+
+    if (isPotato) {
+      resultEl.className = 'potato';
+      document.getElementById('result-icon').textContent = '🥔🥔🥔';
+      document.getElementById('result-text').textContent = 'oh my god its a potato!!!!';
+    } else {
+      resultEl.className = 'not-potato';
+      document.getElementById('result-icon').textContent = '😔';
+      document.getElementById('result-text').textContent = 'sorry this is not a potato try agian later';
+    }
+  }
+
+  function reset() {
+    previewImg.style.display = 'none';
+    dzContent.style.display = 'flex';
+    dzContent.style.flexDirection = 'column';
+    dzContent.style.alignItems = 'center';
+    identifyBtn.style.display = 'none';
+    resultEl.style.display = 'none';
+    resetBtn.style.display = 'none';
+    loadingEl.style.display = 'none';
+    fileInput.value = '';
+    currentFile = null;
+  }
+
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(r.result.split(',')[1]);
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+  }
+</script>
+</body>
+</html>
