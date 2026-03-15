@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
   <header>
     <a href="index.html" class="logo">LD</a>
     <button class="nav-toggle" id="navToggle" aria-label="Menu">
@@ -22,25 +21,32 @@
       <a href="contact.html">Contact</a>
     </nav>
   </header>
-
   <div class="page-header">
     <span class="tag">📱 Build</span>
     <h1>Apps</h1>
     <p>Useful tools I've made. Hopefully they actually work.</p>
   </div>
-
   <div class="page-content">
-    <div class="empty-state">
-      <div class="big">📱</div>
-      <h2>Nothing here yet</h2>
-      <p>Apps are being built — check back soon.</p>
+    <div class="games-grid">
+      <a href="potato-identifier.html" class="game-card">
+        <div class="game-preview">
+          <div class="gp-emoji">🥔</div>
+        </div>
+        <div class="game-info">
+          <div class="game-meta">
+            <span class="game-tag">AI</span>
+            <span class="game-tag">Image</span>
+          </div>
+          <h2>Potato Identifier</h2>
+          <p>Drop in any image and find out if it's a potato or not.</p>
+          <span class="play-btn">Open →</span>
+        </div>
+      </a>
     </div>
   </div>
-
   <footer>
     <p>© 2025 Leon Dudhill</p>
   </footer>
-
   <script>
     const toggle = document.getElementById("navToggle");
     const menu = document.getElementById("navMenu");
