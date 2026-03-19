@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>CHECKERS</title>
+<link rel="icon" href="favicon.png" type="image/png" />
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  background:#000;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;min-height:100vh;min-height:100dvh;
+  font-family:'Share Tech Mono',monospace;overflow:hidden;
+  touch-action:none;user-select:none;-webkit-user-select:none;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,180,0.012) 2px,rgba(0,255,180,0.012) 4px);
+  pointer-events:none;z-index:200;
+}
+#leon-splash{
+  position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;background:#000;text-align:center;gap:14px;
+  z-index:9999;opacity:0;transition:opacity 0.8s ease;pointer-events:none;
+}
+#leon-splash .ls-by{font-size:13px;color:rgba(0,255,255,0.5);letter-spacing:8px;text-transform:uppercase;}
+#leon-splash .ls-name{font-size:42px;color:#fff;text-shadow:0 0 20px #0ff,0 0 60px #0ff;letter-spacing:4px;}
+#leon-splash .ls-name span{color:#00ffcc;text-shadow:0 0 20px #00ffcc,0 0 60px #00ffcc;}
+#back-btn{
+  position:fixed;top:16px;left:16px;font-family:'Share Tech Mono',monospace;
+  font-size:11px;letter-spacing:3px;color:rgba(0,255,255,0.5);text-decoration:none;
+  text-transform:uppercase;border:1px solid rgba(0,255,255,0.2);padding:6px 14px;
+  border-radius:4px;z-index:10000;transition:color 0.2s,border-color 0.2s;
+}
+#back-btn:hover{color:#0ff;border-color:#0ff;}
+#hud{
+  display:flex;justify-content:space-between;align-items:flex-end;
+  width:var(--bs,480px);margin-bottom:10px;padding:0 4px;flex-shrink:0;
+}
+.hud-block{display:flex;flex-direction:column;align-items:flex-start;gap:2px;}
+.hud-block.center{align-items:center;}
+.hud-block.right{align-items:flex-end;}
+.hud-label{font-size:10px;letter-spacing:5px;color:rgba(0,255,255,0.4);text-transform:uppercase;}
+.hud-value{font-size:36px;color:#fff;letter-spacing:3px;}
+.hud-value.rg{text-shadow:0 0 15px #ff3366,0 0 35px #ff3366;}
+.hud-value.cg{text-shadow:0 0 15px #0ff,0 0 35px #0ff;}
+#game-wrapper{position:relative;flex-shrink:0;}
+#board{
+  display:grid;grid-template-columns:repeat(8,1fr);
+  width:var(--bs,480px);height:var(--bs,480px);
+  border:1px solid rgba(0,255,255,0.25);
+  box-shadow:0 0 40px rgba(0,255,255,0.1),0 0 100px rgba(0,255,255,0.04);
+  border-radius:2px;overflow:hidden;position:relative;
+}
+.sq{
+  position:relative;display:flex;align-items:center;justify-content:center;
+  cursor:default;-webkit-tap-highlight-color:transparent;
+}
+.sq.dark{background:#051a1a;}
+.sq.light{background:#020d0d;}
+.sq.drop-target{background:rgba(0,255,200,0.15)!important;box-shadow:inset 0 0 14px rgba(0,255,200,0.3);}
+.sq.drop-target::after{
+  content:'';position:absolute;width:36%;height:36%;border-radius:50%;
+  background:rgba(0,255,200,0.4);box-shadow:0 0 14px rgba(0,255,200,0.7);pointer-events:none;
+}
+.sq.highlight-move::after{
+  content:'';position:absolute;width:30%;height:30%;border-radius:50%;
+  background:rgba(0,255,200,0.28);box-shadow:0 0 10px rgba(0,255,200,0.5);pointer-events:none;
+}
+#piece-layer{
+  position:absolute;inset:0;pointer-events:none;z-index:10;
+}
+/* floating drag ghost */
+#drag-ghost{
+  position:fixed;pointer-events:none;z-index:9000;border-radius:50%;
+  display:none;align-items:center;justify-content:center;
+  transform:translate(-50%,-50%) scale(1.2);
+}
+#drag-ghost.red{background:radial-gradient(circle at 35% 35%,#ff6688,#cc1133);border:3px solid rgba(255,120,140,0.8);box-shadow:0 12px 30px rgba(0,0,0,0.8),0 0 28px rgba(255,51,102,0.6);}
+#drag-ghost.cyan{background:radial-gradient(circle at 35% 35%,#66ffee,#009988);border:3px solid rgba(0,255,220,0.8);box-shadow:0 12px 30px rgba(0,0,0,0.8),0 0 28px rgba(0,255,204,0.6);}
+#drag-ghost .gc{color:rgba(255,240,120,0.95);text-shadow:0 0 8px rgba(255,220,0,0.9);line-height:1;}
+#overlay{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;background:rgba(0,0,0,0.82);
+  text-align:center;z-index:50;gap:12px;
+}
+#overlay h1{font-size:52px;color:#fff;text-shadow:0 0 20px #0ff,0 0 60px #0ff;letter-spacing:14px;text-transform:uppercase;}
+.result-text{font-size:16px;letter-spacing:6px;text-transform:uppercase;}
+.result-text.red-win{color:#ff3366;text-shadow:0 0 15px #ff3366,0 0 40px #ff3366;}
+.result-text.cyan-win{color:#00ffcc;text-shadow:0 0 15px #00ffcc,0 0 40px #00ffcc;}
+.sub{font-size:13px;color:#0ff;opacity:.65;letter-spacing:5px;animation:blink 1.2s step-start infinite;}
+@keyframes blink{0%,100%{opacity:.65}50%{opacity:0}}
+#turn-bar{
+  width:var(--bs,480px);margin-top:10px;display:flex;align-items:center;
+  justify-content:space-between;flex-shrink:0;padding:0 4px;
+}
+#turn-text{font-size:11px;letter-spacing:4px;color:rgba(0,255,255,0.35);text-transform:uppercase;transition:color .3s;}
+#mode-selector{display:flex;gap:10px;}
+.mode-btn{
+  font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;
+  color:rgba(0,255,255,0.4);background:transparent;border:1px solid rgba(0,255,255,0.2);
+  padding:5px 14px;border-radius:4px;cursor:pointer;text-transform:uppercase;
+  transition:all .2s;-webkit-tap-highlight-color:transparent;
+}
+.mode-btn:hover,.mode-btn.active{color:#0ff;border-color:#0ff;box-shadow:0 0 10px rgba(0,255,255,0.2);}
+@media(max-width:560px){
+  :root{--bs:min(96vw,calc(100dvh - 160px))!important;}
+  #hud,#turn-bar{width:var(--bs)!important;}
+  #turn-bar{flex-direction:column;align-items:center;gap:8px;}
+  .hud-value{font-size:26px;}
+  #overlay h1{font-size:32px;letter-spacing:8px;}
+}
+</style>
+</head>
+<body>
+<div id="leon-splash">
+  <div class="ls-by">A game by</div>
+  <div class="ls-name"><span>Leon Dudhill</span></div>
+</div>
+<a href="games.html" id="back-btn">← Back</a>
+
+<div id="hud">
+  <div class="hud-block">
+    <span class="hud-label">Red</span>
+    <span class="hud-value rg" id="score-red">0</span>
+  </div>
+  <div class="hud-block center">
+    <span class="hud-label">Captured</span>
+    <div style="display:flex;gap:16px;align-items:flex-end">
+      <span class="hud-value rg" id="cap-red" style="font-size:24px">0</span>
+      <span style="color:rgba(0,255,255,0.2);font-size:20px;padding-bottom:2px">vs</span>
+      <span class="hud-value cg" id="cap-cyan" style="font-size:24px">0</span>
+    </div>
+  </div>
+  <div class="hud-block right">
+    <span class="hud-label">Cyan</span>
+    <span class="hud-value cg" id="score-cyan">0</span>
+  </div>
+</div>
+
+<div id="game-wrapper">
+  <div id="board"></div>
+  <canvas id="piece-layer"></canvas>
+  <div id="overlay"><h1>CHECKERS</h1><div class="sub">Tap to start</div></div>
+</div>
+<div id="drag-ghost"><span class="gc" id="ghost-crown" style="display:none">♛</span></div>
+
+<div id="turn-bar">
+  <div id="turn-text">· Red moves first ·</div>
+  <div id="mode-selector">
+    <button class="mode-btn active" id="btn-2p">2 Player</button>
+    <button class="mode-btn" id="btn-cpu">vs CPU</button>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════ CONSTANTS ═══════════════════════ */
+const EMPTY=0,RED=1,CYAN=2,RK=3,CK=4;
+
+/* ═══════════════════════ STATE ═══════════════════════════ */
+let G=[];          // live grid [row][col]
+let turn=RED, selected=null, validMoves=[], mustCap=false;
+let gameState='idle', scores={r:0,c:0}, caps={r:0,c:0};
+let vsPC=false, cpuBusy=false, chain=null;
+let dragging=false, dragFrom=null, dragPiece=EMPTY;
+
+/* ═══════════════════════ SIZING ══════════════════════════ */
+let BS=480, CELL=60, PRAD=22;
+function resize(){
+  BS=Math.floor(Math.min(window.innerWidth*.96,window.innerHeight-160,480)/8)*8;
+  CELL=BS/8; PRAD=CELL*.36;
+  document.documentElement.style.setProperty('--bs',BS+'px');
+  const b=document.getElementById('board');
+  b.style.width=b.style.height=BS+'px';
+  document.getElementById('hud').style.width=BS+'px';
+  const cv=document.getElementById('piece-layer');
+  cv.width=cv.height=BS; cv.style.width=cv.style.height=BS+'px';
+  render();
+}
+window.addEventListener('resize',resize);
+
+/* ═══════════════════════ BOARD HTML ══════════════════════ */
+function buildSquares(){
+  const b=document.getElementById('board'); b.innerHTML='';
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const d=document.createElement('div');
+    d.className='sq '+((r+c)%2===0?'light':'dark');
+    d.dataset.r=r; d.dataset.c=c;
+    b.appendChild(d);
+  }
+}
+const sq=(r,c)=>document.querySelector(`#board .sq[data-r="${r}"][data-c="${c}"]`);
+function clearHighlights(){document.querySelectorAll('#board .sq').forEach(s=>s.classList.remove('highlight-move','drop-target'));}
+function showHighlights(isDragging){
+  clearHighlights();
+  validMoves.forEach(m=>{
+    const s=sq(m.row,m.col);
+    if(s) s.classList.add(isDragging?'drop-target':'highlight-move');
+  });
+}
+
+/* ═══════════════════════ CANVAS RENDER ═══════════════════ */
+function render(){
+  const cv=document.getElementById('piece-layer');
+  const ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,BS,BS);
+  if(gameState==='idle') return;
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const p=G[r][c];
+    if(!p) continue;
+    if(dragging&&dragFrom&&dragFrom.r===r&&dragFrom.c===c) continue;
+    drawPiece(ctx,c*CELL+CELL/2,r*CELL+CELL/2,PRAD,p,
+      !dragging&&selected&&selected.r===r&&selected.c===c);
+  }
+}
+
+function drawPiece(ctx,cx,cy,rad,piece,sel){
+  const isR=piece===RED||piece===RK, isK=piece===RK||piece===CK;
+  ctx.save();
+  if(sel){ctx.shadowColor='rgba(255,255,80,.9)';ctx.shadowBlur=24;cy-=rad*.1;}
+  // outer glow ring
+  ctx.beginPath(); ctx.arc(cx,cy,rad+5,0,Math.PI*2);
+  ctx.fillStyle=isR?'rgba(255,51,102,.2)':'rgba(0,255,204,.2)'; ctx.fill();
+  // body gradient
+  const g=ctx.createRadialGradient(cx-rad*.25,cy-rad*.25,rad*.08,cx,cy,rad);
+  if(isR){g.addColorStop(0,'#ff6688');g.addColorStop(1,'#cc1133');}
+  else{g.addColorStop(0,'#66ffee');g.addColorStop(1,'#009988');}
+  ctx.beginPath(); ctx.arc(cx,cy,rad,0,Math.PI*2);
+  ctx.fillStyle=g; ctx.fill();
+  // border
+  ctx.strokeStyle=isR?'rgba(255,120,140,.7)':'rgba(0,255,220,.7)';
+  ctx.lineWidth=2; ctx.stroke();
+  // shine
+  ctx.beginPath(); ctx.arc(cx-rad*.22,cy-rad*.28,rad*.3,0,Math.PI*2);
+  ctx.fillStyle='rgba(255,255,255,.18)'; ctx.fill();
+  // king
+  if(isK){
+    ctx.shadowColor='rgba(255,220,0,.9)'; ctx.shadowBlur=10;
+    ctx.fillStyle='rgba(255,240,120,.95)';
+    ctx.font=`bold ${rad*.85}px serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('♛',cx,cy+rad*.07);
+  }
+  ctx.restore();
+}
+
+/* ═══════════════════════ DRAG GHOST ═════════════════════ */
+const ghost=document.getElementById('drag-ghost');
+const ghostCrown=document.getElementById('ghost-crown');
+function showGhost(piece,x,y){
+  const sz=Math.round(PRAD*2.2);
+  ghost.style.cssText=`display:flex;width:${sz}px;height:${sz}px;left:${x}px;top:${y}px;`;
+  ghost.className=(piece===RED||piece===RK)?'red':'cyan';
+  ghost.id='drag-ghost';
+  ghostCrown.style.display=(piece===RK||piece===CK)?'block':'none';
+  ghostCrown.style.fontSize=Math.round(sz*.42)+'px';
+}
+function moveGhost(x,y){ghost.style.left=x+'px';ghost.style.top=y+'px';}
+function hideGhost(){ghost.style.display='none';}
+
+/* ═══════════════════════ HIT TEST ═══════════════════════ */
+function toCell(px,py){
+  const rect=document.getElementById('board').getBoundingClientRect();
+  const c=Math.floor((px-rect.left)/CELL), r=Math.floor((py-rect.top)/CELL);
+  return (r>=0&&r<8&&c>=0&&c<8)?{r,c}:null;
+}
+function xy(e){return e.touches?{x:e.touches[0].clientX,y:e.touches[0].clientY}:{x:e.clientX,y:e.clientY};}
+function xyUp(e){return e.changedTouches?{x:e.changedTouches[0].clientX,y:e.changedTouches[0].clientY}:{x:e.clientX,y:e.clientY};}
+
+/* ═══════════════════════ INPUT ══════════════════════════ */
+const boardEl=document.getElementById('board');
+boardEl.addEventListener('mousedown',pDown);
+document.addEventListener('mousemove',pMove);
+document.addEventListener('mouseup',pUp);
+boardEl.addEventListener('touchstart',e=>{e.preventDefault();pDown(e);},{passive:false});
+document.addEventListener('touchmove',e=>{if(dragging)e.preventDefault();pMove(e);},{passive:false});
+document.addEventListener('touchend',e=>{e.preventDefault();pUp(e);},{passive:false});
+
+function pDown(e){
+  if(gameState!=='playing'||cpuBusy) return;
+  if(vsPC&&turn===CYAN) return;
+  const {x,y}=xy(e); const cell=toCell(x,y); if(!cell) return;
+  const {r,c}=cell; const p=G[r][c];
+  const mine=(turn===RED&&(p===RED||p===RK))||(turn===CYAN&&(p===CYAN||p===CK));
+
+  if(chain){
+    if(r===chain.r&&c===chain.c&&mine){ selectPiece(r,c); startDrag(r,c,p,x,y); }
+    return;
+  }
+  if(mine){ selectPiece(r,c); startDrag(r,c,p,x,y); }
+  else if(selected){ tryMove(r,c); }
+}
+
+function pMove(e){
+  if(!dragging) return;
+  const {x,y}=xy(e); moveGhost(x,y);
+  clearHighlights();
+  const cell=toCell(x,y);
+  validMoves.forEach(m=>{
+    const s=sq(m.row,m.col);
+    if(s) s.classList.add(cell&&m.row===cell.r&&m.col===cell.c?'drop-target':'highlight-move');
+  });
+}
+
+function pUp(e){
+  if(!dragging) return;
+  dragging=false; hideGhost();
+  const {x,y}=xyUp(e); const cell=toCell(x,y);
+  if(cell){
+    const m=validMoves.find(v=>v.row===cell.r&&v.col===cell.c);
+    if(m){doMove(m); return;}
+  }
+  showHighlights(false); render();
+}
+
+function selectPiece(r,c){
+  selected={r,c};
+  let moves=movesFor(r,c);
+  if(mustCap) moves=moves.filter(m=>m.captures.length>0);
+  validMoves=moves;
+}
+function startDrag(r,c,p,x,y){
+  dragging=true; dragFrom={r,c}; dragPiece=p;
+  showGhost(p,x,y); showHighlights(true); render();
+}
+function tryMove(r,c){
+  const m=validMoves.find(v=>v.row===r&&v.col===c);
+  if(m){doMove(m);} else {selected=null;validMoves=[];showHighlights(false);render();}
+}
+
+/* ═══════════════════════ MOVE EXECUTION ════════════════════ */
+function doMove(mv){
+  const p=G[selected.r][selected.c];
+  G[mv.row][mv.col]=p; G[selected.r][selected.c]=EMPTY;
+  mv.captures.forEach(cap=>{ G[cap.r][cap.c]=EMPTY; if(turn===RED) caps.c++; else caps.r++; });
+  const promoted=(p===RED&&mv.row===0)||(p===CYAN&&mv.row===7);
+  if(p===RED&&mv.row===0) G[mv.row][mv.col]=RK;
+  if(p===CYAN&&mv.row===7) G[mv.row][mv.col]=CK;
+
+  if(mv.captures.length>0&&!promoted){
+    const further=movesFor(mv.row,mv.col).filter(m=>m.captures.length>0);
+    if(further.length){
+      chain={r:mv.row,c:mv.col}; selected={r:mv.row,c:mv.col}; validMoves=further;
+      updateCapsUI(); showHighlights(false); render(); return;
+    }
+  }
+  chain=null; selected=null; validMoves=[];
+  updateCapsUI();
+  const w=checkWin(); if(w){showHighlights(false);render();endGame(w);return;}
+  turn=turn===RED?CYAN:RED; computeMustCap(); updateTurnUI();
+  showHighlights(false); render();
+  if(vsPC&&turn===CYAN){cpuBusy=true;cpuGo();}
+}
+
+/* ═══════════════════════ MOVE GEN ══════════════════════════ */
+function movesFor(r,c){
+  const p=G[r][c]; if(!p) return [];
+  const isR=p===RED||p===RK, isK=p===RK||p===CK;
+  const dirs=[]; if(isR||isK) dirs.push([-1,-1],[-1,1]); if(!isR||isK) dirs.push([1,-1],[1,1]);
+  const out=[];
+  dirs.forEach(([dr,dc])=>{
+    const nr=r+dr,nc=c+dc;
+    if(ok(nr,nc)&&!G[nr][nc]) out.push({row:nr,col:nc,captures:[]});
+  });
+  dirs.forEach(([dr,dc])=>{
+    const mr=r+dr,mc=c+dc,lr=r+2*dr,lc=c+2*dc;
+    if(ok(lr,lc)&&!G[lr][lc]){
+      const mid=G[mr][mc];
+      const enemy=isR?(mid===CYAN||mid===CK):(mid===RED||mid===RK);
+      if(enemy) out.push({row:lr,col:lc,captures:[{r:mr,c:mc}]});
+    }
+  });
+  return out;
+}
+function allMoves(t){
+  const out=[];
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const p=G[r][c];
+    if((t===RED&&(p===RED||p===RK))||(t===CYAN&&(p===CYAN||p===CK)))
+      movesFor(r,c).forEach(m=>out.push({...m,fromR:r,fromC:c}));
+  }
+  return out;
+}
+function computeMustCap(){mustCap=allMoves(turn).some(m=>m.captures.length>0);}
+function ok(r,c){return r>=0&&r<8&&c>=0&&c<8;}
+
+/* ═══════════════════════ WIN CHECK ══════════════════════════ */
+function checkWin(){
+  let rc=0,cc=0;
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){if(G[r][c]===RED||G[r][c]===RK) rc++; if(G[r][c]===CYAN||G[r][c]===CK) cc++;}
+  if(!cc) return RED; if(!rc) return CYAN;
+  if(!allMoves(turn===RED?CYAN:RED).length) return turn;
+  return null;
+}
+
+/* ═══════════════════════ AI — Iterative Deepening Alpha-Beta ══════════════
+   Runs on the main thread in a single synchronous burst.
+   No Worker needed — modern JS engines handle depth-10 checkers in ~1-2s.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+const INF = 1e8;
+const TIME_LIMIT = 2500; // ms
+let aiDeadline = 0;
+
+// ── Position / evaluation tables ──────────────────────────────────────────────
+// How valuable is each row for a regular piece advancing toward promotion?
+const CYAN_ADV = [0, 0, 0, 2, 4,  8, 12, 0]; // row 0=start, row7=king row
+const RED_ADV  = [0,12,  8, 4, 2,  0,  0, 0];
+// Centre-control bonus (same for both sides)
+const CENTRE = [
+  [0,0,0,0,0,0,0,0],
+  [0,0,1,0,1,0,0,0],
+  [0,1,0,2,0,2,0,1],
+  [0,0,2,0,3,0,2,0],
+  [0,2,0,3,0,3,0,2],
+  [0,0,2,0,2,0,2,0],
+  [0,1,0,2,0,2,0,1],
+  [0,0,0,0,0,0,0,0]
+];
+
+// ── Grid helpers ──────────────────────────────────────────────────────────────
+function clone(g){ return g.map(r=>r.slice()); }
+
+function countG(g,t){
+  let n=0;
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const p=g[r][c];
+    if(t===RED&&(p===RED||p===RK)) n++;
+    if(t===CYAN&&(p===CYAN||p===CK)) n++;
+  }
+  return n;
+}
+
+function movesOnG(g,r,c){
+  const p=g[r][c]; if(!p) return [];
+  const isR=p===RED||p===RK, isK=p===RK||p===CK;
+  const dirs=[]; if(isR||isK) dirs.push([-1,-1],[-1,1]); if(!isR||isK) dirs.push([1,-1],[1,1]);
+  const out=[];
+  dirs.forEach(([dr,dc])=>{
+    const nr=r+dr,nc=c+dc;
+    if(ok(nr,nc)&&!g[nr][nc]) out.push({row:nr,col:nc,captures:[]});
+  });
+  dirs.forEach(([dr,dc])=>{
+    const mr=r+dr,mc=c+dc,lr=r+2*dr,lc=c+2*dc;
+    if(ok(lr,lc)&&!g[lr][lc]){
+      const mid=g[mr][mc];
+      const en=isR?(mid===CYAN||mid===CK):(mid===RED||mid===RK);
+      if(en) out.push({row:lr,col:lc,captures:[{r:mr,c:mc}]});
+    }
+  });
+  return out;
+}
+
+function allMovesG(g,t){
+  const out=[];
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const p=g[r][c];
+    if((t===RED&&(p===RED||p===RK))||(t===CYAN&&(p===CYAN||p===CK)))
+      movesOnG(g,r,c).forEach(m=>out.push({...m,fromR:r,fromC:c}));
+  }
+  const hasCap=out.some(m=>m.captures.length>0);
+  return hasCap ? out.filter(m=>m.captures.length>0) : out;
+}
+
+function applyG(g,m){
+  const orig=g[m.fromR][m.fromC];
+  const saved=m.captures.map(cap=>({r:cap.r,c:cap.c,p:g[cap.r][cap.c]}));
+  g[m.row][m.col]=orig; g[m.fromR][m.fromC]=EMPTY;
+  m.captures.forEach(cap=>g[cap.r][cap.c]=EMPTY);
+  if(orig===RED&&m.row===0) g[m.row][m.col]=RK;
+  if(orig===CYAN&&m.row===7) g[m.row][m.col]=CK;
+  return {orig,saved};
+}
+function undoG(g,m,u){
+  g[m.fromR][m.fromC]=u.orig; g[m.row][m.col]=EMPTY;
+  u.saved.forEach(s=>g[s.r][s.c]=s.p);
+}
+
+// ── Evaluation (positive = CYAN/AI winning) ───────────────────────────────────
+function evalG(g){
+  let score=0, cP=0, rP=0, cK=0, rK=0;
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const p=g[r][c]; if(!p) continue;
+    const ct=CENTRE[r][c];
+    if(p===CYAN){
+      cP++;
+      score += 100 + CYAN_ADV[r] + ct*3;
+      if(r===0) score+=10;                                      // back-rank anchor
+      if(c===0||c===7) score+=2;                                // edge safety
+      if(ok(r-1,c-1)&&(g[r-1][c-1]===CYAN||g[r-1][c-1]===CK)) score+=6; // protected
+      if(ok(r-1,c+1)&&(g[r-1][c+1]===CYAN||g[r-1][c+1]===CK)) score+=6;
+    } else if(p===CK){
+      cK++; cP++;
+      score += 180 + ct*5;
+      if(c===0||c===7) score-=5;  // edge kings less mobile
+    } else if(p===RED){
+      rP++;
+      score -= 100 + RED_ADV[r] + ct*3;
+      if(r===7) score-=10;
+      if(c===0||c===7) score-=2;
+      if(ok(r+1,c-1)&&(g[r+1][c-1]===RED||g[r+1][c-1]===RK)) score-=6;
+      if(ok(r+1,c+1)&&(g[r+1][c+1]===RED||g[r+1][c+1]===RK)) score-=6;
+    } else if(p===RK){
+      rK++; rP++;
+      score -= 180 + ct*5;
+      if(c===0||c===7) score+=5;
+    }
+  }
+  // Material advantage amplifier — being up a piece becomes more valuable in endgame
+  const matDiff=(cP+cK)-(rP+rK);
+  score += matDiff * (matDiff>0 ? 12 : 10);
+
+  // Endgame: CYAN kings hunt remaining RED pieces
+  if(rP<=4 && cK>0){
+    for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+      if(g[r][c]===CK){
+        let minD=99;
+        for(let r2=0;r2<8;r2++) for(let c2=0;c2<8;c2++){
+          if(g[r2][c2]===RED||g[r2][c2]===RK){
+            const d=Math.abs(r-r2)+Math.abs(c-c2); if(d<minD) minD=d;
+          }
+        }
+        score+=Math.max(0,(14-minD)*4);
+      }
+    }
+  }
+  // Mobility
+  score += (allMovesG(g,CYAN).length - allMovesG(g,RED).length)*3;
+  return score;
+}
+
+// ── Quiescence (resolves captures at leaf to avoid horizon effect) ─────────────
+function quiesce(g,alpha,beta,t){
+  const stand = t===CYAN ? evalG(g) : -evalG(g);
+  if(stand>=beta) return beta;
+  if(stand>alpha) alpha=stand;
+  const caps=allMovesG(g,t).filter(m=>m.captures.length>0);
+  const nt=t===RED?CYAN:RED;
+  for(const m of caps){
+    const u=applyG(g,m);
+    const s=-quiesce(g,-beta,-alpha,nt);
+    undoG(g,m,u);
+    if(s>=beta) return beta;
+    if(s>alpha) alpha=s;
+  }
+  return alpha;
+}
+
+// ── Negamax alpha-beta ────────────────────────────────────────────────────────
+function negamax(g,depth,alpha,beta,t){
+  if(Date.now()>aiDeadline) throw 'timeout';
+  const rc=countG(g,RED), cc=countG(g,CYAN);
+  if(!cc) return  INF;   // CYAN wins (caller is CYAN perspective = good)
+  if(!rc) return -INF;   // RED wins
+  const moves=allMovesG(g,t);
+  if(!moves.length) return -INF;
+  if(depth<=0) return quiesce(g,alpha,beta,t);
+  // Move ordering: captures first, then moves toward centre
+  moves.sort((a,b)=>b.captures.length-a.captures.length);
+  const nt=t===RED?CYAN:RED;
+  for(const m of moves){
+    const u=applyG(g,m);
+    const s = t===CYAN
+      ? -negamax(g,depth-1,-beta,-alpha,nt)
+      :  negamax(g,depth-1, alpha, beta,nt);   // keep sign convention
+    undoG(g,m,u);
+    if(t===CYAN){
+      if(s>=beta) return beta;
+      if(s>alpha) alpha=s;
+    } else {
+      if(s<=-beta) return beta;  // won't happen — just for safety
+      alpha=s; // we track from CYAN POV throughout
+    }
+  }
+  return alpha;
+}
+
+// Cleaner negamax — pure negamax where every call is from current player's POV
+function nm(g,depth,alpha,beta,t){
+  if(Date.now()>aiDeadline) throw 'timeout';
+  const rc=countG(g,RED), cc=countG(g,CYAN);
+  if(!cc) return t===CYAN ?  INF : -INF;
+  if(!rc) return t===CYAN ? -INF :  INF;
+  const moves=allMovesG(g,t);
+  if(!moves.length) return -INF;
+  if(depth<=0) return t===CYAN ? quiesce(g,alpha,beta,t) : -quiesce(g,-beta,-alpha,t===RED?CYAN:RED);
+  moves.sort((a,b)=>b.captures.length-a.captures.length);
+  const nt=t===RED?CYAN:RED;
+  let best=-INF;
+  for(const m of moves){
+    const u=applyG(g,m);
+    const s=-nm(g,depth-1,-beta,-alpha,nt);
+    undoG(g,m,u);
+    if(s>best) best=s;
+    if(s>alpha) alpha=s;
+    if(alpha>=beta) break;
+  }
+  return best;
+}
+
+// ── Iterative deepening root (synchronous, time-bounded) ─────────────────────
+function aiPickMove(g){
+  const moves=allMovesG(g,CYAN);
+  if(!moves.length) return null;
+  if(moves.length===1) return moves[0];
+
+  aiDeadline = Date.now() + TIME_LIMIT;
+  let bestMove = moves[0];
+
+  for(let depth=1; depth<=16; depth++){
+    // Sort by previous iteration score (best-first — improves pruning a lot)
+    moves.sort((a,b)=>( (b._score||0)-(a._score||0) ));
+    let alpha=-INF, iterBest=null, timedOut=false;
+    try{
+      for(const m of moves){
+        const u=applyG(g,m);
+        const s=-nm(g,depth-1,-INF,-alpha,RED);
+        undoG(g,m,u);
+        m._score=s;
+        if(s>alpha){ alpha=s; iterBest=m; }
+      }
+    } catch(e){ timedOut=true; }
+    if(iterBest) bestMove=iterBest;
+    if(timedOut) break;
+    if(alpha>=INF*0.9) break; // forced win found
+  }
+  return bestMove;
+}
+
+// ── CPU entry point ───────────────────────────────────────────────────────────
+function cpuGo(){
+  if(gameState!=='playing'){ cpuBusy=false; return; }
+  // Yield one frame so the "CPU thinking" UI text paints before we block
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      const g=clone(G);
+      const mv=aiPickMove(g);
+      cpuBusy=false;
+      if(!mv||gameState!=='playing') return;
+      selected={r:mv.fromR,c:mv.fromC};
+      doMove(mv);
+    });
+  });
+}
+
+/* ═══════════════════════ UI / FLOW ══════════════════════════ */
+function updateTurnUI(){
+  const el=document.getElementById('turn-text');
+  if(vsPC&&turn===CYAN){el.textContent='· CPU thinking (up to 3s) ·';el.style.color='rgba(0,255,204,.5)';}
+  else{el.textContent=`· ${turn===RED?'Red':'Cyan'}'s turn${mustCap?' — must capture':''} ·`;el.style.color=turn===RED?'rgba(255,51,102,.55)':'rgba(0,255,204,.55)';}
+}
+function updateCapsUI(){document.getElementById('cap-red').textContent=caps.r;document.getElementById('cap-cyan').textContent=caps.c;}
+function updateScoreUI(){document.getElementById('score-red').textContent=scores.r;document.getElementById('score-cyan').textContent=scores.c;}
+
+function initGrid(){
+  G=[];
+  for(let r=0;r<8;r++){G[r]=[];for(let c=0;c<8;c++){const dark=(r+c)%2===1;G[r][c]=dark&&r<3?CYAN:dark&&r>4?RED:EMPTY;}}
+}
+function startGame(){
+  initGrid(); turn=RED; selected=null; validMoves=[]; chain=null;
+  cpuBusy=false; dragging=false; caps={r:0,c:0}; mustCap=false; gameState='playing';
+  hideGhost(); buildSquares(); resize();
+  updateCapsUI(); updateTurnUI(); updateScoreUI();
+  document.getElementById('overlay').style.display='none';
+}
+function endGame(w){
+  gameState='over';
+  if(w===RED) scores.r++; else scores.c++;
+  updateScoreUI(); setTimeout(()=>showEnd(w),500);
+}
+function showEnd(w){
+  const ov=document.getElementById('overlay'); ov.innerHTML='';
+  const h=document.createElement('h1'); h.textContent=w===RED?'RED WINS!':'CYAN WINS!';
+  const r=document.createElement('div'); r.className='result-text '+(w===RED?'red-win':'cyan-win');
+  r.textContent=vsPC?(w===CYAN?'CPU wins this round':'You beat the CPU!'):(w===RED?'Red takes it':'Cyan takes it');
+  const s=document.createElement('div'); s.className='sub'; s.textContent='Tap to play again';
+  ov.appendChild(h); ov.appendChild(r); ov.appendChild(s); ov.style.display='flex';
+}
+
+const ov=document.getElementById('overlay');
+ov.addEventListener('click',()=>{if(gameState==='idle'||gameState==='over')startGame();});
+ov.addEventListener('touchend',e=>{e.preventDefault();if(gameState==='idle'||gameState==='over')startGame();},{passive:false});
+
+document.getElementById('btn-2p').addEventListener('click',()=>setMode(false));
+document.getElementById('btn-cpu').addEventListener('click',()=>setMode(true));
+function setMode(cpu){vsPC=cpu;document.getElementById('btn-2p').classList.toggle('active',!cpu);document.getElementById('btn-cpu').classList.toggle('active',cpu);if(gameState!=='idle')startGame();}
+
+/* ═══════════════════════ SPLASH ════════════════════════════ */
+(function(){
+  const s=document.getElementById('leon-splash');
+  setTimeout(()=>s.style.opacity='1',50);
+  setTimeout(()=>s.style.opacity='0',2800);
+  setTimeout(()=>{s.style.display='none';s.style.pointerEvents='none';},3700);
+})();
+</script>
+</body>
+</html>

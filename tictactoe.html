@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>TIC TAC TOE</title>
+<link rel="icon" href="favicon.png" type="image/png" />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    font-family: 'Share Tech Mono', monospace;
+    overflow: hidden;
+    touch-action: none;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,255,180,0.012) 2px,
+      rgba(0,255,180,0.012) 4px
+    );
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* Leon splash */
+  #leon-splash {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: #000; text-align: center;
+    gap: 14px; z-index: 9999;
+    opacity: 0; transition: opacity 0.8s ease;
+    pointer-events: none;
+  }
+  #leon-splash .ls-by {
+    font-size: 13px; color: rgba(0,255,255,0.5);
+    letter-spacing: 8px; text-transform: uppercase;
+  }
+  #leon-splash .ls-name {
+    font-size: 42px; color: #fff;
+    text-shadow: 0 0 20px #0ff, 0 0 60px #0ff;
+    letter-spacing: 4px;
+  }
+  #leon-splash .ls-name span {
+    color: #00ffcc;
+    text-shadow: 0 0 20px #00ffcc, 0 0 60px #00ffcc;
+  }
+
+  /* Back button */
+  #back-btn {
+    position: fixed; top: 16px; left: 16px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; letter-spacing: 3px;
+    color: rgba(0,255,255,0.5); text-decoration: none;
+    text-transform: uppercase;
+    border: 1px solid rgba(0,255,255,0.2);
+    padding: 6px 14px; border-radius: 4px;
+    z-index: 10000; transition: color 0.2s, border-color 0.2s;
+  }
+  #back-btn:hover { color: #0ff; border-color: #0ff; }
+
+  /* HUD */
+  #hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    width: 420px;
+    margin-bottom: 10px;
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
+  .hud-block { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+  .hud-block.center { align-items: center; }
+  .hud-block.right { align-items: flex-end; }
+  .hud-label {
+    font-size: 10px; letter-spacing: 5px;
+    color: rgba(0,255,255,0.4); text-transform: uppercase;
+  }
+  .hud-value {
+    font-size: 36px; color: #fff;
+    text-shadow: 0 0 15px #0ff, 0 0 35px #0ff;
+    letter-spacing: 3px;
+  }
+  .hud-value.x-color {
+    color: #fff;
+    text-shadow: 0 0 15px #ff00cc, 0 0 35px #ff00cc;
+  }
+  .hud-value.o-color {
+    color: #fff;
+    text-shadow: 0 0 15px #00ffcc, 0 0 35px #00ffcc;
+  }
+
+  /* Game wrapper */
+  #game-wrapper {
+    position: relative;
+  }
+
+  /* Board */
+  #board-container {
+    position: relative;
+    width: 420px;
+    height: 420px;
+    border: 1px solid rgba(0,255,255,0.2);
+    box-shadow:
+      0 0 30px rgba(0,255,255,0.12),
+      0 0 80px rgba(0,255,255,0.04);
+    border-radius: 2px;
+    background: #020a0a;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  /* Grid lines */
+  #board-container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      /* Vertical lines */
+      linear-gradient(90deg, transparent calc(33.33% - 1px), rgba(0,255,255,0.25) calc(33.33% - 1px), rgba(0,255,255,0.25) calc(33.33% + 1px), transparent calc(33.33% + 1px)),
+      linear-gradient(90deg, transparent calc(66.66% - 1px), rgba(0,255,255,0.25) calc(66.66% - 1px), rgba(0,255,255,0.25) calc(66.66% + 1px), transparent calc(66.66% + 1px)),
+      /* Horizontal lines */
+      linear-gradient(180deg, transparent calc(33.33% - 1px), rgba(0,255,255,0.25) calc(33.33% - 1px), rgba(0,255,255,0.25) calc(33.33% + 1px), transparent calc(33.33% + 1px)),
+      linear-gradient(180deg, transparent calc(66.66% - 1px), rgba(0,255,255,0.25) calc(66.66% - 1px), rgba(0,255,255,0.25) calc(66.66% + 1px), transparent calc(66.66% + 1px));
+    pointer-events: none;
+    z-index: 1;
+    box-shadow:
+      inset 33.33% 0 0 rgba(0,255,255,0.05),
+      inset 66.66% 0 0 rgba(0,255,255,0.05);
+  }
+
+  /* Subtle dot grid background */
+  #board-container::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(0,255,255,0.06) 1px, transparent 1px);
+    background-size: 30px 30px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Grid SVG canvas */
+  #grid-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+  }
+
+  /* Cells */
+  .cell {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 3;
+    transition: background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cell:hover:not(.taken) {
+    background: rgba(0,255,255,0.04);
+  }
+  .cell.taken { cursor: default; }
+
+  /* Overlay */
+  #overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.82);
+    text-align: center;
+    z-index: 20;
+    gap: 12px;
+  }
+  #overlay h1 {
+    font-size: 52px; color: #fff;
+    text-shadow: 0 0 20px #0ff, 0 0 60px #0ff;
+    letter-spacing: 14px; text-transform: uppercase;
+  }
+  #overlay .sub {
+    font-size: 13px; color: #0ff;
+    opacity: 0.65; letter-spacing: 5px;
+    animation: blink 1.2s step-start infinite;
+  }
+  #overlay .result-text {
+    font-size: 18px; letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+  #overlay .result-text.x-win {
+    color: #ff00cc;
+    text-shadow: 0 0 15px #ff00cc, 0 0 40px #ff00cc;
+  }
+  #overlay .result-text.o-win {
+    color: #00ffcc;
+    text-shadow: 0 0 15px #00ffcc, 0 0 40px #00ffcc;
+  }
+  #overlay .result-text.draw {
+    color: #ffff00;
+    text-shadow: 0 0 15px #ffff00, 0 0 40px #ffff00;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 0.65; }
+    50% { opacity: 0; }
+  }
+
+  /* Turn indicator */
+  #turn-indicator {
+    margin-top: 12px;
+    font-size: 11px;
+    color: rgba(0,255,255,0.3);
+    letter-spacing: 5px;
+    text-align: center;
+    text-transform: uppercase;
+    width: 420px;
+    height: 20px;
+    transition: color 0.3s;
+  }
+
+  /* Mode selector */
+  #mode-selector {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+  }
+  .mode-btn {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: rgba(0,255,255,0.4);
+    background: transparent;
+    border: 1px solid rgba(0,255,255,0.2);
+    padding: 7px 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mode-btn:hover, .mode-btn.active {
+    color: #0ff;
+    border-color: #0ff;
+    box-shadow: 0 0 10px rgba(0,255,255,0.2);
+  }
+
+  /* Win line animation */
+  .win-line {
+    stroke-dasharray: 600;
+    stroke-dashoffset: 600;
+    animation: drawLine 0.4s ease forwards;
+  }
+  @keyframes drawLine {
+    to { stroke-dashoffset: 0; }
+  }
+
+  /* Symbol animations */
+  @keyframes popIn {
+    0% { transform: scale(0.4); opacity: 0; }
+    70% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .symbol-anim {
+    animation: popIn 0.25s ease forwards;
+  }
+
+  /* MOBILE */
+  @media (max-width: 520px) {
+    #hud, #turn-indicator, #mode-selector { width: 92vw !important; }
+    #board-container { width: 92vw !important; height: 92vw !important; }
+    #hud { margin-bottom: 8px; }
+    .hud-value { font-size: 28px; }
+    #overlay h1 { font-size: 36px; letter-spacing: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="leon-splash">
+  <div class="ls-by">A game by</div>
+  <div class="ls-name"><span>Leon Dudhill</span></div>
+</div>
+
+<a href="games.html" id="back-btn">← Back</a>
+
+<!-- HUD -->
+<div id="hud">
+  <div class="hud-block">
+    <span class="hud-label">X Wins</span>
+    <span class="hud-value x-color" id="score-x">0</span>
+  </div>
+  <div class="hud-block center">
+    <span class="hud-label">Draws</span>
+    <span class="hud-value" id="score-draw">0</span>
+  </div>
+  <div class="hud-block right">
+    <span class="hud-label">O Wins</span>
+    <span class="hud-value o-color" id="score-o">0</span>
+  </div>
+</div>
+
+<!-- Board -->
+<div id="game-wrapper">
+  <div id="board-container">
+    <svg id="grid-svg" viewBox="0 0 420 420" xmlns="http://www.w3.org/2000/svg"></svg>
+    <!-- Cells inserted by JS -->
+  </div>
+
+  <!-- Overlay -->
+  <div id="overlay">
+    <h1>TIC TAC TOE</h1>
+    <div class="sub" id="start-hint">Tap to start</div>
+  </div>
+</div>
+
+<!-- Turn / Mode -->
+<div id="turn-indicator">&nbsp;</div>
+<div id="mode-selector">
+  <button class="mode-btn active" id="btn-2p" ontouchstart="">2 Player</button>
+  <button class="mode-btn" id="btn-cpu" ontouchstart="">vs CPU</button>
+</div>
+
+<script>
+// ── State ────────────────────────────────────────────────────────────────────
+const WINS = [
+  [0,1,2],[3,4,5],[6,7,8], // rows
+  [0,3,6],[1,4,7],[2,5,8], // cols
+  [0,4,8],[2,4,6]          // diagonals
+];
+
+let board = Array(9).fill(null);
+let currentPlayer = 'X';
+let gameState = 'idle'; // idle, playing, over
+let scores = { X: 0, O: 0, D: 0 };
+let vsComputer = false;
+let cpuThinking = false;
+
+const svg = document.getElementById('grid-svg');
+const overlay = document.getElementById('overlay');
+const startHint = document.getElementById('start-hint');
+const turnEl = document.getElementById('turn-indicator');
+const boardEl = document.getElementById('board-container');
+
+// ── Build cells ──────────────────────────────────────────────────────────────
+const cells = [];
+for (let i = 0; i < 9; i++) {
+  const div = document.createElement('div');
+  div.classList.add('cell');
+  const row = Math.floor(i / 3), col = i % 3;
+  div.style.cssText = `width:33.33%;height:33.33%;left:${col*33.33}%;top:${row*33.33}%;`;
+  div.dataset.index = i;
+  boardEl.appendChild(div);
+  cells.push(div);
+}
+
+// ── Mode buttons ─────────────────────────────────────────────────────────────
+document.getElementById('btn-2p').addEventListener('click', () => setMode(false));
+document.getElementById('btn-cpu').addEventListener('click', () => setMode(true));
+function setMode(cpu) {
+  vsComputer = cpu;
+  document.getElementById('btn-2p').classList.toggle('active', !cpu);
+  document.getElementById('btn-cpu').classList.toggle('active', cpu);
+  if (gameState !== 'idle') resetGame();
+}
+
+// ── Cell interaction ─────────────────────────────────────────────────────────
+function addCellListeners() {
+  cells.forEach(cell => {
+    cell.addEventListener('click', () => handleCellClick(parseInt(cell.dataset.index)));
+    cell.addEventListener('touchend', e => { e.preventDefault(); handleCellClick(parseInt(cell.dataset.index)); }, { passive: false });
+  });
+}
+addCellListeners();
+
+function handleCellClick(i) {
+  if (gameState !== 'playing') return;
+  if (board[i] !== null) return;
+  if (cpuThinking) return;
+  placeSymbol(i);
+}
+
+function placeSymbol(i) {
+  board[i] = currentPlayer;
+  cells[i].classList.add('taken');
+  drawSymbol(i, currentPlayer);
+  const result = checkResult();
+  if (result) { endGame(result); return; }
+  currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+  updateTurnIndicator();
+  if (vsComputer && currentPlayer === 'O') { cpuThinking = true; setTimeout(cpuMove, 380); }
+}
+
+// ── Symbols ───────────────────────────────────────────────────────────────────
+function drawSymbol(i, player) {
+  const row = Math.floor(i / 3), col = i % 3;
+  const cx = col * 140 + 70, cy = row * 140 + 70;
+  const pad = 34;
+
+  let el;
+  if (player === 'X') {
+    el = document.createElementNS('http://www.w3.org/2000/svg','g');
+    el.setAttribute('class','symbol-anim');
+    el.setAttribute('transform-origin',`${cx} ${cy}`);
+    const l1 = document.createElementNS('http://www.w3.org/2000/svg','line');
+    l1.setAttribute('x1', cx-pad); l1.setAttribute('y1', cy-pad);
+    l1.setAttribute('x2', cx+pad); l1.setAttribute('y2', cy+pad);
+    l1.setAttribute('stroke','#ff00cc'); l1.setAttribute('stroke-width','5');
+    l1.setAttribute('stroke-linecap','round');
+    const l2 = document.createElementNS('http://www.w3.org/2000/svg','line');
+    l2.setAttribute('x1', cx+pad); l2.setAttribute('y1', cy-pad);
+    l2.setAttribute('x2', cx-pad); l2.setAttribute('y2', cy+pad);
+    l2.setAttribute('stroke','#ff00cc'); l2.setAttribute('stroke-width','5');
+    l2.setAttribute('stroke-linecap','round');
+    // Glow filter
+    const g1 = l1.cloneNode(); g1.setAttribute('stroke','rgba(255,0,204,0.3)'); g1.setAttribute('stroke-width','12');
+    const g2 = l2.cloneNode(); g2.setAttribute('stroke','rgba(255,0,204,0.3)'); g2.setAttribute('stroke-width','12');
+    el.appendChild(g1); el.appendChild(g2); el.appendChild(l1); el.appendChild(l2);
+  } else {
+    el = document.createElementNS('http://www.w3.org/2000/svg','g');
+    el.setAttribute('class','symbol-anim');
+    el.setAttribute('transform-origin',`${cx} ${cy}`);
+    const cg = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    cg.setAttribute('cx', cx); cg.setAttribute('cy', cy); cg.setAttribute('r', pad+4);
+    cg.setAttribute('fill','none'); cg.setAttribute('stroke','rgba(0,255,204,0.25)'); cg.setAttribute('stroke-width','14');
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', pad);
+    c.setAttribute('fill','none'); c.setAttribute('stroke','#00ffcc'); c.setAttribute('stroke-width','5');
+    el.appendChild(cg); el.appendChild(c);
+  }
+  svg.appendChild(el);
+}
+
+// ── Check result ──────────────────────────────────────────────────────────────
+function checkResult() {
+  for (const combo of WINS) {
+    const [a,b,c] = combo;
+    if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+      return { winner: board[a], combo };
+    }
+  }
+  if (board.every(v => v !== null)) return { winner: null }; // draw
+  return null;
+}
+
+// ── Win line ──────────────────────────────────────────────────────────────────
+function drawWinLine(combo) {
+  const [a, c2] = [combo[0], combo[2]];
+  const toCoord = idx => ({ x: (idx%3)*140+70, y: Math.floor(idx/3)*140+70 });
+  const p1 = toCoord(a), p2 = toCoord(c2);
+
+  // Glow
+  const lg = document.createElementNS('http://www.w3.org/2000/svg','line');
+  lg.setAttribute('x1',p1.x); lg.setAttribute('y1',p1.y);
+  lg.setAttribute('x2',p2.x); lg.setAttribute('y2',p2.y);
+  lg.setAttribute('stroke',currentPlayer==='X'?'rgba(255,0,204,0.35)':'rgba(0,255,204,0.35)');
+  lg.setAttribute('stroke-width','16'); lg.setAttribute('stroke-linecap','round');
+  lg.setAttribute('class','win-line');
+
+  const l = document.createElementNS('http://www.w3.org/2000/svg','line');
+  l.setAttribute('x1',p1.x); l.setAttribute('y1',p1.y);
+  l.setAttribute('x2',p2.x); l.setAttribute('y2',p2.y);
+  l.setAttribute('stroke',currentPlayer==='X'?'#ff00cc':'#00ffcc');
+  l.setAttribute('stroke-width','4'); l.setAttribute('stroke-linecap','round');
+  l.setAttribute('class','win-line');
+
+  svg.appendChild(lg); svg.appendChild(l);
+}
+
+// ── CPU (minimax) ─────────────────────────────────────────────────────────────
+function cpuMove() {
+  cpuThinking = false;
+  if (gameState !== 'playing') return;
+  const best = bestMove();
+  placeSymbol(best);
+}
+
+function bestMove() {
+  // Try to win, block, else minimax
+  let best = -Infinity, move = -1;
+  for (let i = 0; i < 9; i++) {
+    if (!board[i]) {
+      board[i] = 'O';
+      const score = minimax(board, 0, false, -Infinity, Infinity);
+      board[i] = null;
+      if (score > best) { best = score; move = i; }
+    }
+  }
+  return move;
+}
+
+function minimax(b, depth, isMax, alpha, beta) {
+  const r = checkResult();
+  if (r) {
+    if (r.winner === 'O') return 10 - depth;
+    if (r.winner === 'X') return depth - 10;
+    return 0;
+  }
+  if (isMax) {
+    let best = -Infinity;
+    for (let i = 0; i < 9; i++) {
+      if (!b[i]) { b[i]='O'; best=Math.max(best,minimax(b,depth+1,false,alpha,beta)); b[i]=null; alpha=Math.max(alpha,best); if(beta<=alpha)break; }
+    }
+    return best;
+  } else {
+    let best = Infinity;
+    for (let i = 0; i < 9; i++) {
+      if (!b[i]) { b[i]='X'; best=Math.min(best,minimax(b,depth+1,true,alpha,beta)); b[i]=null; beta=Math.min(beta,best); if(beta<=alpha)break; }
+    }
+    return best;
+  }
+}
+
+// ── Game flow ─────────────────────────────────────────────────────────────────
+function startGame() {
+  gameState = 'playing';
+  board = Array(9).fill(null);
+  currentPlayer = 'X';
+  cpuThinking = false;
+  cells.forEach(c => c.classList.remove('taken'));
+  // Clear SVG symbols
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  overlay.style.display = 'none';
+  updateTurnIndicator();
+}
+
+function resetGame() {
+  startGame();
+}
+
+function endGame(result) {
+  gameState = 'over';
+  turnEl.textContent = '';
+  if (result.winner) {
+    drawWinLine(result.combo);
+    scores[result.winner]++;
+    updateScores();
+    setTimeout(() => showOverlay(result.winner), 600);
+  } else {
+    scores.D++;
+    updateScores();
+    setTimeout(() => showDrawOverlay(), 300);
+  }
+}
+
+function showOverlay(winner) {
+  overlay.innerHTML = '';
+  const h = document.createElement('h1');
+  h.textContent = winner === 'X' ? 'X WINS!' : 'O WINS!';
+  const r = document.createElement('div');
+  r.classList.add('result-text', winner === 'X' ? 'x-win' : 'o-win');
+  r.textContent = vsComputer && winner === 'O' ? 'CPU wins this round' : `Player ${winner} takes it`;
+  const s = document.createElement('div');
+  s.classList.add('sub'); s.textContent = 'Tap to play again';
+  overlay.appendChild(h); overlay.appendChild(r); overlay.appendChild(s);
+  overlay.style.display = 'flex';
+}
+
+function showDrawOverlay() {
+  overlay.innerHTML = '';
+  const h = document.createElement('h1');
+  h.style.fontSize = '42px'; h.textContent = "IT'S A DRAW";
+  const r = document.createElement('div');
+  r.classList.add('result-text','draw'); r.textContent = 'Nobody wins this time';
+  const s = document.createElement('div');
+  s.classList.add('sub'); s.textContent = 'Tap to play again';
+  overlay.appendChild(h); overlay.appendChild(r); overlay.appendChild(s);
+  overlay.style.display = 'flex';
+}
+
+function updateTurnIndicator() {
+  if (vsComputer && currentPlayer === 'O') {
+    turnEl.textContent = '· CPU thinking ·';
+    turnEl.style.color = 'rgba(0,255,204,0.5)';
+  } else {
+    turnEl.textContent = `· Player ${currentPlayer}'s turn ·`;
+    turnEl.style.color = currentPlayer === 'X' ? 'rgba(255,0,204,0.5)' : 'rgba(0,255,204,0.5)';
+  }
+}
+
+function updateScores() {
+  document.getElementById('score-x').textContent = scores.X;
+  document.getElementById('score-o').textContent = scores.O;
+  document.getElementById('score-draw').textContent = scores.D;
+}
+
+// ── Overlay tap / click ───────────────────────────────────────────────────────
+overlay.addEventListener('click', handleOverlayTap);
+overlay.addEventListener('touchend', e => { e.preventDefault(); handleOverlayTap(); }, { passive: false });
+
+function handleOverlayTap() {
+  if (gameState === 'idle' || gameState === 'over') startGame();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+updateScores();
+
+// Leon splash
+(function(){
+  const s = document.getElementById('leon-splash');
+  setTimeout(() => s.style.opacity = '1', 50);
+  setTimeout(() => s.style.opacity = '0', 2800);
+  setTimeout(() => { s.style.display = 'none'; s.style.pointerEvents = 'none'; }, 3700);
+})();
+</script>
+</body>
+</html>
