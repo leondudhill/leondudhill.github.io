@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MovieAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #212121;
+  --sidebar-bg: #171717;
+  --white: #ffffff;
+  --text: #ececec;
+  --text2: #8e8ea0;
+  --text3: #c5c5d2;
+  --border: #2d2d2d;
+  --hover: #2a2a2a;
+  --hover2: #3a3a3a;
+  --accent: #10a37f;
+  --accent-hover: #0d8f6e;
+  --accent-dim: rgba(16,163,127,0.12);
+  --user-bubble: #2f2f2f;
+  --ai-bg: transparent;
+  --input-bg: #2f2f2f;
+  --input-border: #3d3d3d;
+  --shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+body {
+  font-family: 'Sora', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+}
+
+/* ===== SPLASH ===== */
+#splash {
+  position: fixed; inset: 0;
+  background: #171717;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 9999; opacity: 1;
+  transition: opacity 0.6s ease;
+}
+#splash.fade-out { opacity: 0; pointer-events: none; }
+#splash.hidden { display: none; }
+.splash-icon {
+  width: 64px; height: 64px; border-radius: 16px;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 20px;
+}
+.splash-icon svg { width: 36px; height: 36px; color: white; }
+.splash-title { font-size: 32px; font-weight: 700; color: var(--white); margin-bottom: 6px; }
+.splash-by { font-size: 13px; color: var(--text2); margin-top: 12px; }
+.splash-name { font-size: 17px; font-weight: 600; color: var(--text3); margin-top: 4px; }
+.splash-dots { display: flex; gap: 8px; margin-top: 24px; }
+.splash-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: sdot 1.2s ease-in-out infinite; }
+.splash-dot:nth-child(2){animation-delay:0.2s;background:#7c3aed}
+.splash-dot:nth-child(3){animation-delay:0.4s;background:#2563eb}
+.splash-dot:nth-child(4){animation-delay:0.6s;background:#db2777}
+@keyframes sdot{0%,80%,100%{transform:scale(0.6);opacity:0.3}40%{transform:scale(1.2);opacity:1}}
+
+/* ===== SIDEBAR ===== */
+#sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  border-right: 1px solid var(--border);
+  transition: width 0.2s;
+  overflow: hidden;
+}
+
+.sidebar-top {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 4px 12px;
+}
+.new-chat-btn {
+  flex: 1; display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 8px;
+  background: none; border: none; cursor: pointer;
+  color: var(--text); font-size: 14px; font-weight: 500;
+  font-family: 'Sora', sans-serif;
+  transition: background 0.15s;
+  text-align: left;
+}
+.new-chat-btn:hover { background: var(--hover2); }
+.new-chat-btn svg { flex-shrink: 0; color: var(--text2); }
+.sidebar-icon-btn {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: none; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text2); transition: background 0.15s;
+}
+.sidebar-icon-btn:hover { background: var(--hover2); color: var(--text); }
+
+.sidebar-section-label {
+  font-size: 11px; font-weight: 600; color: var(--text2);
+  text-transform: uppercase; letter-spacing: 0.8px;
+  padding: 8px 12px 4px;
+}
+
+.chat-history { flex: 1; overflow-y: auto; }
+.chat-history::-webkit-scrollbar { width: 4px; }
+.chat-history::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.history-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border-radius: 8px;
+  cursor: pointer; font-size: 13px; color: var(--text3);
+  transition: background 0.1s;
+  border: none; background: none; width: 100%;
+  text-align: left; font-family: 'Sora', sans-serif;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.history-item:hover { background: var(--hover); }
+.history-item.active { background: var(--hover2); color: var(--text); }
+.history-item svg { flex-shrink: 0; color: var(--text2); width: 14px; height: 14px; }
+
+.sidebar-bottom {
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  margin-top: 8px;
+}
+.sidebar-bottom-btn {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 8px;
+  background: none; border: none; cursor: pointer;
+  color: var(--text3); font-size: 13px;
+  font-family: 'Sora', sans-serif;
+  transition: background 0.15s; width: 100%; text-align: left;
+}
+.sidebar-bottom-btn:hover { background: var(--hover2); color: var(--text); }
+.sidebar-bottom-btn svg { color: var(--text2); flex-shrink: 0; }
+
+/* ===== MAIN ===== */
+#main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Topbar */
+#topbar {
+  display: flex; align-items: center;
+  padding: 12px 16px; gap: 8px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.model-selector {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 8px;
+  background: none; border: none; cursor: pointer;
+  color: var(--text); font-size: 14px; font-weight: 600;
+  font-family: 'Sora', sans-serif;
+  transition: background 0.15s;
+}
+.model-selector:hover { background: var(--hover2); }
+.model-selector svg { color: var(--text2); }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.customize-topbar-btn {
+  font-size: 13px; font-weight: 500; color: var(--text2);
+  background: none; border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px 14px; cursor: pointer;
+  font-family: 'Sora', sans-serif; transition: all 0.15s;
+}
+.customize-topbar-btn:hover { color: var(--text); border-color: var(--hover2); background: var(--hover); }
+.share-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 8px;
+  background: var(--hover2); border: none; cursor: pointer;
+  color: var(--text); font-size: 13px; font-weight: 500;
+  font-family: 'Sora', sans-serif; transition: background 0.15s;
+}
+.share-btn:hover { background: var(--hover2); }
+
+/* ===== CHAT AREA ===== */
+#chat-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 0;
+  scroll-behavior: smooth;
+}
+#chat-area::-webkit-scrollbar { width: 6px; }
+#chat-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 6px; }
+
+/* Welcome screen */
+#welcome-screen {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  height: 100%; padding: 24px;
+  text-align: center;
+}
+.welcome-icon {
+  width: 56px; height: 56px; border-radius: 14px;
+  background: var(--accent); display: flex;
+  align-items: center; justify-content: center;
+  margin-bottom: 20px;
+}
+.welcome-icon svg { width: 32px; height: 32px; color: white; }
+.welcome-title {
+  font-size: 28px; font-weight: 700; color: var(--white);
+  margin-bottom: 8px;
+}
+.welcome-subtitle { font-size: 15px; color: var(--text2); margin-bottom: 32px; max-width: 400px; line-height: 1.6; }
+.suggestion-chips {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; max-width: 520px; width: 100%;
+}
+.chip {
+  background: var(--user-bubble); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 16px;
+  text-align: left; cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.chip:hover { background: var(--hover2); border-color: var(--hover2); }
+.chip-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.chip-sub { font-size: 12px; color: var(--text2); }
+
+/* Messages */
+#messages-container { display: none; }
+.message-row {
+  max-width: 760px; margin: 0 auto;
+  padding: 12px 24px;
+  display: flex; flex-direction: column;
+  gap: 4px;
+}
+.message-row.user { align-items: flex-end; }
+.message-row.ai { align-items: flex-start; }
+
+.message-bubble {
+  max-width: 85%;
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-size: 15px; line-height: 1.65;
+  white-space: pre-wrap; word-wrap: break-word;
+}
+.message-row.user .message-bubble {
+  background: var(--user-bubble);
+  border-radius: 16px 16px 4px 16px;
+  color: var(--text);
+}
+.message-row.ai .message-bubble {
+  background: transparent;
+  border-radius: 16px 16px 16px 4px;
+  color: var(--text);
+  padding: 12px 0;
+  max-width: 100%;
+}
+
+.ai-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 8px;
+}
+.ai-icon {
+  width: 28px; height: 28px; border-radius: 7px;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.ai-icon svg { width: 16px; height: 16px; color: white; }
+.ai-name { font-size: 13px; font-weight: 600; color: var(--text3); }
+
+.message-actions {
+  display: flex; gap: 4px;
+  margin-top: 6px; padding-left: 38px;
+  opacity: 0; transition: opacity 0.15s;
+}
+.message-row:hover .message-actions { opacity: 1; }
+.msg-action-btn {
+  width: 28px; height: 28px; border-radius: 6px;
+  background: none; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text2); transition: background 0.1s, color 0.1s;
+}
+.msg-action-btn:hover { background: var(--hover2); color: var(--text); }
+.msg-action-btn svg { width: 15px; height: 15px; }
+
+/* Typing indicator */
+.typing-indicator {
+  display: flex; gap: 5px; align-items: center;
+  padding: 12px 0;
+}
+.typing-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--text2);
+  animation: typing 1.4s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typing { 0%,80%,100%{transform:scale(0.6);opacity:0.4} 40%{transform:scale(1);opacity:1} }
+
+/* ===== INPUT AREA ===== */
+#input-area {
+  padding: 16px 24px 20px;
+  flex-shrink: 0;
+}
+.input-wrapper {
+  max-width: 760px; margin: 0 auto;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 16px;
+  display: flex; flex-direction: column;
+  transition: border-color 0.2s;
+  overflow: hidden;
+}
+.input-wrapper:focus-within { border-color: var(--hover2); }
+.input-top {
+  display: flex; align-items: flex-end; gap: 8px;
+  padding: 12px 14px 8px;
+}
+textarea#chat-input {
+  flex: 1; background: none; border: none; outline: none;
+  font-size: 15px; font-family: 'Sora', sans-serif;
+  color: var(--text); resize: none;
+  max-height: 200px; line-height: 1.6;
+  padding: 2px 0;
+}
+textarea#chat-input::placeholder { color: var(--text2); }
+.send-btn {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: var(--accent); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: white; flex-shrink: 0;
+  transition: background 0.15s, opacity 0.15s;
+}
+.send-btn:hover { background: var(--accent-hover); }
+.send-btn:disabled { background: var(--hover2); opacity: 0.5; cursor: default; }
+.send-btn svg { width: 18px; height: 18px; }
+.input-bottom {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 10px 10px;
+}
+.input-bottom-btn {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 10px; border-radius: 8px;
+  background: none; border: none; cursor: pointer;
+  color: var(--text2); font-size: 12px; font-weight: 500;
+  font-family: 'Sora', sans-serif; transition: background 0.1s;
+}
+.input-bottom-btn:hover { background: var(--hover2); color: var(--text); }
+.input-bottom-btn svg { width: 15px; height: 15px; }
+.input-disclaimer {
+  margin-left: auto; font-size: 11px; color: var(--text2);
+}
+
+/* ===== CUSTOMISE MODAL ===== */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7); z-index: 1000;
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: #1e1e1e; border-radius: 16px;
+  width: 700px; max-width: 95vw; max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+  border: 1px solid var(--border);
+}
+.modal::-webkit-scrollbar { width: 6px; }
+.modal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 6px; }
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; background: #1e1e1e; z-index: 1;
+}
+.modal-header h2 { font-size: 18px; font-weight: 700; color: var(--white); }
+.modal-close {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: none; border: none; cursor: pointer;
+  font-size: 20px; color: var(--text2);
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-close:hover { background: var(--hover2); color: var(--text); }
+.modal-body { padding: 20px 24px; }
+.modal-section { margin-bottom: 28px; }
+.modal-section h3 {
+  font-size: 13px; font-weight: 600; color: var(--text2);
+  text-transform: uppercase; letter-spacing: 0.8px;
+  margin-bottom: 14px; border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+.modal-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.modal-row label { font-size: 13px; color: var(--text2); font-weight: 500; }
+.modal-row input[type="text"],
+.modal-row input[type="url"],
+.modal-row textarea {
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 12px; font-size: 14px; font-family: 'Sora', sans-serif;
+  color: var(--text); width: 100%; outline: none; resize: vertical;
+  background: var(--input-bg);
+}
+.modal-row input:focus, .modal-row textarea:focus { border-color: var(--accent); }
+.modal-row-inline { display: flex; gap: 10px; }
+.modal-row-inline .modal-row { flex: 1; }
+.tabs-nav { display: flex; gap: 4px; margin-bottom: 20px; background: var(--sidebar-bg); padding: 4px; border-radius: 10px; }
+.tabs-nav-btn {
+  flex: 1; padding: 8px 12px; font-size: 13px; color: var(--text2); cursor: pointer;
+  border: none; background: none; border-radius: 8px;
+  font-family: 'Sora', sans-serif; font-weight: 500; text-align: center;
+  transition: all 0.15s;
+}
+.tabs-nav-btn:hover { color: var(--text); }
+.tabs-nav-btn.active { background: var(--hover2); color: var(--white); font-weight: 600; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.preset-card {
+  background: var(--user-bubble); border-radius: 10px; padding: 14px;
+  margin-bottom: 10px; border: 1px solid var(--border);
+  position: relative;
+}
+.preset-num { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+.enabled-toggle {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 10px;
+}
+.toggle-track {
+  width: 36px; height: 20px; border-radius: 10px;
+  background: var(--border); cursor: pointer;
+  position: relative; transition: background 0.2s; flex-shrink: 0;
+}
+.toggle-track.on { background: var(--accent); }
+.toggle-thumb {
+  position: absolute; top: 2px; left: 2px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: white; transition: left 0.2s;
+}
+.toggle-track.on .toggle-thumb { left: 18px; }
+.toggle-label { font-size: 13px; color: var(--text3); }
+.modal-footer {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 16px 24px; border-top: 1px solid var(--border);
+  position: sticky; bottom: 0; background: #1e1e1e;
+}
+.btn-cancel {
+  background: var(--hover2); border: none; border-radius: 8px;
+  padding: 9px 20px; font-size: 14px; cursor: pointer; color: var(--text);
+  font-family: 'Sora', sans-serif; font-weight: 500;
+}
+.btn-cancel:hover { background: var(--hover2); opacity: 0.85; }
+.btn-save {
+  background: var(--accent); border: none; border-radius: 8px;
+  padding: 9px 24px; font-size: 14px; color: white;
+  cursor: pointer; font-weight: 600; font-family: 'Sora', sans-serif;
+}
+.btn-save:hover { background: var(--accent-hover); }
+
+@media (max-width: 700px) {
+  #sidebar { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash" style="position:fixed;inset:0;background:#171717;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;opacity:1;transition:opacity 0.6s ease;">
+  <p style="font-family:sans-serif;font-size:14px;color:#ececec;opacity:0.6;margin-bottom:6px;letter-spacing:0.5px;">An App by</p>
+  <p style="font-family:sans-serif;font-size:26px;font-weight:700;color:#ececec;letter-spacing:-0.5px;">Leon Dudhill</p>
+  <div style="display:flex;gap:8px;margin-top:24px;"><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:#10a37f;animation-delay:0.0s"></div><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:#7c3aed;animation-delay:0.15s"></div><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:#2563eb;animation-delay:0.3s"></div><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:#db2777;animation-delay:0.44999999999999996s"></div></div>
+</div>
+
+
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sidebar-top">
+    <button class="new-chat-btn" onclick="newChat()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New chat
+    </button>
+    <button class="sidebar-icon-btn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </button>
+  </div>
+
+  <div class="sidebar-section-label">Today</div>
+  <div class="chat-history" id="chat-history"></div>
+
+  <div class="sidebar-bottom">
+    <button class="sidebar-bottom-btn" onclick="openCustomise()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      Customise MovieAI
+    </button>
+    <button class="sidebar-bottom-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span id="sidebar-username">Leon Dudhill</span>
+    </button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <div id="topbar">
+    <button class="model-selector">
+      <span id="model-name-display">MovieAI</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="topbar-right">
+      <button class="customize-topbar-btn" onclick="openCustomise()">Customise</button>
+      <button class="share-btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Share
+      </button>
+    </div>
+  </div>
+
+  <div id="chat-area">
+    <!-- Welcome -->
+    <div id="welcome-screen">
+      <div class="welcome-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/><circle cx="19" cy="5" r="3" fill="white" stroke="none"/></svg>
+      </div>
+      <div class="welcome-title" id="welcome-title">How can I help you?</div>
+      <div class="welcome-subtitle" id="welcome-subtitle">Ask me anything. I'm here to assist on set and beyond.</div>
+      <div class="suggestion-chips" id="suggestion-chips"></div>
+    </div>
+    <!-- Messages -->
+    <div id="messages-container"></div>
+  </div>
+
+  <div id="input-area">
+    <div class="input-wrapper">
+      <div class="input-top">
+        <textarea id="chat-input" placeholder="Message MovieAI" rows="1"
+          onkeydown="handleInputKey(event)"
+          oninput="autoResize(this)"></textarea>
+        <button class="send-btn" id="send-btn" onclick="sendMessage()" disabled>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+      </div>
+      <div class="input-bottom">
+        <button class="input-bottom-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+          Attach
+        </button>
+        <button class="input-bottom-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          Voice
+        </button>
+        <span class="input-disclaimer">MovieAI can make mistakes. Verify important info.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOMISE MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>⚙️ Customise MovieAI</h2>
+      <button class="modal-close" onclick="closeCustomise()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="tabs-nav">
+        <button class="tabs-nav-btn active" onclick="switchModalTab('general',this)">General</button>
+        <button class="tabs-nav-btn" onclick="switchModalTab('responses',this)">Responses</button>
+        <button class="tabs-nav-btn" onclick="switchModalTab('chips',this)">Suggestions</button>
+      </div>
+
+      <!-- GENERAL -->
+      <div id="modal-general" class="tab-content active">
+        <div class="modal-section">
+          <h3>Appearance</h3>
+          <div class="modal-row-inline">
+            <div class="modal-row"><label>App Name</label><input type="text" id="cfg-name" placeholder="MovieAI"></div>
+            <div class="modal-row"><label>Your Name</label><input type="text" id="cfg-username" placeholder="Leon Dudhill"></div>
+          </div>
+          <div class="modal-row"><label>Welcome Title</label><input type="text" id="cfg-welcome-title" placeholder="How can I help you?"></div>
+          <div class="modal-row"><label>Welcome Subtitle</label><input type="text" id="cfg-welcome-sub" placeholder="Ask me anything..."></div>
+          <div class="modal-row"><label>Input Placeholder</label><input type="text" id="cfg-input-placeholder" placeholder="Message MovieAI"></div>
+        </div>
+        <div class="modal-section">
+          <h3>Response Behaviour</h3>
+          <div class="modal-row"><label>Response cycle</label>
+            <select id="cfg-cycle" style="border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Sora',sans-serif;font-size:14px;color:var(--text);background:var(--input-bg);outline:none;width:100%">
+              <option value="sequential">Sequential — cycle through 1, 2, 3, 4, 5, repeat</option>
+              <option value="random">Random — pick a random response each time</option>
+              <option value="first">Always use Response 1 only</option>
+            </select>
+          </div>
+          <div class="modal-row"><label>Typing delay (ms)</label>
+            <input type="text" id="cfg-delay" placeholder="800">
+          </div>
+        </div>
+      </div>
+
+      <!-- RESPONSES -->
+      <div id="modal-responses" class="tab-content">
+        <div class="modal-section">
+          <h3>Preset Responses (up to 5)</h3>
+          <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">These are the responses MovieAI gives to any message. Toggle each one on or off. You can use line breaks — they'll appear formatted in chat.</p>
+          <div id="responses-editor"></div>
+        </div>
+      </div>
+
+      <!-- CHIPS -->
+      <div id="modal-chips" class="tab-content">
+        <div class="modal-section">
+          <h3>Suggestion Chips (shown on welcome screen)</h3>
+          <div id="chips-editor"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeCustomise()">Cancel</button>
+      <button class="btn-save" onclick="saveConfig()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DEFAULT CONFIG
+// ============================================================
+const DEFAULT_CONFIG = {
+  appName: 'MovieAI',
+  username: 'Leon Dudhill',
+  welcomeTitle: 'How can I help you today?',
+  welcomeSub: 'Ask me anything. I\'m here to assist on set and beyond.',
+  inputPlaceholder: 'Message MovieAI',
+  cycle: 'sequential',
+  typingDelay: 900,
+  responses: [
+    {
+      enabled: true,
+      text: `That's a great question! Based on the latest production schedule, shooting is proceeding on time. Stage 4 is booked through Friday, and the director has confirmed the revised shot list for tomorrow's call.\n\nIs there anything specific about the schedule you'd like me to look into?`
+    },
+    {
+      enabled: true,
+      text: `I've pulled up the relevant information for you.\n\nAccording to the script breakdown, scenes 14 through 22 are exterior shots requiring natural light. The weather report for Thursday indicates clear skies, so the production team should be able to proceed as planned.\n\nLet me know if you need anything else.`
+    },
+    {
+      enabled: true,
+      text: `Absolutely. Here's a quick summary:\n\n• Principal photography: 68% complete\n• Remaining shoot days: 12\n• Post-production start: estimated 3 weeks from now\n• Festival submission deadline: 14 weeks away\n\nEverything appears to be on track. Would you like a more detailed breakdown?`
+    },
+    {
+      enabled: true,
+      text: `I understand. That's something the production office can assist with directly.\n\nIn the meantime, I'd recommend checking the call sheet for today — it was distributed at 6am and includes updated contact information for all department heads.\n\nIs there anything else I can help clarify?`
+    },
+    {
+      enabled: true,
+      text: `Great thinking! Here are a few options to consider:\n\n1. Speak directly with the location manager — they have the most up-to-date information.\n2. Review the production bible, which covers all approved locations and access protocols.\n3. Check the shared drive under /Locations for the latest permits and maps.\n\nWould you like help with any of these?`
+    }
+  ],
+  chips: [
+    { title: 'What\'s on the call sheet?', sub: 'Today\'s schedule' },
+    { title: 'Summarise the script changes', sub: 'Latest revisions' },
+    { title: 'Who is the DP today?', sub: 'Crew info' },
+    { title: 'What\'s the weather on set?', sub: 'Location forecast' }
+  ]
+};
+
+// ============================================================
+// LOAD / SAVE
+// ============================================================
+function loadConfig() {
+  try {
+    const saved = localStorage.getItem('movieAIConfig');
+    if (saved) {
+      const p = JSON.parse(saved);
+      const m = Object.assign({}, JSON.parse(JSON.stringify(DEFAULT_CONFIG)), p);
+      if (!p.responses || p.responses.length < DEFAULT_CONFIG.responses.length) {
+        m.responses = DEFAULT_CONFIG.responses.map((d,i) => (p.responses&&p.responses[i]) ? p.responses[i] : d);
+      }
+      if (!p.chips || p.chips.length < DEFAULT_CONFIG.chips.length) {
+        m.chips = DEFAULT_CONFIG.chips.map((d,i) => (p.chips&&p.chips[i]) ? p.chips[i] : d);
+      }
+      return m;
+    }
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+}
+
+let config = loadConfig();
+let responseIndex = 0;
+let chatSessions = [];
+let currentSession = null;
+let isTyping = false;
+
+// ============================================================
+// APPLY CONFIG
+// ============================================================
+function applyConfig() {
+  const name = config.appName || 'MovieAI';
+  document.title = name;
+  document.getElementById('splash-title-el').textContent = name;
+  document.getElementById('model-name-display').textContent = name;
+  document.getElementById('welcome-title').textContent = config.welcomeTitle || 'How can I help you?';
+  document.getElementById('welcome-subtitle').textContent = config.welcomeSub || '';
+  document.getElementById('chat-input').placeholder = config.inputPlaceholder || 'Message MovieAI';
+  document.getElementById('sidebar-username').textContent = config.username || 'Leon Dudhill';
+  renderChips();
+}
+
+// ============================================================
+// CHIPS
+// ============================================================
+function renderChips() {
+  const container = document.getElementById('suggestion-chips');
+  container.innerHTML = (config.chips||[]).map(c => `
+    <div class="chip" onclick="sendChip(${JSON.stringify(c.title).replace(/"/g,'&quot;')})">
+      <div class="chip-title">${escHtml(c.title)}</div>
+      <div class="chip-sub">${escHtml(c.sub)}</div>
+    </div>`).join('');
+}
+
+function sendChip(text) {
+  document.getElementById('chat-input').value = text;
+  autoResize(document.getElementById('chat-input'));
+  document.getElementById('send-btn').disabled = false;
+  sendMessage();
+}
+
+// ============================================================
+// CHAT LOGIC
+// ============================================================
+function handleInputKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+  document.getElementById('send-btn').disabled = document.getElementById('chat-input').value.trim().length === 0;
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 200) + 'px';
+  document.getElementById('send-btn').disabled = el.value.trim().length === 0;
+}
+
+function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text || isTyping) return;
+
+  // Hide welcome, show messages
+  document.getElementById('welcome-screen').style.display = 'none';
+  document.getElementById('messages-container').style.display = 'block';
+
+  // Add user message
+  addMessage('user', text);
+
+  // Add to history sidebar
+  addToHistory(text);
+
+  // Clear input
+  input.value = '';
+  input.style.height = 'auto';
+  document.getElementById('send-btn').disabled = true;
+
+  // Show typing indicator then respond
+  isTyping = true;
+  const delay = parseInt(config.typingDelay) || 900;
+  showTyping();
+  setTimeout(() => {
+    hideTyping();
+    const response = getNextResponse();
+    if (response) addMessage('ai', response);
+    isTyping = false;
+  }, delay);
+}
+
+function getNextResponse() {
+  const enabled = (config.responses||[]).filter(r => r.enabled);
+  if (!enabled.length) return "I don't have a response configured yet. Please add one in Customise.";
+
+  if (config.cycle === 'random') {
+    return enabled[Math.floor(Math.random() * enabled.length)].text;
+  } else if (config.cycle === 'first') {
+    return enabled[0].text;
+  } else {
+    // sequential
+    const r = enabled[responseIndex % enabled.length].text;
+    responseIndex++;
+    return r;
+  }
+}
+
+function addMessage(role, text) {
+  const container = document.getElementById('messages-container');
+  const div = document.createElement('div');
+  div.className = `message-row ${role}`;
+  const aiName = config.appName || 'MovieAI';
+
+  if (role === 'user') {
+    div.innerHTML = `<div class="message-bubble">${escHtml(text)}</div>`;
+  } else {
+    div.innerHTML = `
+      <div class="message-bubble">
+        <div class="ai-header">
+          <div class="ai-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/><circle cx="19" cy="5" r="3" fill="white" stroke="none"/></svg></div>
+          <span class="ai-name">${escHtml(aiName)}</span>
+        </div>
+        <div style="padding-left:0">${escHtml(text)}</div>
+      </div>
+      <div class="message-actions">
+        <button class="msg-action-btn" title="Copy" onclick="copyText(this,'${escHtml(text).replace(/'/g,"&#39;")}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </button>
+        <button class="msg-action-btn" title="Thumbs up">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+        </button>
+        <button class="msg-action-btn" title="Thumbs down">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+        </button>
+      </div>`;
+  }
+
+  container.appendChild(div);
+  scrollToBottom();
+}
+
+function showTyping() {
+  const container = document.getElementById('messages-container');
+  const div = document.createElement('div');
+  div.className = 'message-row ai';
+  div.id = 'typing-indicator-row';
+  div.innerHTML = `<div class="message-bubble">
+    <div class="ai-header">
+      <div class="ai-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/><circle cx="19" cy="5" r="3" fill="white" stroke="none"/></svg></div>
+      <span class="ai-name">${escHtml(config.appName||'MovieAI')}</span>
+    </div>
+    <div class="typing-indicator">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>
+  </div>`;
+  container.appendChild(div);
+  scrollToBottom();
+}
+
+function hideTyping() {
+  const el = document.getElementById('typing-indicator-row');
+  if (el) el.remove();
+}
+
+function scrollToBottom() {
+  const area = document.getElementById('chat-area');
+  area.scrollTop = area.scrollHeight;
+}
+
+function copyText(btn, text) {
+  navigator.clipboard.writeText(text).catch(() => {});
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="#10a37f" stroke-width="2" width="15" height="15"><polyline points="20 6 9 17 4 12"/></svg>`;
+  setTimeout(() => {
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+  }, 2000);
+}
+
+// ============================================================
+// HISTORY
+// ============================================================
+function addToHistory(text) {
+  const history = document.getElementById('chat-history');
+  const existing = history.querySelectorAll('.history-item');
+  existing.forEach(el => el.classList.remove('active'));
+
+  const btn = document.createElement('button');
+  btn.className = 'history-item active';
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${escHtml(text.substring(0,32))}${text.length>32?'…':''}`;
+  btn.onclick = () => {};
+  history.insertBefore(btn, history.firstChild);
+}
+
+function newChat() {
+  document.getElementById('messages-container').innerHTML = '';
+  document.getElementById('messages-container').style.display = 'none';
+  document.getElementById('welcome-screen').style.display = 'flex';
+  document.getElementById('chat-history').querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
+  responseIndex = 0;
+}
+
+// ============================================================
+// CUSTOMISE MODAL
+// ============================================================
+function openCustomise() {
+  populateModal();
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeCustomise() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+function switchModalTab(name, btn) {
+  document.querySelectorAll('.tabs-nav-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.modal .tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('modal-' + name).classList.add('active');
+}
+
+function populateModal() {
+  document.getElementById('cfg-name').value = config.appName || '';
+  document.getElementById('cfg-username').value = config.username || '';
+  document.getElementById('cfg-welcome-title').value = config.welcomeTitle || '';
+  document.getElementById('cfg-welcome-sub').value = config.welcomeSub || '';
+  document.getElementById('cfg-input-placeholder').value = config.inputPlaceholder || '';
+  document.getElementById('cfg-cycle').value = config.cycle || 'sequential';
+  document.getElementById('cfg-delay').value = config.typingDelay || 900;
+
+  // Responses editor
+  document.getElementById('responses-editor').innerHTML = config.responses.map((r, i) => `
+    <div class="preset-card">
+      <div class="preset-num">Response ${i+1}</div>
+      <div class="enabled-toggle">
+        <div class="toggle-track ${r.enabled?'on':''}" id="toggle-${i}" onclick="toggleResponse(${i})">
+          <div class="toggle-thumb"></div>
+        </div>
+        <span class="toggle-label">${r.enabled?'Enabled':'Disabled'}</span>
+      </div>
+      <div class="modal-row" style="margin-bottom:0">
+        <label>Response text (line breaks supported)</label>
+        <textarea id="resp-text-${i}" rows="5" style="min-height:100px">${escHtml(r.text)}</textarea>
+      </div>
+    </div>`).join('');
+
+  // Chips editor
+  document.getElementById('chips-editor').innerHTML = config.chips.map((c, i) => `
+    <div class="preset-card">
+      <div class="preset-num">Chip ${i+1}</div>
+      <div class="modal-row-inline">
+        <div class="modal-row"><label>Title (main text)</label><input type="text" id="chip-title-${i}" value="${escHtml(c.title)}"></div>
+        <div class="modal-row"><label>Subtitle</label><input type="text" id="chip-sub-${i}" value="${escHtml(c.sub)}"></div>
+      </div>
+    </div>`).join('');
+}
+
+function toggleResponse(i) {
+  config.responses[i].enabled = !config.responses[i].enabled;
+  const track = document.getElementById('toggle-' + i);
+  track.classList.toggle('on', config.responses[i].enabled);
+  track.nextElementSibling.textContent = config.responses[i].enabled ? 'Enabled' : 'Disabled';
+}
+
+function saveConfig() {
+  config.appName = document.getElementById('cfg-name').value || 'MovieAI';
+  config.username = document.getElementById('cfg-username').value || 'Leon Dudhill';
+  config.welcomeTitle = document.getElementById('cfg-welcome-title').value;
+  config.welcomeSub = document.getElementById('cfg-welcome-sub').value;
+  config.inputPlaceholder = document.getElementById('cfg-input-placeholder').value;
+  config.cycle = document.getElementById('cfg-cycle').value;
+  config.typingDelay = parseInt(document.getElementById('cfg-delay').value) || 900;
+
+  config.responses = config.responses.map((r, i) => ({
+    enabled: r.enabled,
+    text: document.getElementById(`resp-text-${i}`)?.value || r.text
+  }));
+
+  config.chips = config.chips.map((c, i) => ({
+    title: document.getElementById(`chip-title-${i}`)?.value || c.title,
+    sub: document.getElementById(`chip-sub-${i}`)?.value || c.sub
+  }));
+
+  localStorage.setItem('movieAIConfig', JSON.stringify(config));
+  applyConfig();
+  closeCustomise();
+  responseIndex = 0;
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+document.getElementById('modal-overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeCustomise();
+});
+
+// Enable send button on input
+document.getElementById('chat-input').addEventListener('input', function() {
+  document.getElementById('send-btn').disabled = this.value.trim().length === 0;
+});
+
+// ============================================================
+// SPLASH
+// ============================================================
+(function() {
+  const splash = document.getElementById('splash');
+  if (sessionStorage.getItem('movieAISplash')) { splash.classList.add('hidden'); return; }
+  sessionStorage.setItem('movieAISplash', '1');
+  setTimeout(() => {
+    splash.classList.add('fade-out');
+    setTimeout(() => splash.classList.add('hidden'), 650);
+  }, 1600);
+})();
+
+applyConfig();
+</script>
+</body>
+</html>

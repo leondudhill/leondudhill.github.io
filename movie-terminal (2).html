@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terminal</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --green: #00ff41;
+  --green-dim: #00c832;
+  --green-dark: #003b0e;
+  --green-glow: rgba(0,255,65,0.15);
+  --amber: #ffb000;
+  --cyan: #00e5ff;
+  --red: #ff3333;
+  --white: #e0e0e0;
+  --grey: #4a4a4a;
+  --bg: #000000;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  color: var(--green);
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow: hidden;
+  cursor: none;
+}
+
+/* CRT scan line overlay */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.08) 2px,
+    rgba(0,0,0,0.08) 4px
+  );
+  pointer-events: none;
+  z-index: 100;
+}
+
+/* CRT vignette */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.7) 100%);
+  pointer-events: none;
+  z-index: 99;
+}
+
+/* Phosphor glow on text */
+#terminal {
+  position: fixed; inset: 0;
+  padding: 20px 24px 80px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  text-shadow: 0 0 8px var(--green), 0 0 16px rgba(0,255,65,0.4);
+}
+
+/* Status bar at top */
+#statusbar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--green-dark);
+  margin-bottom: 12px;
+  font-size: 11px;
+  color: var(--green-dim);
+  flex-shrink: 0;
+}
+.status-item { display: flex; align-items: center; gap: 6px; }
+.status-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green);
+  animation: pulse 2s ease-in-out infinite;
+  box-shadow: 0 0 6px var(--green);
+}
+.status-dot.amber { background: var(--amber); box-shadow: 0 0 6px var(--amber); color: var(--amber); }
+.status-dot.red { background: var(--red); box-shadow: 0 0 6px var(--red); animation: fastpulse 0.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+@keyframes fastpulse { 0%,100%{opacity:1} 50%{opacity:0.2} }
+.status-sep { color: var(--green-dark); }
+#clock { margin-left: auto; color: var(--cyan); text-shadow: 0 0 8px var(--cyan); font-size: 11px; }
+
+/* Output area */
+#output {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.line {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  min-height: 20px;
+  animation: linefade 0.1s ease-in;
+}
+@keyframes linefade { from{opacity:0} to{opacity:1} }
+
+.line.dim { color: var(--green-dim); }
+.line.bright { color: var(--green); font-weight: 500; }
+.line.amber { color: var(--amber); text-shadow: 0 0 8px var(--amber), 0 0 16px rgba(255,176,0,0.4); }
+.line.cyan { color: var(--cyan); text-shadow: 0 0 8px var(--cyan); }
+.line.red { color: var(--red); text-shadow: 0 0 8px var(--red); }
+.line.white { color: var(--white); text-shadow: 0 0 4px rgba(255,255,255,0.3); }
+.line.indent { padding-left: 20px; }
+.line.indent2 { padding-left: 40px; }
+
+.prompt {
+  color: var(--cyan);
+  text-shadow: 0 0 8px var(--cyan);
+  white-space: nowrap;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+.prompt.root { color: var(--red); text-shadow: 0 0 8px var(--red); }
+
+.line-text { word-break: break-all; }
+
+/* Progress bars */
+.progress-wrap { display: flex; align-items: center; gap: 10px; width: 100%; }
+.progress-bar {
+  flex: 1; height: 8px;
+  background: var(--green-dark);
+  border: 1px solid var(--green-dim);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%; background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  transition: width 0.05s linear;
+}
+.progress-pct { color: var(--green); font-size: 11px; min-width: 36px; text-align: right; }
+
+/* Input line at bottom */
+#input-line {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  padding: 12px 24px 16px;
+  background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 100%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 50;
+}
+#input-prompt {
+  color: var(--cyan);
+  text-shadow: 0 0 8px var(--cyan);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+#input-display {
+  flex: 1;
+  color: var(--green);
+  text-shadow: 0 0 8px var(--green), 0 0 16px rgba(0,255,65,0.4);
+  white-space: pre;
+  word-break: break-all;
+  min-height: 20px;
+}
+#cursor {
+  display: inline-block;
+  width: 8px; height: 14px;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  animation: blink 1s step-end infinite;
+  vertical-align: middle;
+  margin-left: 1px;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* Hidden real input to capture keystrokes */
+#real-input {
+  position: fixed;
+  top: -999px; left: -999px;
+  opacity: 0; width: 1px; height: 1px;
+}
+
+/* Customise button */
+#customize-fab {
+  position: fixed;
+  top: 12px; right: 16px;
+  background: rgba(0,50,0,0.8);
+  border: 1px solid var(--green-dim);
+  color: var(--green-dim);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 5px 12px;
+  cursor: pointer;
+  z-index: 200;
+  transition: all 0.15s;
+  text-shadow: 0 0 6px var(--green);
+}
+#customize-fab:hover {
+  background: rgba(0,80,0,0.9);
+  color: var(--green);
+  border-color: var(--green);
+}
+
+/* MODAL */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.85); z-index: 1000;
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: #050f05;
+  border: 1px solid var(--green-dim);
+  width: 720px; max-width: 95vw; max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 0 40px rgba(0,255,65,0.15);
+  font-family: 'JetBrains Mono', monospace;
+}
+.modal::-webkit-scrollbar { width: 6px; }
+.modal::-webkit-scrollbar-thumb { background: var(--green-dark); }
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 20px; border-bottom: 1px solid var(--green-dark);
+  position: sticky; top: 0; background: #050f05; z-index: 1;
+}
+.modal-header h2 { font-size: 14px; font-weight: 700; color: var(--green); text-shadow: 0 0 8px var(--green); }
+.modal-close {
+  background: none; border: 1px solid var(--green-dark); cursor: pointer;
+  color: var(--green-dim); font-size: 14px; font-family: 'JetBrains Mono', monospace;
+  padding: 4px 10px;
+}
+.modal-close:hover { border-color: var(--green); color: var(--green); }
+.modal-body { padding: 20px; }
+.modal-section { margin-bottom: 24px; }
+.modal-section h3 {
+  font-size: 11px; font-weight: 700; color: var(--green-dim);
+  text-transform: uppercase; letter-spacing: 1px;
+  margin-bottom: 12px; padding-bottom: 6px;
+  border-bottom: 1px solid var(--green-dark);
+}
+.modal-row { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+.modal-row label { font-size: 11px; color: var(--green-dim); }
+.modal-row input[type="text"],
+.modal-row textarea {
+  border: 1px solid var(--green-dark); border-radius: 0;
+  padding: 8px 10px; font-size: 13px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--green); width: 100%; outline: none; resize: vertical;
+  background: #010a01;
+  text-shadow: 0 0 6px var(--green);
+}
+.modal-row input:focus, .modal-row textarea:focus { border-color: var(--green-dim); }
+.modal-row-inline { display: flex; gap: 10px; }
+.modal-row-inline .modal-row { flex: 1; }
+.word-preset {
+  background: #010a01; border: 1px solid var(--green-dark);
+  padding: 12px; margin-bottom: 8px;
+}
+.word-preset-title { font-size: 11px; color: var(--green-dim); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.tabs-nav { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 1px solid var(--green-dark); }
+.tabs-nav-btn {
+  padding: 8px 16px; font-size: 12px; color: var(--green-dim); cursor: pointer;
+  border: none; background: none; border-bottom: 2px solid transparent;
+  font-family: 'JetBrains Mono', monospace;
+}
+.tabs-nav-btn:hover { color: var(--green); }
+.tabs-nav-btn.active { color: var(--green); border-bottom-color: var(--green); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.modal-footer {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 16px 20px; border-top: 1px solid var(--green-dark);
+  position: sticky; bottom: 0; background: #050f05;
+}
+.btn-cancel {
+  background: none; border: 1px solid var(--green-dark);
+  padding: 8px 20px; font-size: 13px; cursor: pointer; color: var(--green-dim);
+  font-family: 'JetBrains Mono', monospace;
+}
+.btn-cancel:hover { border-color: var(--green-dim); color: var(--green); }
+.btn-save {
+  background: var(--green-dark); border: 1px solid var(--green);
+  padding: 8px 24px; font-size: 13px; color: var(--green);
+  cursor: pointer; font-family: 'JetBrains Mono', monospace;
+  text-shadow: 0 0 6px var(--green);
+}
+.btn-save:hover { background: #00500e; }
+
+/* Splash */
+#splash {
+  position: fixed; inset: 0; background: #000;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; z-index: 9999;
+  opacity: 1; transition: opacity 0.6s ease;
+}
+#splash.fade-out { opacity: 0; pointer-events: none; }
+#splash.hidden { display: none; }
+.splash-text {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--green);
+  text-shadow: 0 0 12px var(--green);
+  font-size: 14px;
+  text-align: center;
+  line-height: 2;
+}
+.splash-title { font-size: 28px; font-weight: 700; letter-spacing: 4px; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash" style="position:fixed;inset:0;background:#000000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;opacity:1;transition:opacity 0.6s ease;">
+  <p style="font-family:sans-serif;font-size:14px;color:#00ff41;opacity:0.6;margin-bottom:6px;letter-spacing:0.5px;">An App by</p>
+  <p style="font-family:sans-serif;font-size:26px;font-weight:700;color:#00ff41;letter-spacing:-0.5px;">Leon Dudhill</p>
+  <div style="display:flex;gap:8px;margin-top:24px;"><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:#00ff41;animation-delay:0.0s"></div><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:#00ff41;animation-delay:0.15s"></div><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:#00ff41;animation-delay:0.3s"></div><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:#00ff41;animation-delay:0.44999999999999996s"></div></div>
+</div>
+
+
+
+<!-- CUSTOMISE BUTTON -->
+<button id="customize-fab" onclick="openCustomise()">[CUSTOMISE]</button>
+
+<!-- TERMINAL -->
+<div id="terminal">
+  <div id="statusbar">
+    <div class="status-item"><div class="status-dot"></div><span>CONNECTED</span></div>
+    <span class="status-sep">|</span>
+    <div class="status-item"><div class="status-dot amber"></div><span style="color:var(--amber)">FIREWALL ACTIVE</span></div>
+    <span class="status-sep">|</span>
+    <div class="status-item" id="session-label"><span>SESSION: </span><span id="session-id" style="color:var(--cyan)">0x4A2F</span></div>
+    <span class="status-sep">|</span>
+    <div class="status-item"><span id="ip-label">TARGET: </span><span id="target-ip" style="color:var(--amber)">192.168.1.1</span></div>
+    <div id="clock">00:00:00</div>
+  </div>
+  <div id="output"></div>
+</div>
+
+<!-- INPUT LINE -->
+<div id="input-line">
+  <span id="input-prompt">root@movieai:~$&nbsp;</span>
+  <span id="input-display"></span><span id="cursor"></span>
+</div>
+<input id="real-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+
+<!-- CUSTOMISE MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>// TERMINAL CONFIG</h2>
+      <button class="modal-close" onclick="closeCustomise()">[X]</button>
+    </div>
+    <div class="modal-body">
+      <div class="tabs-nav">
+        <button class="tabs-nav-btn active" onclick="switchModalTab('general',this)">GENERAL</button>
+        <button class="tabs-nav-btn" onclick="switchModalTab('words',this)">PRESET WORDS</button>
+        <button class="tabs-nav-btn" onclick="switchModalTab('boot',this)">BOOT TEXT</button>
+      </div>
+
+      <div id="modal-general" class="tab-content active">
+        <div class="modal-section">
+          <h3>Identity</h3>
+          <div class="modal-row-inline">
+            <div class="modal-row"><label>Username</label><input type="text" id="cfg-user" placeholder="root"></div>
+            <div class="modal-row"><label>Hostname</label><input type="text" id="cfg-host" placeholder="movieai"></div>
+          </div>
+          <div class="modal-row-inline">
+            <div class="modal-row"><label>Target IP</label><input type="text" id="cfg-target-ip" placeholder="192.168.1.1"></div>
+            <div class="modal-row"><label>Session ID</label><input type="text" id="cfg-session" placeholder="0x4A2F"></div>
+          </div>
+        </div>
+        <div class="modal-section">
+          <h3>Behaviour</h3>
+          <div class="modal-row">
+            <label>Word cycle mode</label>
+            <select id="cfg-cycle" style="border:1px solid var(--green-dark);padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--green);background:#010a01;outline:none;width:100%">
+              <option value="sequential">Sequential (1, 2, 3… repeat)</option>
+              <option value="random">Random</option>
+            </select>
+          </div>
+          <div class="modal-row-inline">
+            <div class="modal-row"><label>Typing speed (ms per char)</label><input type="text" id="cfg-speed" placeholder="28"></div>
+            <div class="modal-row"><label>Newline after N words</label><input type="text" id="cfg-newline" placeholder="6"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="modal-words" class="tab-content">
+        <div class="modal-section">
+          <h3>Preset Words (up to 10) — one word or phrase per slot</h3>
+          <p style="font-size:11px;color:var(--green-dim);margin-bottom:14px;line-height:1.7">Every keystroke types the next word from this list. Short cryptic words look most realistic.</p>
+          <div id="words-editor"></div>
+        </div>
+      </div>
+
+      <div id="modal-boot" class="tab-content">
+        <div class="modal-section">
+          <h3>Boot Sequence Lines</h3>
+          <p style="font-size:11px;color:var(--green-dim);margin-bottom:14px;line-height:1.7">These lines print when the terminal loads. One line per entry.</p>
+          <div id="boot-editor"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeCustomise()">[CANCEL]</button>
+      <button class="btn-save" onclick="saveConfig()">[SAVE CONFIG]</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DEFAULT CONFIG
+// ============================================================
+const DEFAULT_CONFIG = {
+  username: 'root',
+  hostname: 'movieai',
+  targetIp: '192.168.1.1',
+  sessionId: '0x4A2F',
+  cycle: 'sequential',
+  typingSpeed: 28,
+  newlineEvery: 6,
+  words: [
+    'initializing...',
+    'bypass_firewall()',
+    '0xDEADBEEF',
+    'inject_payload',
+    'RSA-4096',
+    'DECRYPTING...',
+    'nmap -sV --script',
+    'exploit_db[443]',
+    'hash_collision()',
+    'ACCESS_GRANTED'
+  ],
+  bootLines: [
+    { text: 'BIOS v3.8.1 — POST OK', color: 'dim' },
+    { text: 'Loading kernel modules... [OK]', color: 'dim' },
+    { text: 'Mounting encrypted volumes... [OK]', color: 'dim' },
+    { text: 'Starting network services... [OK]', color: 'dim' },
+    { text: 'TOR proxy: ACTIVE [127.0.0.1:9050]', color: 'cyan' },
+    { text: 'VPN tunnel: ESTABLISHED [exit node: NL-AMS-03]', color: 'cyan' },
+    { text: 'MAC spoofing: ENABLED [de:ad:be:ef:00:01]', color: 'cyan' },
+    { text: 'WARNING: Intrusion detection bypassed', color: 'amber' },
+    { text: 'Loading exploit framework v4.2.1...', color: 'dim' },
+    { text: '  > metasploit-core           [LOADED]', color: 'dim' },
+    { text: '  > sqlmap-1.7.2              [LOADED]', color: 'dim' },
+    { text: '  > nmap-7.94                 [LOADED]', color: 'dim' },
+    { text: '  > aircrack-ng-1.7           [LOADED]', color: 'dim' },
+    { text: '  > hashcat-6.2.6             [LOADED]', color: 'dim' },
+    { text: 'Scanning target: 192.168.1.1...', color: 'bright' },
+    { text: '  PORT     STATE   SERVICE   VERSION', color: 'white' },
+    { text: '  22/tcp   open    ssh       OpenSSH 8.2p1', color: 'white' },
+    { text: '  80/tcp   open    http      Apache 2.4.41', color: 'white' },
+    { text: '  443/tcp  open    https     nginx 1.18.0', color: 'white' },
+    { text: '  3306/tcp open    mysql     MySQL 8.0.26', color: 'white' },
+    { text: 'Vulnerabilities detected: 3 CRITICAL, 7 HIGH', color: 'red' },
+    { text: 'CVE-2024-1337  CVSS:9.8  RCE via buffer overflow', color: 'red' },
+    { text: 'CVE-2024-0891  CVSS:8.1  SQL injection (unpathed)', color: 'amber' },
+    { text: 'CVE-2023-4471  CVSS:7.5  Auth bypass possible', color: 'amber' },
+    { text: '---', color: 'dim' },
+    { text: 'SYSTEM READY. Awaiting commands.', color: 'bright' },
+    { text: '', color: 'dim' }
+  ]
+};
+
+// ============================================================
+// LOAD / SAVE
+// ============================================================
+function loadConfig() {
+  try {
+    const saved = localStorage.getItem('terminalConfig');
+    if (saved) {
+      const p = JSON.parse(saved);
+      const m = Object.assign({}, JSON.parse(JSON.stringify(DEFAULT_CONFIG)), p);
+      if (!p.words || p.words.length < DEFAULT_CONFIG.words.length)
+        m.words = DEFAULT_CONFIG.words.map((d,i) => (p.words && p.words[i] !== undefined) ? p.words[i] : d);
+      if (!p.bootLines || p.bootLines.length < DEFAULT_CONFIG.bootLines.length)
+        m.bootLines = DEFAULT_CONFIG.bootLines.map((d,i) => (p.bootLines && p.bootLines[i]) ? p.bootLines[i] : d);
+      return m;
+    }
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+}
+
+let config = loadConfig();
+let wordIndex = 0;
+let currentLineWords = 0;
+let lineWordCount = 0;
+let isBooting = true;
+let inputText = '';
+let outputLines = [];
+const MAX_LINES = 80;
+
+// ============================================================
+// CLOCK
+// ============================================================
+function updateClock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ============================================================
+// APPLY CONFIG
+// ============================================================
+function applyConfig() {
+  document.getElementById('target-ip').textContent = config.targetIp || '192.168.1.1';
+  document.getElementById('session-id').textContent = config.sessionId || '0x4A2F';
+  const prompt = `${config.username||'root'}@${config.hostname||'movieai'}:~$\u00a0`;
+  document.getElementById('input-prompt').textContent = prompt;
+}
+
+// ============================================================
+// OUTPUT
+// ============================================================
+function addLine(text, colorClass, indent) {
+  const output = document.getElementById('output');
+  const line = document.createElement('div');
+  line.className = `line ${colorClass||''}${indent?' indent':''}`;
+  line.innerHTML = `<span class="line-text">${escHtml(text)}</span>`;
+  output.appendChild(line);
+
+  // Trim old lines
+  outputLines.push(line);
+  if (outputLines.length > MAX_LINES) {
+    outputLines[0].remove();
+    outputLines.shift();
+  }
+
+  // Scroll to bottom
+  requestAnimationFrame(() => {
+    output.scrollTop = output.scrollHeight;
+  });
+}
+
+function addPromptLine(cmd) {
+  const output = document.getElementById('output');
+  const line = document.createElement('div');
+  line.className = 'line bright';
+  const prompt = `${config.username||'root'}@${config.hostname||'movieai'}:~$`;
+  line.innerHTML = `<span class="prompt cyan">${escHtml(prompt)}&nbsp;</span><span class="line-text">${escHtml(cmd)}</span>`;
+  output.appendChild(line);
+  outputLines.push(line);
+  if (outputLines.length > MAX_LINES) { outputLines[0].remove(); outputLines.shift(); }
+  requestAnimationFrame(() => { output.scrollTop = output.scrollHeight; });
+}
+
+// ============================================================
+// BOOT SEQUENCE
+// ============================================================
+function runBootSequence() {
+  const lines = config.bootLines || DEFAULT_CONFIG.bootLines;
+  let i = 0;
+  const delay = 60;
+
+  // Replace target IP in boot lines
+  const targetIp = config.targetIp || '192.168.1.1';
+
+  function printNext() {
+    if (i >= lines.length) {
+      isBooting = false;
+      focusInput();
+      return;
+    }
+    const l = lines[i];
+    const text = (l.text||'').replace('192.168.1.1', targetIp);
+    addLine(text, l.color || 'dim');
+    i++;
+    // Vary speed — progress bars and scans are slower
+    const d = text.includes('...') ? delay * 1.5 : delay;
+    setTimeout(printNext, d + Math.random() * 30);
+  }
+
+  // Show progress bar for a couple of steps
+  setTimeout(() => {
+    showProgressBar('LOADING EXPLOIT DATABASE', 1200, () => {
+      setTimeout(() => {
+        showProgressBar('ESTABLISHING TUNNEL', 800, () => {
+          setTimeout(printNext, 300);
+        });
+      }, 200);
+    });
+  }, 200);
+}
+
+function showProgressBar(label, duration, cb) {
+  const output = document.getElementById('output');
+  const wrap = document.createElement('div');
+  wrap.className = 'line';
+  wrap.innerHTML = `<span class="line-text" style="display:flex;flex-direction:column;gap:3px;width:100%">
+    <span style="color:var(--green-dim);font-size:12px">${escHtml(label)}</span>
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" style="width:0%" id="pb-${label.replace(/\s/g,'_')}"></div></div>
+      <span class="progress-pct" id="pct-${label.replace(/\s/g,'_')}">0%</span>
+    </div>
+  </span>`;
+  output.appendChild(wrap);
+  outputLines.push(wrap);
+
+  const fillId = `pb-${label.replace(/\s/g,'_')}`;
+  const pctId = `pct-${label.replace(/\s/g,'_')}`;
+  const steps = 60;
+  let step = 0;
+  const interval = duration / steps;
+
+  const t = setInterval(() => {
+    step++;
+    const pct = Math.min(100, Math.round((step / steps) * 100));
+    const fill = document.getElementById(fillId);
+    const pctEl = document.getElementById(pctId);
+    if (fill) fill.style.width = pct + '%';
+    if (pctEl) pctEl.textContent = pct + '%';
+    if (step >= steps) {
+      clearInterval(t);
+      if (cb) cb();
+    }
+  }, interval);
+}
+
+// ============================================================
+// KEYPRESS HANDLER — types preset words
+// ============================================================
+document.addEventListener('keydown', function(e) {
+  if (isBooting) return;
+  // Let modal / customise interactions pass through
+  if (document.getElementById('modal-overlay').classList.contains('open')) return;
+
+  // Ignore modifier-only keys
+  if (['Shift','Control','Alt','Meta','CapsLock','Tab','Escape','F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12'].includes(e.key)) return;
+
+  e.preventDefault();
+
+  if (e.key === 'Enter') {
+    handleEnter();
+    return;
+  }
+
+  if (e.key === 'Backspace') {
+    // Remove last word
+    const parts = inputText.trimEnd().split(' ');
+    parts.pop();
+    inputText = parts.join(' ');
+    if (inputText.length > 0) inputText += ' ';
+    updateInputDisplay();
+    return;
+  }
+
+  // Any other key = type the next preset word
+  typeNextWord();
+});
+
+function typeNextWord() {
+  const words = config.words.filter(w => w && w.trim());
+  if (!words.length) return;
+
+  let word;
+  if (config.cycle === 'random') {
+    word = words[Math.floor(Math.random() * words.length)];
+  } else {
+    word = words[wordIndex % words.length];
+    wordIndex++;
+  }
+
+  // Add word to input with space
+  if (inputText.length > 0 && !inputText.endsWith(' ')) inputText += ' ';
+  inputText += word;
+
+  lineWordCount++;
+
+  // Auto-newline after N words
+  const newlineEvery = parseInt(config.newlineEvery) || 6;
+  if (lineWordCount >= newlineEvery) {
+    handleEnter(true);
+    return;
+  }
+
+  updateInputDisplay();
+}
+
+function handleEnter(auto) {
+  if (!inputText.trim()) return;
+
+  // Print prompt + command
+  addPromptLine(inputText.trim());
+
+  // Generate a realistic response
+  emitResponse(inputText.trim());
+
+  // Clear input
+  inputText = '';
+  lineWordCount = 0;
+  updateInputDisplay();
+}
+
+function emitResponse(cmd) {
+  const responses = [
+    () => {
+      addLine(`Connecting to ${config.targetIp||'192.168.1.1'}...`, 'dim');
+      addLine(`[*] Sending SYN packets...`, 'dim');
+      addLine(`[+] Port 443 OPEN`, 'bright');
+      addLine(`[+] Port 22  OPEN`, 'bright');
+      addLine(`[*] Fingerprinting OS... Linux 5.4.0-generic`, 'cyan');
+    },
+    () => {
+      addLine(`[*] Running payload injection...`, 'dim');
+      addLine(`[*] Bypassing ASLR...`, 'dim');
+      addLine(`[+] Buffer overflow: SUCCESS`, 'bright');
+      addLine(`[+] Shell spawned: /bin/bash`, 'green');
+      addLine(`id: uid=0(root) gid=0(root) groups=0(root)`, 'bright');
+    },
+    () => {
+      addLine(`[*] Cracking hash: $2y$12$K8Zr4mNpQ...`, 'dim');
+      addLine(`[*] Wordlist: rockyou.txt [14,341,564 words]`, 'dim');
+      addLine(`[*] Speed: 847.2 MH/s`, 'cyan');
+      addLine(`[+] Hash cracked: password123!`, 'amber');
+    },
+    () => {
+      addLine(`[*] SQL injection payload sent...`, 'dim');
+      addLine(`[*] Dumping table: users`, 'dim');
+      addLine(`  admin  | 5f4dcc3b5aa765d61d8327de...`, 'white');
+      addLine(`  root   | d8578edf8458ce06fbc5bb76...`, 'white');
+      addLine(`[+] 847 records extracted`, 'bright');
+    },
+    () => {
+      addLine(`[*] Decrypting AES-256 volume...`, 'dim');
+      addLine(`[*] Key material acquired via cold boot attack`, 'dim');
+      addLine(`[+] Decryption: COMPLETE`, 'bright');
+      addLine(`[*] Mounting at /mnt/secure_vol`, 'cyan');
+    },
+    () => {
+      addLine(`[!] Firewall rule added: DROP ALL INBOUND`, 'amber');
+      addLine(`[*] Covering tracks...`, 'dim');
+      addLine(`[*] Clearing auth.log...           [DONE]`, 'dim');
+      addLine(`[*] Clearing bash_history...        [DONE]`, 'dim');
+      addLine(`[*] Timestomping modified files...  [DONE]`, 'dim');
+    },
+    () => {
+      addLine(`[*] Pivoting through compromised host...`, 'dim');
+      addLine(`[*] Tunnelling via 10.0.0.47:4444`, 'cyan');
+      addLine(`[+] New target reachable: 10.0.0.1`, 'bright');
+      addLine(`[*] Starting lateral movement...`, 'dim');
+    },
+    () => {
+      addLine(`[*] Intercepting TLS handshake...`, 'dim');
+      addLine(`[*] MITM position: ESTABLISHED`, 'cyan');
+      addLine(`[+] Certificate forged: *.target.local`, 'amber');
+      addLine(`[*] Decrypting traffic stream...`, 'dim');
+      addLine(`[+] Credentials captured: 3 pairs`, 'bright');
+    }
+  ];
+
+  const r = responses[Math.floor(Math.random() * responses.length)];
+  r();
+  addLine('', 'dim'); // blank line
+}
+
+function updateInputDisplay() {
+  document.getElementById('input-display').textContent = inputText;
+}
+
+function focusInput() {
+  document.getElementById('real-input').focus();
+}
+
+// Keep focus on hidden input
+document.addEventListener('click', () => {
+  if (!document.getElementById('modal-overlay').classList.contains('open')) {
+    focusInput();
+  }
+});
+
+// ============================================================
+// CUSTOMISE MODAL
+// ============================================================
+function openCustomise() {
+  populateModal();
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeCustomise() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  focusInput();
+}
+function switchModalTab(name, btn) {
+  document.querySelectorAll('.tabs-nav-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.modal .tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('modal-' + name).classList.add('active');
+}
+
+function populateModal() {
+  document.getElementById('cfg-user').value = config.username || '';
+  document.getElementById('cfg-host').value = config.hostname || '';
+  document.getElementById('cfg-target-ip').value = config.targetIp || '';
+  document.getElementById('cfg-session').value = config.sessionId || '';
+  document.getElementById('cfg-cycle').value = config.cycle || 'sequential';
+  document.getElementById('cfg-speed').value = config.typingSpeed || 28;
+  document.getElementById('cfg-newline').value = config.newlineEvery || 6;
+
+  document.getElementById('words-editor').innerHTML = config.words.map((w, i) => `
+    <div class="word-preset">
+      <div class="word-preset-title">WORD ${i+1}</div>
+      <div class="modal-row" style="margin:0">
+        <input type="text" id="word-${i}" value="${escHtml(w)}" placeholder="e.g. bypass_firewall()">
+      </div>
+    </div>`).join('');
+
+  document.getElementById('boot-editor').innerHTML = config.bootLines.map((l, i) => `
+    <div class="word-preset">
+      <div class="modal-row-inline" style="margin:0">
+        <div class="modal-row" style="flex:3">
+          <label>LINE ${i+1} TEXT</label>
+          <input type="text" id="boot-text-${i}" value="${escHtml(l.text||'')}">
+        </div>
+        <div class="modal-row" style="flex:1">
+          <label>COLOUR</label>
+          <select id="boot-color-${i}" style="border:1px solid var(--green-dark);padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--green);background:#010a01;outline:none;width:100%">
+            ${['dim','bright','cyan','amber','red','white'].map(c => `<option value="${c}" ${l.color===c?'selected':''}>${c.toUpperCase()}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function saveConfig() {
+  config.username = document.getElementById('cfg-user').value || 'root';
+  config.hostname = document.getElementById('cfg-host').value || 'movieai';
+  config.targetIp = document.getElementById('cfg-target-ip').value || '192.168.1.1';
+  config.sessionId = document.getElementById('cfg-session').value || '0x4A2F';
+  config.cycle = document.getElementById('cfg-cycle').value;
+  config.typingSpeed = parseInt(document.getElementById('cfg-speed').value) || 28;
+  config.newlineEvery = parseInt(document.getElementById('cfg-newline').value) || 6;
+
+  config.words = config.words.map((w, i) => document.getElementById(`word-${i}`)?.value || w);
+
+  config.bootLines = config.bootLines.map((l, i) => ({
+    text: document.getElementById(`boot-text-${i}`)?.value ?? l.text,
+    color: document.getElementById(`boot-color-${i}`)?.value || l.color
+  }));
+
+  localStorage.setItem('terminalConfig', JSON.stringify(config));
+  applyConfig();
+  closeCustomise();
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+document.getElementById('modal-overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeCustomise();
+});
+
+// ============================================================
+// SPLASH + BOOT
+// ============================================================
+(function() {
+  const splash = document.getElementById('splash');
+  if (sessionStorage.getItem('terminalBooted')) {
+    splash.classList.add('hidden');
+    applyConfig();
+    runBootSequence();
+    return;
+  }
+  sessionStorage.setItem('terminalBooted', '1');
+  setTimeout(() => {
+    splash.classList.add('fade-out');
+    setTimeout(() => {
+      splash.classList.add('hidden');
+      applyConfig();
+      runBootSequence();
+    }, 650);
+  }, 1800);
+})();
+</script>
+</body>
+</html>

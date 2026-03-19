@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Movie Search</title>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #ffffff;
+    --text: #202124;
+    --link: #1a0dab;
+    --link-visited: #681da8;
+    --url-green: #006621;
+    --snippet: #4d5156;
+    --border: #dfe1e5;
+    --hover-bg: #f8f9fa;
+    --tab-active: #1a73e8;
+    --btn-bg: #f8f9fa;
+    --btn-hover: #e8eaed;
+    --header-border: #e0e0e0;
+    --news-date: #70757a;
+  }
+
+  body {
+    font-family: 'Roboto', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ===== HOME PAGE ===== */
+  #home-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding-bottom: 100px;
+  }
+
+  .home-logo {
+    margin-bottom: 28px;
+    font-size: 72px;
+    font-family: 'Google Sans', Arial, sans-serif;
+    letter-spacing: -2px;
+    user-select: none;
+  }
+  .home-logo img { max-height: 92px; max-width: 320px; object-fit: contain; }
+  .logo-m { color: #4285F4; }
+  .logo-o1 { color: #EA4335; }
+  .logo-v { color: #FBBC05; }
+  .logo-i { color: #4285F4; }
+  .logo-e { color: #34A853; }
+  .logo-space { display: inline-block; width: 10px; }
+  .logo-s { color: #EA4335; }
+  .logo-e2 { color: #4285F4; }
+  .logo-a { color: #FBBC05; }
+  .logo-r { color: #34A853; }
+  .logo-c { color: #EA4335; }
+  .logo-h { color: #4285F4; }
+
+  .home-search-box {
+    display: flex;
+    align-items: center;
+    width: 560px;
+    max-width: 90vw;
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 10px 16px;
+    font-size: 16px;
+    background: white;
+    box-shadow: none;
+    transition: box-shadow 0.2s;
+    cursor: text;
+  }
+  .home-search-box:focus-within {
+    box-shadow: 0 1px 6px rgba(32,33,36,0.28);
+    border-color: rgba(223,225,229,0);
+  }
+  .home-search-box input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    font-family: 'Roboto', Arial, sans-serif;
+    color: var(--text);
+    background: transparent;
+  }
+  .home-search-box .search-icon {
+    color: #9aa0a6;
+    margin-right: 12px;
+    font-size: 18px;
+  }
+  .home-search-box .mic-icon {
+    color: #4285F4;
+    cursor: pointer;
+    font-size: 18px;
+    margin-left: 8px;
+  }
+
+  .home-btn-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 28px;
+  }
+  .home-btn {
+    background: var(--btn-bg);
+    border: 1px solid var(--btn-bg);
+    border-radius: 4px;
+    color: var(--text);
+    font-size: 14px;
+    padding: 10px 18px;
+    cursor: pointer;
+    font-family: 'Roboto', Arial, sans-serif;
+  }
+  .home-btn:hover {
+    border-color: var(--border);
+    box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    background: var(--btn-hover);
+  }
+
+  /* top links on home */
+  .home-top-links {
+    position: absolute;
+    top: 14px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .home-top-links a {
+    font-size: 13px;
+    color: var(--text);
+    text-decoration: none;
+    padding: 8px;
+    border-radius: 4px;
+  }
+  .home-top-links a:hover { background: var(--hover-bg); }
+  .sign-in-btn {
+    background: #1a73e8 !important;
+    color: white !important;
+    border-radius: 4px;
+    padding: 9px 20px !important;
+    font-weight: 500;
+  }
+  .sign-in-btn:hover { background: #1765cc !important; }
+  .customize-btn {
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text);
+    text-decoration: none;
+    padding: 8px;
+    border-radius: 4px;
+    border: none;
+    background: none;
+    font-family: 'Roboto', Arial, sans-serif;
+  }
+  .customize-btn:hover { background: var(--hover-bg); }
+
+  /* ===== RESULTS PAGE ===== */
+  #results-page { display: none; }
+
+  .results-header {
+    border-bottom: 1px solid var(--header-border);
+    padding: 0 20px;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+  }
+
+  .results-top {
+    display: flex;
+    align-items: center;
+    padding: 10px 0 4px;
+    gap: 16px;
+  }
+
+  .results-logo {
+    font-family: 'Google Sans', Arial, sans-serif;
+    font-size: 26px;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .results-logo img { max-height: 34px; max-width: 120px; object-fit: contain; }
+
+  .results-search-box {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 8px 14px;
+    width: 570px;
+    max-width: calc(100vw - 260px);
+    background: white;
+    transition: box-shadow 0.15s;
+  }
+  .results-search-box:focus-within {
+    box-shadow: 0 1px 6px rgba(32,33,36,0.28);
+    border-color: rgba(223,225,229,0);
+  }
+  .results-search-box input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    font-family: 'Roboto', Arial, sans-serif;
+    color: var(--text);
+    background: transparent;
+  }
+  .results-search-box .search-icon { color: #9aa0a6; font-size: 18px; margin-right: 10px; }
+  .results-search-box .clear-icon { color: #9aa0a6; cursor: pointer; font-size: 18px; margin-right: 4px; }
+  .results-search-box .divider { width: 1px; height: 24px; background: var(--border); margin: 0 8px; }
+  .results-search-box .mic-icon { color: #4285F4; font-size: 18px; cursor: pointer; }
+
+  .header-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+  .header-right a {
+    font-size: 13px; color: var(--text); text-decoration: none; padding: 8px;
+    border-radius: 4px;
+  }
+  .header-right a:hover { background: var(--hover-bg); }
+
+  /* Tabs */
+  .results-tabs {
+    display: flex;
+    gap: 0;
+    padding-top: 4px;
+    overflow-x: auto;
+  }
+  .tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px 12px;
+    font-size: 13px;
+    color: #70757a;
+    cursor: pointer;
+    border: none;
+    background: none;
+    border-bottom: 3px solid transparent;
+    font-family: 'Roboto', Arial, sans-serif;
+    white-space: nowrap;
+    transition: color 0.1s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active {
+    color: var(--tab-active);
+    border-bottom-color: var(--tab-active);
+  }
+  .tab-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+  /* ===== RESULTS BODY ===== */
+  .results-body { padding: 20px 0 20px 180px; max-width: 800px; }
+
+  .results-stats { font-size: 13px; color: #70757a; margin-bottom: 22px; }
+
+  /* Web Results */
+  .web-result { margin-bottom: 28px; max-width: 620px; }
+  .web-result .result-url { font-size: 13px; color: var(--snippet); margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
+  .web-result .result-favicon { width: 16px; height: 16px; border-radius: 50%; background: #e8eaed; flex-shrink: 0; }
+  .web-result .result-title { font-size: 20px; color: var(--link); text-decoration: none; line-height: 1.3; cursor: pointer; }
+  .web-result .result-title:hover { text-decoration: underline; }
+  .web-result .result-snippet { font-size: 14px; color: var(--snippet); line-height: 1.58; margin-top: 4px; }
+  .web-result .result-date { color: #70757a; }
+  .web-result .breadcrumb { color: var(--snippet); font-size: 13px; }
+
+  /* Image Results */
+  /* tab visibility handled by .tab-content / .tab-content.active only */
+  .images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    padding: 10px 20px 20px 180px;
+  }
+  .image-card {
+    width: 100%;
+    cursor: pointer;
+    border-radius: 4px;
+    overflow: hidden;
+    transition: opacity 0.15s;
+  }
+  .image-card:hover { opacity: 0.9; }
+  .image-card img { width: 100%; height: 150px; object-fit: cover; display: block; background: #e8eaed; }
+  .image-card .img-label { font-size: 12px; color: var(--snippet); padding: 4px 2px; line-height: 1.3; }
+  .image-card .img-source { font-size: 12px; color: #70757a; }
+
+  /* Video Results */
+  /* videos tab */
+  .video-result { display: flex; gap: 14px; margin-bottom: 26px; max-width: 700px; padding-left: 180px; }
+  .video-thumb { width: 160px; height: 90px; border-radius: 8px; object-fit: cover; background: #e8eaed; flex-shrink: 0; cursor: pointer; }
+  .video-info { flex: 1; }
+  .video-title { font-size: 16px; color: var(--link); cursor: pointer; margin-bottom: 4px; line-height: 1.3; }
+  .video-title:hover { text-decoration: underline; }
+  .video-meta { font-size: 13px; color: #70757a; margin-bottom: 4px; }
+  .video-snippet { font-size: 13px; color: var(--snippet); line-height: 1.5; }
+  .video-play-icon { background: rgba(0,0,0,0.6); color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 14px; position: absolute; bottom: 8px; right: 8px; }
+  .video-thumb-wrap { position: relative; flex-shrink: 0; }
+
+  /* News Results */
+  /* news tab */
+  .news-result { display: flex; gap: 14px; margin-bottom: 22px; max-width: 700px; padding-left: 180px; border-bottom: 1px solid #ebebeb; padding-bottom: 22px; }
+  .news-result:last-child { border-bottom: none; }
+  .news-text { flex: 1; }
+  .news-source { font-size: 12px; color: var(--snippet); font-weight: 500; margin-bottom: 2px; }
+  .news-title { font-size: 16px; color: var(--link); cursor: pointer; font-weight: 500; line-height: 1.3; margin-bottom: 4px; }
+  .news-title:hover { text-decoration: underline; }
+  .news-snippet { font-size: 13px; color: var(--snippet); line-height: 1.5; margin-bottom: 4px; }
+  .news-date { font-size: 12px; color: var(--news-date); }
+  .news-img { width: 92px; height: 68px; border-radius: 8px; object-fit: cover; background: #e8eaed; flex-shrink: 0; }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 8px;
+    width: 680px;
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; background: white; z-index: 1;
+  }
+  .modal-header h2 { font-size: 18px; font-weight: 500; color: var(--text); }
+  .modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: #70757a; padding: 2px 8px; border-radius: 4px; }
+  .modal-close:hover { background: var(--hover-bg); }
+  .modal-body { padding: 20px 24px; }
+
+  .modal-section { margin-bottom: 28px; }
+  .modal-section h3 { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; }
+
+  .modal-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .modal-row label { font-size: 13px; color: #5f6368; }
+  .modal-row input[type="text"],
+  .modal-row input[type="url"],
+  .modal-row input[type="color"],
+  .modal-row textarea {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-size: 14px;
+    font-family: 'Roboto', Arial, sans-serif;
+    color: var(--text);
+    width: 100%;
+    outline: none;
+    resize: vertical;
+  }
+  .modal-row input[type="color"] { padding: 2px 4px; height: 36px; width: 60px; cursor: pointer; }
+  .modal-row input:focus, .modal-row textarea:focus { border-color: #1a73e8; }
+
+  .modal-row-inline { display: flex; gap: 10px; align-items: flex-start; }
+  .modal-row-inline .modal-row { flex: 1; }
+
+  .result-preset { background: #f8f9fa; border-radius: 6px; padding: 12px; margin-bottom: 12px; border: 1px solid #e0e0e0; }
+  .result-preset-title { font-size: 12px; font-weight: 500; color: #5f6368; margin-bottom: 8px; }
+
+  .image-preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .image-preset { background: #f8f9fa; border-radius: 6px; padding: 8px; border: 1px solid #e0e0e0; }
+  .image-preset label { font-size: 11px; color: #5f6368; display: block; margin-bottom: 4px; }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    position: sticky; bottom: 0; background: white;
+  }
+  .btn-cancel {
+    background: none; border: 1px solid var(--border); border-radius: 4px;
+    padding: 8px 20px; font-size: 14px; cursor: pointer; font-family: 'Roboto', Arial, sans-serif;
+    color: var(--text);
+  }
+  .btn-cancel:hover { background: var(--hover-bg); }
+  .btn-save {
+    background: #1a73e8; border: none; border-radius: 4px;
+    padding: 8px 20px; font-size: 14px; color: white; cursor: pointer;
+    font-family: 'Roboto', Arial, sans-serif; font-weight: 500;
+  }
+  .btn-save:hover { background: #1765cc; }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .tabs-nav {
+    display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 20px;
+  }
+  .tabs-nav-btn {
+    padding: 8px 16px; font-size: 13px; color: #70757a; cursor: pointer;
+    border: none; background: none; border-bottom: 2px solid transparent;
+    font-family: 'Roboto', Arial, sans-serif;
+  }
+  .tabs-nav-btn.active { color: #1a73e8; border-bottom-color: #1a73e8; }
+
+  .no-results { color: #70757a; font-size: 15px; padding: 20px 0 20px 180px; }
+
+  @media (max-width: 768px) {
+    .results-body, .video-result, .news-result { padding-left: 20px; }
+    .images-grid { padding-left: 20px; padding-right: 20px; }
+    .results-search-box { max-width: calc(100vw - 160px); }
+    .home-logo { font-size: 52px; }
+    .results-logo { font-size: 20px; }
+    .video-result, .news-result { flex-direction: column; }
+    .video-thumb { width: 100%; height: 160px; }
+    .news-img { width: 80px; height: 60px; }
+  }
+
+  /* ===== SPLASH SCREEN ===== */
+  #splash-screen {
+    position: fixed;
+    inset: 0;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 1;
+    transition: opacity 0.6s ease;
+  }
+  #splash-screen.fade-out {
+    opacity: 0;
+    pointer-events: none;
+  }
+  #splash-screen.hidden {
+    display: none;
+  }
+  .splash-title {
+    font-family: 'Google Sans', Arial, sans-serif;
+    font-size: 18px;
+    color: #5f6368;
+    letter-spacing: 0.5px;
+  }
+  .splash-name {
+    font-family: 'Google Sans', Arial, sans-serif;
+    font-size: 28px;
+    font-weight: 500;
+    color: #202124;
+    margin-top: 6px;
+    letter-spacing: -0.5px;
+  }
+  .splash-dots {
+    display: flex;
+    gap: 8px;
+    margin-top: 32px;
+  }
+  .splash-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    animation: splashBounce 1.2s ease-in-out infinite;
+  }
+  .splash-dot:nth-child(1) { background: #4285F4; animation-delay: 0s; }
+  .splash-dot:nth-child(2) { background: #EA4335; animation-delay: 0.15s; }
+  .splash-dot:nth-child(3) { background: #FBBC05; animation-delay: 0.3s; }
+  .splash-dot:nth-child(4) { background: #34A853; animation-delay: 0.45s; }
+  @keyframes splashBounce {
+    0%, 80%, 100% { transform: scale(0.7); opacity: 0.5; }
+    40% { transform: scale(1.1); opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<div id="splash" style="position:fixed;inset:0;background:#ffffff;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;opacity:1;transition:opacity 0.6s ease;">
+  <p style="font-family:sans-serif;font-size:14px;color:#202124;opacity:0.6;margin-bottom:6px;letter-spacing:0.5px;">An App by</p>
+  <p style="font-family:sans-serif;font-size:26px;font-weight:700;color:#202124;letter-spacing:-0.5px;">Leon Dudhill</p>
+  <div style="display:flex;gap:8px;margin-top:24px;"><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:#4285F4;animation-delay:0.0s"></div><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:#EA4335;animation-delay:0.15s"></div><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:#FBBC05;animation-delay:0.3s"></div><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:#34A853;animation-delay:0.44999999999999996s"></div></div>
+</div>
+
+<!-- ===== SPLASH SCREEN ===== -->
+<div id="splash-screen">
+  <div class="splash-title">An App by</div>
+  <div class="splash-name">Leon Dudhill</div>
+  <div class="splash-dots">
+    <div class="splash-dot"></div>
+    <div class="splash-dot"></div>
+    <div class="splash-dot"></div>
+    <div class="splash-dot"></div>
+  </div>
+</div>
+
+<!-- ===== HOME PAGE ===== -->
+<div id="home-page">
+  <div class="home-top-links">
+    <button class="customize-btn" onclick="openModal()">Customise</button>
+    <a href="#" onclick="return false;" id="gmail-link-home">Email</a>
+    <a href="#" onclick="return false;" class="sign-in-btn" id="signin-link-home">Sign in</a>
+  </div>
+
+  <div class="home-logo" id="home-logo-el">
+    <span class="logo-m">M</span><span class="logo-o1">o</span><span class="logo-v">v</span><span class="logo-i">i</span><span class="logo-e">e</span><span class="logo-space"></span><span class="logo-s">S</span><span class="logo-e2">e</span><span class="logo-a">a</span><span class="logo-r">r</span><span class="logo-c">c</span><span class="logo-h">h</span>
+  </div>
+
+  <div class="home-search-box" onclick="document.getElementById('home-input').focus()">
+    <span class="search-icon">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+    </span>
+    <input type="text" id="home-input" autocomplete="off" onkeydown="if(event.key==='Enter')doSearch()">
+    <span class="mic-icon">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 15c1.66 0 3-1.34 3-3V6c0-1.66-1.34-3-3-3S9 4.34 9 6v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V6zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-2.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+    </span>
+  </div>
+
+  <div class="home-btn-row">
+    <button class="home-btn" id="search-btn-el" onclick="doSearch()">Search</button>
+    <button class="home-btn" id="lucky-btn-el" onclick="doSearch()">Try My Luck</button>
+  </div>
+</div>
+
+<!-- ===== RESULTS PAGE ===== -->
+<div id="results-page">
+  <div class="results-header">
+    <div class="results-top">
+      <div class="results-logo" id="results-logo-el" onclick="showHome()">
+        <span class="logo-m">M</span><span class="logo-o1">o</span><span class="logo-v">v</span><span class="logo-i">i</span><span class="logo-e">e</span><span class="logo-space"></span><span class="logo-s">S</span><span class="logo-e2">e</span><span class="logo-a">a</span><span class="logo-r">r</span><span class="logo-c">c</span><span class="logo-h">h</span>
+      </div>
+
+      <div class="results-search-box">
+        <span class="search-icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        </span>
+        <input type="text" id="results-input" autocomplete="off" onkeydown="if(event.key==='Enter')doSearch()">
+        <span class="clear-icon" onclick="document.getElementById('results-input').value=''">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </span>
+        <span class="divider"></span>
+        <span class="mic-icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 15c1.66 0 3-1.34 3-3V6c0-1.66-1.34-3-3-3S9 4.34 9 6v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V6zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-2.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+        </span>
+      </div>
+
+      <div class="header-right">
+        <button class="customize-btn" onclick="openModal()">Customise</button>
+        <a href="#" onclick="return false;" id="gmail-link-results">Email</a>
+        <a href="#" onclick="return false;" class="sign-in-btn">Sign in</a>
+      </div>
+    </div>
+
+    <div class="results-tabs">
+      <button class="tab-btn active" onclick="switchTab('web',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12z"/></svg>
+        All
+      </button>
+      <button class="tab-btn" onclick="switchTab('images',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+        Images
+      </button>
+      <button class="tab-btn" onclick="switchTab('videos',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 16.5l6-4.5-6-4.5v9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+        Videos
+      </button>
+      <button class="tab-btn" onclick="switchTab('news',this)">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 3H4v10c0 2.21 1.79 4 4 4h6c2.21 0 4-1.79 4-4v-3h2c1.11 0 2-.89 2-2V5c0-1.11-.89-2-2-2zm0 5h-2V5h2v3zM4 19h16v2H4z"/></svg>
+        News
+      </button>
+    </div>
+  </div>
+
+  <!-- WEB RESULTS -->
+  <div id="tab-web" class="tab-content active">
+    <div class="results-body">
+      <div class="results-stats" id="results-stats"></div>
+      <div id="web-results-container"></div>
+    </div>
+  </div>
+
+  <!-- IMAGES -->
+  <div id="tab-images" class="tab-content">
+    <div class="images-grid" id="images-container"></div>
+  </div>
+
+  <!-- VIDEOS -->
+  <div id="tab-videos" class="tab-content">
+    <div style="padding-top:20px" id="videos-container"></div>
+  </div>
+
+  <!-- NEWS -->
+  <div id="tab-news" class="tab-content">
+    <div style="padding-top:20px" id="news-container"></div>
+  </div>
+</div>
+
+<!-- ===== CUSTOMISE MODAL ===== -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>⚙️ Customise Movie Search</h2>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Nav tabs -->
+      <div class="tabs-nav">
+        <button class="tabs-nav-btn active" onclick="switchModalTab('general',this)">General</button>
+        <button class="tabs-nav-btn" onclick="switchModalTab('results',this)">Web Results</button>
+        <button class="tabs-nav-btn" onclick="switchModalTab('images',this)">Images</button>
+        <button class="tabs-nav-btn" onclick="switchModalTab('videos',this)">Videos</button>
+        <button class="tabs-nav-btn" onclick="switchModalTab('news',this)">News</button>
+      </div>
+
+      <!-- GENERAL TAB -->
+      <div id="modal-general" class="tab-content active">
+        <div class="modal-section">
+          <h3>Appearance</h3>
+          <div class="modal-row">
+            <label>Background Colour</label>
+            <input type="color" id="cfg-bg-color">
+          </div>
+          <div class="modal-row">
+            <label>Website Name (leave blank if using logo image)</label>
+            <input type="text" id="cfg-site-name" placeholder="Movie Search">
+          </div>
+          <div class="modal-row">
+            <label>Logo Image URL (optional — replaces text name)</label>
+            <input type="url" id="cfg-logo-url" placeholder="https://example.com/logo.jpg">
+          </div>
+            <input type="text" id="cfg-search-btn" placeholder="Search">
+          </div>
+          <div class="modal-row">
+            <label>"Try My Luck" Button Text</label>
+            <input type="text" id="cfg-lucky-btn" placeholder="Try My Luck">
+          </div>
+          <div class="modal-row">
+            <label>Email Link Text</label>
+            <input type="text" id="cfg-email-label" placeholder="Email">
+          </div>
+        </div>
+      </div>
+
+      <!-- RESULTS TAB -->
+      <div id="modal-results" class="tab-content">
+        <div class="modal-section">
+          <h3>Web Search Results (7 shown per search)</h3>
+          <div id="results-presets-editor"></div>
+        </div>
+      </div>
+
+      <!-- IMAGES TAB -->
+      <div id="modal-images" class="tab-content">
+        <div class="modal-section">
+          <h3>Image Presets (20 images)</h3>
+          <div class="image-preset-grid" id="images-presets-editor"></div>
+        </div>
+      </div>
+
+      <!-- VIDEOS TAB -->
+      <div id="modal-videos" class="tab-content">
+        <div class="modal-section">
+          <h3>Video Presets (7 shown)</h3>
+          <div id="videos-presets-editor"></div>
+        </div>
+      </div>
+
+      <!-- NEWS TAB -->
+      <div id="modal-news" class="tab-content">
+        <div class="modal-section">
+          <h3>News Stories (5 shown)</h3>
+          <div id="news-presets-editor"></div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveConfig()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DEFAULT CONFIG
+// ============================================================
+const DEFAULT_CONFIG = {
+  bgColor: '#ffffff',
+  siteName: 'Movie Search',
+  logoUrl: '',
+  searchBtnText: 'Search',
+  luckyBtnText: 'Try My Luck',
+  emailLabel: 'Email',
+  webResults: [
+    {
+      title: 'Leon Dudhill | Official Website',
+      url: 'www.leondudhill.com',
+      displayUrl: 'leondudhill.com',
+      snippet: 'Welcome to the official website of Leon Dudhill. Explore projects, portfolio, and the latest updates from the creative world of Leon Dudhill.',
+      date: ''
+    },
+    {
+      title: 'The Beastologist — YouTube Channel',
+      url: 'www.youtube.com/@thebeastologist',
+      displayUrl: 'youtube.com › @thebeastologist',
+      snippet: 'The Beastologist — Official YouTube channel. Dive into fascinating content about creatures, nature, and the unknown. Subscribe for the latest videos.',
+      date: ''
+    },
+    {
+      title: 'Search Results — Wikipedia',
+      url: 'en.wikipedia.org/wiki/Main_Page',
+      displayUrl: 'en.wikipedia.org',
+      snippet: 'Wikipedia is a free online encyclopedia, created and edited by volunteers around the world and hosted by the Wikimedia Foundation.',
+      date: ''
+    },
+    {
+      title: 'Latest News & Updates — BBC',
+      url: 'www.bbc.co.uk',
+      displayUrl: 'bbc.co.uk',
+      snippet: 'Breaking news, sport, TV, radio and a whole lot more. The BBC informs, educates and entertains, wherever you are, whatever your age.',
+      date: ''
+    },
+    {
+      title: 'Movie Database & Reviews — IMDb',
+      url: 'www.imdb.com',
+      displayUrl: 'imdb.com',
+      snippet: 'The world\'s most popular and authoritative source for movie, TV and celebrity content. Find ratings and reviews for the newest movie and TV shows.',
+      date: ''
+    },
+    {
+      title: 'Film Reviews & Ratings — Rotten Tomatoes',
+      url: 'www.rottentomatoes.com',
+      displayUrl: 'rottentomatoes.com',
+      snippet: 'Rotten Tomatoes is the world\'s most trusted recommendation resource for quality entertainment. Find film scores, critic reviews, and audience ratings.',
+      date: ''
+    },
+    {
+      title: 'Streaming Guide — What to Watch Tonight',
+      url: 'www.justwatch.com',
+      displayUrl: 'justwatch.com',
+      snippet: 'Find out where to stream, buy or rent the latest movies and TV shows across all major streaming services including Netflix, Disney+ and Prime Video.',
+      date: ''
+    }
+  ],
+  images: [
+    { url: 'https://picsum.photos/seed/city1/400/300', label: 'City skyline at dusk', source: 'unsplash.com' },
+    { url: 'https://picsum.photos/seed/nature2/400/300', label: 'Mountain landscape', source: 'pexels.com' },
+    { url: 'https://picsum.photos/seed/ocean3/400/300', label: 'Ocean waves at sunset', source: 'flickr.com' },
+    { url: 'https://picsum.photos/seed/forest4/400/300', label: 'Forest path in autumn', source: 'unsplash.com' },
+    { url: 'https://picsum.photos/seed/tech5/400/300', label: 'Technology concept', source: 'getty.com' },
+    { url: 'https://picsum.photos/seed/space6/400/300', label: 'Space and stars', source: 'nasa.gov' },
+    { url: 'https://picsum.photos/seed/food7/400/300', label: 'Gourmet food', source: 'pexels.com' },
+    { url: 'https://picsum.photos/seed/arch8/400/300', label: 'Architecture detail', source: 'unsplash.com' },
+    { url: 'https://picsum.photos/seed/animal9/400/300', label: 'Wildlife photography', source: 'natgeo.com' },
+    { url: 'https://picsum.photos/seed/portrait10/400/300', label: 'Abstract portrait', source: 'flickr.com' },
+    { url: 'https://picsum.photos/seed/beach11/400/300', label: 'Tropical beach', source: 'pexels.com' },
+    { url: 'https://picsum.photos/seed/car12/400/300', label: 'Classic automobile', source: 'motoring.com' },
+    { url: 'https://picsum.photos/seed/street13/400/300', label: 'Street photography', source: 'flickr.com' },
+    { url: 'https://picsum.photos/seed/night14/400/300', label: 'Night city lights', source: 'unsplash.com' },
+    { url: 'https://picsum.photos/seed/water15/400/300', label: 'Waterfall scenery', source: 'natgeo.com' },
+    { url: 'https://picsum.photos/seed/desert16/400/300', label: 'Desert dunes', source: 'pexels.com' },
+    { url: 'https://picsum.photos/seed/snow17/400/300', label: 'Snowy mountains', source: 'unsplash.com' },
+    { url: 'https://picsum.photos/seed/vintage18/400/300', label: 'Vintage aesthetic', source: 'flickr.com' },
+    { url: 'https://picsum.photos/seed/market19/400/300', label: 'Busy marketplace', source: 'getty.com' },
+    { url: 'https://picsum.photos/seed/sky20/400/300', label: 'Dramatic sky', source: 'unsplash.com' }
+  ],
+  videos: [
+    {
+      title: 'The Beastologist — Official Channel Trailer',
+      url: 'https://www.youtube.com/@thebeastologist',
+      thumbnail: 'https://picsum.photos/seed/vid1/320/180',
+      channel: 'The Beastologist',
+      duration: '3:24',
+      views: '1.2M views',
+      date: '2 weeks ago',
+      snippet: 'Welcome to The Beastologist channel. Exploring the most incredible creatures on Earth.'
+    },
+    {
+      title: 'Top 10 Most Mysterious Creatures Ever Discovered',
+      url: 'https://www.youtube.com/watch?v=example',
+      thumbnail: 'https://picsum.photos/seed/vid2/320/180',
+      channel: 'Nature Explored',
+      duration: '12:45',
+      views: '4.7M views',
+      date: '1 month ago',
+      snippet: 'Scientists have uncovered some truly bizarre creatures lurking in the depths of our planet.'
+    },
+    {
+      title: 'Leon Dudhill — Creative Showcase 2024',
+      url: 'https://www.leondudhill.com',
+      thumbnail: 'https://picsum.photos/seed/vid3/320/180',
+      channel: 'Leon Dudhill',
+      duration: '8:12',
+      views: '85K views',
+      date: '3 months ago',
+      snippet: 'A full showcase of creative work spanning film, photography and digital art.'
+    },
+    {
+      title: 'How Documentaries Are Made — Behind the Scenes',
+      url: 'https://www.youtube.com/watch?v=example2',
+      thumbnail: 'https://picsum.photos/seed/vid4/320/180',
+      channel: 'FilmCraft',
+      duration: '22:08',
+      views: '932K views',
+      date: '5 months ago',
+      snippet: 'Take a deep dive into the process of creating compelling documentary content.'
+    },
+    {
+      title: 'Wildlife Documentary — Deep Ocean',
+      url: 'https://www.youtube.com/watch?v=example3',
+      thumbnail: 'https://picsum.photos/seed/vid5/320/180',
+      channel: 'BBC Earth',
+      duration: '44:30',
+      views: '12M views',
+      date: '6 months ago',
+      snippet: 'Explore the darkest depths of the ocean and the creatures that inhabit them.'
+    },
+    {
+      title: 'The Art of Cinematography — Visual Storytelling',
+      url: 'https://www.youtube.com/watch?v=example4',
+      thumbnail: 'https://picsum.photos/seed/vid6/320/180',
+      channel: 'Cinema Theory',
+      duration: '18:55',
+      views: '2.3M views',
+      date: '4 months ago',
+      snippet: 'Discover how cinematographers use light, colour and movement to tell compelling stories.'
+    },
+    {
+      title: 'Rare Animals Caught on Camera for the First Time',
+      url: 'https://www.youtube.com/watch?v=example5',
+      thumbnail: 'https://picsum.photos/seed/vid7/320/180',
+      channel: 'Wildlife Planet',
+      duration: '31:10',
+      views: '7.8M views',
+      date: '2 months ago',
+      snippet: 'Remote cameras have captured extraordinary footage of species rarely seen by human eyes.'
+    }
+  ],
+  news: [
+    {
+      title: 'Scientists Discover New Species in Remote Rainforest',
+      source: 'The Daily Chronicle',
+      snippet: 'A team of researchers has identified over 30 previously unknown species during a six-month expedition into an unexplored region of the Amazon, raising hopes for conservation efforts.',
+      date: '2 hours ago',
+      image: 'https://picsum.photos/seed/news1/200/150'
+    },
+    {
+      title: 'Global Film Festival Announces Record-Breaking Submissions',
+      source: 'Entertainment Weekly',
+      snippet: 'This year\'s international film festival has received over 12,000 entries from 140 countries, marking the highest submission rate in the event\'s 30-year history.',
+      date: '5 hours ago',
+      image: 'https://picsum.photos/seed/news2/200/150'
+    },
+    {
+      title: 'New Research Links Ocean Health to Climate Stability',
+      source: 'Science Today',
+      snippet: 'A landmark study published in Nature has found that healthy ocean ecosystems play a significantly larger role in regulating global temperatures than previously understood.',
+      date: '1 day ago',
+      image: 'https://picsum.photos/seed/news3/200/150'
+    },
+    {
+      title: 'Tech Company Unveils AI Tool for Wildlife Conservation',
+      source: 'Tech Insider',
+      snippet: 'A pioneering technology firm has launched an artificial intelligence platform designed to monitor endangered species populations in real time using satellite imagery.',
+      date: '2 days ago',
+      image: 'https://picsum.photos/seed/news4/200/150'
+    },
+    {
+      title: 'Documentary Series Breaks Streaming Records',
+      source: 'Screen Daily',
+      snippet: 'A new nature documentary series has become the most-watched streaming debut of the year, attracting over 40 million viewers in its first weekend of release.',
+      date: '3 days ago',
+      image: 'https://picsum.photos/seed/news5/200/150'
+    }
+  ]
+};
+
+// ============================================================
+// LOAD / SAVE CONFIG
+// ============================================================
+function loadConfig() {
+  try {
+    const saved = localStorage.getItem('movieSearchConfig');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Merge arrays: if saved has fewer entries than default, pad with defaults
+      const merged = Object.assign({}, JSON.parse(JSON.stringify(DEFAULT_CONFIG)), parsed);
+      if (!parsed.webResults || parsed.webResults.length < DEFAULT_CONFIG.webResults.length) {
+        merged.webResults = DEFAULT_CONFIG.webResults.map((def, i) =>
+          (parsed.webResults && parsed.webResults[i]) ? parsed.webResults[i] : def
+        );
+      }
+      if (!parsed.videos || parsed.videos.length < DEFAULT_CONFIG.videos.length) {
+        merged.videos = DEFAULT_CONFIG.videos.map((def, i) =>
+          (parsed.videos && parsed.videos[i]) ? parsed.videos[i] : def
+        );
+      }
+      if (!parsed.images || parsed.images.length < DEFAULT_CONFIG.images.length) {
+        merged.images = DEFAULT_CONFIG.images.map((def, i) =>
+          (parsed.images && parsed.images[i]) ? parsed.images[i] : def
+        );
+      }
+      if (!parsed.news || parsed.news.length < DEFAULT_CONFIG.news.length) {
+        merged.news = DEFAULT_CONFIG.news.map((def, i) =>
+          (parsed.news && parsed.news[i]) ? parsed.news[i] : def
+        );
+      }
+      return merged;
+    }
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+}
+
+function saveToStorage(cfg) {
+  localStorage.setItem('movieSearchConfig', JSON.stringify(cfg));
+}
+
+let config = loadConfig();
+
+// ============================================================
+// APPLY CONFIG
+// ============================================================
+function applyConfig() {
+  document.body.style.background = config.bgColor;
+  document.getElementById('home-page').style.background = config.bgColor;
+  document.getElementById('results-page').style.background = config.bgColor;
+
+  // Logos
+  renderLogo('home-logo-el', true);
+  renderLogo('results-logo-el', false);
+
+  // Buttons & links
+  const sb = document.getElementById('search-btn-el');
+  const lb = document.getElementById('lucky-btn-el');
+  if (sb) sb.textContent = config.searchBtnText || 'Search';
+  if (lb) lb.textContent = config.luckyBtnText || 'Try My Luck';
+  document.querySelectorAll('#gmail-link-home, #gmail-link-results').forEach(el => {
+    if (el) el.textContent = config.emailLabel || 'Email';
+  });
+}
+
+function renderLogo(elId, large) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  if (config.logoUrl) {
+    el.innerHTML = `<img src="${config.logoUrl}" alt="Logo">`;
+  } else {
+    const name = config.siteName || 'Movie Search';
+    const colors = ['#4285F4','#EA4335','#FBBC05','#34A853','#EA4335','#4285F4','#FBBC05','#34A853','#EA4335','#4285F4','#FBBC05','#34A853'];
+    el.innerHTML = name.split('').map((c, i) => {
+      if (c === ' ') return `<span style="display:inline-block;width:${large?10:6}px"></span>`;
+      return `<span style="color:${colors[i%colors.length]}">${c}</span>`;
+    }).join('');
+  }
+}
+
+// ============================================================
+// SEARCH
+// ============================================================
+function doSearch() {
+  const query = (document.getElementById('home-input').value || document.getElementById('results-input').value).trim();
+  if (!query) return;
+
+  document.getElementById('home-page').style.display = 'none';
+  document.getElementById('results-page').style.display = 'block';
+  document.getElementById('results-input').value = query;
+
+  renderWebResults(query);
+  renderImages();
+  renderVideos();
+  renderNews();
+  switchTab('web', document.querySelector('.tab-btn'));
+}
+
+function showHome() {
+  document.getElementById('results-page').style.display = 'none';
+  document.getElementById('home-page').style.display = 'flex';
+  document.getElementById('home-input').value = '';
+}
+
+// ============================================================
+// RENDER WEB RESULTS
+// ============================================================
+function renderWebResults(query) {
+  const container = document.getElementById('web-results-container');
+  const count = (Math.floor(Math.random() * 9000) + 1000) * 1000;
+  const ms = (Math.random() * 0.5 + 0.3).toFixed(2);
+  document.getElementById('results-stats').textContent = `About ${count.toLocaleString()} results (${ms} seconds)`;
+
+  container.innerHTML = config.webResults.map(r => `
+    <div class="web-result">
+      <div class="result-url">
+        <div class="result-favicon"></div>
+        <span class="breadcrumb">${r.url}</span>
+      </div>
+      <a class="result-title" href="https://${r.url.startsWith('www.')?r.url:'www.'+r.url}" target="_blank">${r.title}</a>
+      <div class="result-snippet">
+        ${r.date ? `<span class="result-date">${r.date} — </span>` : ''}${r.snippet}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// RENDER IMAGES
+// ============================================================
+function renderImages() {
+  const container = document.getElementById('images-container');
+  const tripled = [...config.images, ...config.images, ...config.images];
+  container.innerHTML = tripled.map(img => `
+    <div class="image-card">
+      <img src="${img.url}" alt="${img.label}" onerror="this.style.background='#ccc'">
+      <div class="img-label">${img.label}</div>
+      <div class="img-source">${img.source}</div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// RENDER VIDEOS
+// ============================================================
+function renderVideos() {
+  const container = document.getElementById('videos-container');
+  container.innerHTML = config.videos.map(v => `
+    <div class="video-result">
+      <div class="video-thumb-wrap">
+        <img class="video-thumb" src="${v.thumbnail}" alt="${v.title}" onerror="this.style.background='#555'">
+        <div class="video-play-icon">▶</div>
+      </div>
+      <div class="video-info">
+        <div class="video-title" onclick="window.open('${v.url}','_blank')">${v.title}</div>
+        <div class="video-meta">${v.duration} · ${v.views} · ${v.date} · ${v.channel}</div>
+        <div class="video-snippet">${v.snippet}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// RENDER NEWS
+// ============================================================
+function renderNews() {
+  const container = document.getElementById('news-container');
+  container.innerHTML = config.news.map(n => `
+    <div class="news-result">
+      <div class="news-text">
+        <div class="news-source">${n.source}</div>
+        <div class="news-title">${n.title}</div>
+        <div class="news-snippet">${n.snippet}</div>
+        <div class="news-date">${n.date}</div>
+      </div>
+      <img class="news-img" src="${n.image}" alt="${n.title}" onerror="this.style.background='#ccc'">
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// TABS (results page)
+// ============================================================
+function switchTab(tabName, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#results-page .tab-content').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const tabEl = document.getElementById('tab-' + tabName);
+  if (tabEl) tabEl.classList.add('active');
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function openModal() {
+  populateModal();
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+function switchModalTab(name, btn) {
+  document.querySelectorAll('.tabs-nav-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.modal .tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('modal-' + name).classList.add('active');
+}
+
+function populateModal() {
+  document.getElementById('cfg-bg-color').value = config.bgColor;
+  document.getElementById('cfg-site-name').value = config.siteName;
+  document.getElementById('cfg-logo-url').value = config.logoUrl || '';
+  document.getElementById('cfg-search-btn').value = config.searchBtnText || 'Search';
+  document.getElementById('cfg-lucky-btn').value = config.luckyBtnText || 'Try My Luck';
+  document.getElementById('cfg-email-label').value = config.emailLabel || 'Email';
+
+  // Web results editor
+  const re = document.getElementById('results-presets-editor');
+  re.innerHTML = config.webResults.map((r, i) => `
+    <div class="result-preset">
+      <div class="result-preset-title">Result ${i+1}</div>
+      <div class="modal-row"><label>Title</label><input type="text" id="r-title-${i}" value="${escHtml(r.title)}"></div>
+      <div class="modal-row"><label>URL</label><input type="text" id="r-url-${i}" value="${escHtml(r.url)}"></div>
+      <div class="modal-row"><label>Display URL / Breadcrumb</label><input type="text" id="r-durl-${i}" value="${escHtml(r.displayUrl)}"></div>
+      <div class="modal-row"><label>Snippet</label><textarea id="r-snippet-${i}" rows="2">${escHtml(r.snippet)}</textarea></div>
+      <div class="modal-row"><label>Date (optional)</label><input type="text" id="r-date-${i}" value="${escHtml(r.date||'')}"></div>
+    </div>
+  `).join('');
+
+  // Images editor
+  const ie = document.getElementById('images-presets-editor');
+  ie.innerHTML = config.images.map((img, i) => `
+    <div class="image-preset">
+      <label>Image ${i+1} — URL</label>
+      <input type="text" id="img-url-${i}" value="${escHtml(img.url)}" placeholder="https://...">
+      <label style="margin-top:6px">Label</label>
+      <input type="text" id="img-label-${i}" value="${escHtml(img.label)}">
+      <label style="margin-top:6px">Source</label>
+      <input type="text" id="img-src-${i}" value="${escHtml(img.source)}">
+    </div>
+  `).join('');
+
+  // Videos editor
+  const ve = document.getElementById('videos-presets-editor');
+  ve.innerHTML = config.videos.map((v, i) => `
+    <div class="result-preset">
+      <div class="result-preset-title">Video ${i+1}</div>
+      <div class="modal-row"><label>Title</label><input type="text" id="v-title-${i}" value="${escHtml(v.title)}"></div>
+      <div class="modal-row"><label>URL (link when clicked)</label><input type="text" id="v-url-${i}" value="${escHtml(v.url)}"></div>
+      <div class="modal-row"><label>Thumbnail URL</label><input type="text" id="v-thumb-${i}" value="${escHtml(v.thumbnail)}"></div>
+      <div class="modal-row-inline">
+        <div class="modal-row"><label>Channel</label><input type="text" id="v-channel-${i}" value="${escHtml(v.channel)}"></div>
+        <div class="modal-row"><label>Duration</label><input type="text" id="v-duration-${i}" value="${escHtml(v.duration)}"></div>
+        <div class="modal-row"><label>Views</label><input type="text" id="v-views-${i}" value="${escHtml(v.views)}"></div>
+      </div>
+      <div class="modal-row"><label>Snippet</label><textarea id="v-snippet-${i}" rows="2">${escHtml(v.snippet)}</textarea></div>
+    </div>
+  `).join('');
+
+  // News editor
+  const ne = document.getElementById('news-presets-editor');
+  ne.innerHTML = config.news.map((n, i) => `
+    <div class="result-preset">
+      <div class="result-preset-title">Story ${i+1}</div>
+      <div class="modal-row"><label>Headline</label><input type="text" id="n-title-${i}" value="${escHtml(n.title)}"></div>
+      <div class="modal-row"><label>Source / Publisher</label><input type="text" id="n-source-${i}" value="${escHtml(n.source)}"></div>
+      <div class="modal-row"><label>Snippet</label><textarea id="n-snippet-${i}" rows="2">${escHtml(n.snippet)}</textarea></div>
+      <div class="modal-row"><label>Date</label><input type="text" id="n-date-${i}" value="${escHtml(n.date)}"></div>
+      <div class="modal-row"><label>Image URL</label><input type="text" id="n-img-${i}" value="${escHtml(n.image)}"></div>
+    </div>
+  `).join('');
+}
+
+function saveConfig() {
+  config.bgColor = document.getElementById('cfg-bg-color').value;
+  config.siteName = document.getElementById('cfg-site-name').value;
+  config.logoUrl = document.getElementById('cfg-logo-url').value;
+  config.searchBtnText = document.getElementById('cfg-search-btn').value || 'Search';
+  config.luckyBtnText = document.getElementById('cfg-lucky-btn').value || 'Try My Luck';
+  config.emailLabel = document.getElementById('cfg-email-label').value || 'Email';
+
+  config.webResults = config.webResults.map((r, i) => ({
+    title: document.getElementById(`r-title-${i}`).value,
+    url: document.getElementById(`r-url-${i}`).value,
+    displayUrl: document.getElementById(`r-durl-${i}`).value,
+    snippet: document.getElementById(`r-snippet-${i}`).value,
+    date: document.getElementById(`r-date-${i}`).value
+  }));
+
+  config.images = config.images.map((img, i) => ({
+    url: document.getElementById(`img-url-${i}`).value,
+    label: document.getElementById(`img-label-${i}`).value,
+    source: document.getElementById(`img-src-${i}`).value
+  }));
+
+  config.videos = config.videos.map((v, i) => ({
+    title: document.getElementById(`v-title-${i}`).value,
+    url: document.getElementById(`v-url-${i}`).value,
+    thumbnail: document.getElementById(`v-thumb-${i}`).value,
+    channel: document.getElementById(`v-channel-${i}`).value,
+    duration: document.getElementById(`v-duration-${i}`).value,
+    views: document.getElementById(`v-views-${i}`).value,
+    date: v.date,
+    snippet: document.getElementById(`v-snippet-${i}`).value
+  }));
+
+  config.news = config.news.map((n, i) => ({
+    title: document.getElementById(`n-title-${i}`).value,
+    source: document.getElementById(`n-source-${i}`).value,
+    snippet: document.getElementById(`n-snippet-${i}`).value,
+    date: document.getElementById(`n-date-${i}`).value,
+    image: document.getElementById(`n-img-${i}`).value
+  }));
+
+  saveToStorage(config);
+  applyConfig();
+  closeModal();
+}
+
+function escHtml(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Close modal on overlay click
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+
+// ===== SPLASH SCREEN =====
+(function() {
+  const splash = document.getElementById('splash-screen');
+  if (!splash) return;
+  // Show only once per session
+  if (sessionStorage.getItem('splashShown')) {
+    splash.classList.add('hidden');
+    return;
+  }
+  sessionStorage.setItem('splashShown', '1');
+  // Fade in is instant (starts visible), wait 1.6s then fade out over 0.6s
+  setTimeout(function() {
+    splash.classList.add('fade-out');
+    setTimeout(function() {
+      splash.classList.add('hidden');
+    }, 650);
+  }, 1600);
+})();
+
+
+// Splash screen
+(function() {
+  var splash = document.getElementById('splash');
+  if (!splash) return;
+  if (sessionStorage.getItem('splashDone_search')) { splash.style.display='none'; return; }
+  sessionStorage.setItem('splashDone_search','1');
+  setTimeout(function() {
+    splash.style.opacity='0';
+    setTimeout(function() { splash.style.display='none'; }, 650);
+  }, 1600);
+})();
+
+// Init
+applyConfig();
+</script>
+</body>
+</html>

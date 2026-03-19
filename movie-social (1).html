@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Movie Social</title>
+<link href="https://fonts.googleapis.com/css2?family=Chirp:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #000000;
+  --bg2: #16181c;
+  --bg3: #1d1f23;
+  --border: #2f3336;
+  --text: #e7e9ea;
+  --text2: #71767b;
+  --text3: #1d9bf0;
+  --accent: #1d9bf0;
+  --accent-hover: #1a8cd8;
+  --accent-dim: rgba(29,155,240,0.1);
+  --like: #f91880;
+  --like-dim: rgba(249,24,128,0.1);
+  --repost: #00ba7c;
+  --repost-dim: rgba(0,186,124,0.1);
+  --hover-bg: rgba(255,255,255,0.03);
+  --white: #ffffff;
+}
+
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+
+/* ===== SPLASH ===== */
+#splash {
+  position: fixed; inset: 0;
+  background: #000;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity 0.6s ease;
+}
+#splash.fade-out { opacity: 0; pointer-events: none; }
+#splash.hidden { display: none; }
+.splash-logo {
+  font-size: 52px;
+  margin-bottom: 20px;
+  color: var(--white);
+}
+.splash-by { font-size: 14px; color: var(--text2); letter-spacing: 0.5px; }
+.splash-name { font-size: 24px; font-weight: 700; color: var(--white); margin-top: 4px; }
+.splash-dots { display: flex; gap: 8px; margin-top: 28px; }
+.splash-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  animation: bounce 1.2s ease-in-out infinite;
+}
+.splash-dot:nth-child(1) { background: var(--accent); animation-delay: 0s; }
+.splash-dot:nth-child(2) { background: var(--like); animation-delay: 0.15s; }
+.splash-dot:nth-child(3) { background: var(--repost); animation-delay: 0.3s; }
+.splash-dot:nth-child(4) { background: #ffd400; animation-delay: 0.45s; }
+@keyframes bounce { 0%,80%,100%{transform:scale(0.7);opacity:0.5}40%{transform:scale(1.1);opacity:1} }
+
+/* ===== LAYOUT ===== */
+#app {
+  display: flex;
+  width: 100%;
+  max-width: 1265px;
+  height: 100vh;
+}
+
+/* ===== LEFT NAV ===== */
+#left-nav {
+  width: 275px;
+  flex-shrink: 0;
+  padding: 0 12px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.nav-logo {
+  padding: 12px 16px;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--white);
+  justify-content: center;
+}
+.nav-logo:hover { background: var(--hover-bg); }
+.nav-logo img { max-height: 28px; max-width: 120px; object-fit: contain; }
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 16px;
+  border-radius: 9999px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: var(--text);
+  font-size: 20px;
+  font-weight: 400;
+  font-family: 'Inter', sans-serif;
+  text-align: left;
+  width: 100%;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.nav-item:hover { background: var(--hover-bg); }
+.nav-item.active { font-weight: 700; }
+.nav-item svg { width: 26px; height: 26px; flex-shrink: 0; }
+.nav-item .nav-label { font-size: 20px; }
+
+.nav-post-btn {
+  margin-top: 16px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 9999px;
+  padding: 16px;
+  font-size: 17px;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.15s;
+}
+.nav-post-btn:hover { background: var(--accent-hover); }
+
+.nav-profile {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-bottom: 12px;
+}
+.nav-profile:hover { background: var(--hover-bg); }
+.nav-profile-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--accent); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 16px; flex-shrink: 0;
+}
+.nav-profile-name { font-size: 15px; font-weight: 700; color: var(--text); }
+.nav-profile-handle { font-size: 14px; color: var(--text2); }
+.nav-profile-dots { margin-left: auto; color: var(--text); font-size: 18px; }
+
+/* ===== MAIN FEED ===== */
+#main-feed {
+  flex: 1;
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  min-width: 0;
+  max-width: 600px;
+}
+
+.feed-header {
+  position: sticky; top: 0;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  z-index: 10;
+}
+.feed-header-tabs {
+  display: flex;
+}
+.feed-tab {
+  flex: 1; text-align: center;
+  padding: 16px;
+  font-size: 15px; font-weight: 500;
+  color: var(--text2);
+  cursor: pointer;
+  border: none; background: none;
+  font-family: 'Inter', sans-serif;
+  position: relative;
+  transition: background 0.15s, color 0.15s;
+}
+.feed-tab:hover { background: var(--hover-bg); color: var(--text); }
+.feed-tab.active { font-weight: 700; color: var(--text); }
+.feed-tab.active::after {
+  content: '';
+  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 56px; height: 4px;
+  background: var(--accent);
+  border-radius: 9999px;
+}
+
+/* Compose box at top of feed */
+.compose-box {
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.compose-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--accent); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 16px; flex-shrink: 0;
+}
+.compose-right { flex: 1; }
+.compose-input {
+  width: 100%;
+  background: none; border: none; outline: none;
+  color: var(--text); font-size: 20px;
+  font-family: 'Inter', sans-serif;
+  resize: none;
+  line-height: 1.5;
+  min-height: 50px;
+  padding-top: 8px;
+}
+.compose-input::placeholder { color: var(--text2); }
+.compose-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+}
+.compose-action-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: none; background: none; cursor: pointer;
+  color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+}
+.compose-action-btn:hover { background: var(--accent-dim); }
+.compose-action-btn svg { width: 20px; height: 20px; }
+.compose-post-btn {
+  margin-left: auto;
+  background: var(--accent); color: white;
+  border: none; border-radius: 9999px;
+  padding: 8px 20px; font-size: 15px; font-weight: 700;
+  font-family: 'Inter', sans-serif; cursor: pointer;
+  transition: background 0.15s;
+}
+.compose-post-btn:hover { background: var(--accent-hover); }
+
+/* ===== POST / TWEET ===== */
+.post {
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.1s;
+  position: relative;
+}
+.post:hover { background: var(--hover-bg); }
+
+.post-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 16px; color: white;
+}
+
+.post-right { flex: 1; min-width: 0; }
+
+.post-header {
+  display: flex; align-items: center; gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 2px;
+}
+.post-name {
+  font-size: 15px; font-weight: 700; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.post-verified {
+  color: var(--accent); display: inline-flex; align-items: center;
+  flex-shrink: 0;
+}
+.post-handle { font-size: 15px; color: var(--text2); white-space: nowrap; }
+.post-dot { color: var(--text2); font-size: 12px; margin: 0 2px; }
+.post-time { font-size: 15px; color: var(--text2); white-space: nowrap; }
+.post-menu {
+  margin-left: auto; color: var(--text2);
+  background: none; border: none; cursor: pointer;
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.post-menu:hover { background: var(--accent-dim); color: var(--accent); }
+
+.post-body {
+  font-size: 15px; line-height: 1.5; color: var(--text);
+  white-space: pre-wrap; word-wrap: break-word;
+  margin-bottom: 10px;
+}
+.post-body a { color: var(--accent); text-decoration: none; }
+.post-body a:hover { text-decoration: underline; }
+
+.post-image {
+  width: 100%; border-radius: 16px;
+  margin-bottom: 10px; object-fit: cover;
+  max-height: 280px;
+  background: var(--bg3);
+  display: block;
+}
+.post-image-placeholder {
+  width: 100%; height: 180px; border-radius: 16px;
+  background: var(--bg3); margin-bottom: 10px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text2); font-size: 13px;
+}
+
+.post-actions {
+  display: flex; gap: 0; margin-top: 4px;
+  margin-left: -8px;
+}
+.post-action {
+  display: flex; align-items: center; gap: 4px;
+  padding: 6px 8px; border-radius: 9999px;
+  font-size: 13px; color: var(--text2);
+  cursor: pointer; border: none; background: none;
+  font-family: 'Inter', sans-serif;
+  transition: color 0.15s;
+  min-width: 60px;
+}
+.post-action:hover.reply { color: var(--accent); background: var(--accent-dim); }
+.post-action:hover.repost { color: var(--repost); background: var(--repost-dim); }
+.post-action:hover.like { color: var(--like); background: var(--like-dim); }
+.post-action:hover.views { color: var(--accent); background: var(--accent-dim); }
+.post-action svg { width: 18px; height: 18px; }
+.post-action.liked { color: var(--like); }
+.post-action.liked svg { fill: var(--like); }
+.post-action.reposted { color: var(--repost); }
+
+/* Pinned / promoted labels */
+.post-label {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--text2); font-weight: 500;
+  margin-bottom: 4px; padding-left: 52px;
+  margin-top: -4px;
+}
+.post-label svg { width: 14px; height: 14px; }
+
+/* ===== RIGHT PANEL ===== */
+#right-panel {
+  width: 350px;
+  flex-shrink: 0;
+  padding: 0 16px;
+  overflow-y: auto;
+  display: block;
+}
+
+.search-box {
+  position: sticky; top: 0;
+  padding: 8px 0 12px;
+  background: var(--bg);
+}
+.search-inner {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--bg2);
+  border-radius: 9999px;
+  padding: 10px 16px;
+  border: 1px solid transparent;
+  transition: border-color 0.15s, background 0.15s;
+}
+.search-inner:focus-within {
+  background: var(--bg);
+  border-color: var(--accent);
+}
+.search-inner svg { color: var(--text2); flex-shrink: 0; width: 18px; height: 18px; }
+.search-inner input {
+  flex: 1; background: none; border: none; outline: none;
+  font-size: 15px; color: var(--text); font-family: 'Inter', sans-serif;
+}
+.search-inner input::placeholder { color: var(--text2); }
+
+.panel-card {
+  background: var(--bg2);
+  border-radius: 16px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.panel-card-title {
+  font-size: 20px; font-weight: 800; color: var(--text);
+  padding: 12px 16px 4px;
+}
+.trend-item {
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.trend-item:hover { background: var(--hover-bg); }
+.trend-cat { font-size: 13px; color: var(--text2); }
+.trend-name { font-size: 15px; font-weight: 700; color: var(--text); margin: 2px 0; }
+.trend-posts { font-size: 13px; color: var(--text2); }
+.show-more {
+  padding: 16px;
+  color: var(--accent); font-size: 15px; cursor: pointer;
+  display: block; transition: background 0.1s;
+}
+.show-more:hover { background: var(--hover-bg); }
+
+.who-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.who-item:hover { background: var(--hover-bg); }
+.who-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  color: white; font-weight: 700; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.who-info { flex: 1; min-width: 0; }
+.who-name { font-size: 15px; font-weight: 700; color: var(--text); }
+.who-handle { font-size: 14px; color: var(--text2); }
+.follow-btn {
+  background: var(--text); color: var(--bg);
+  border: none; border-radius: 9999px;
+  padding: 6px 16px; font-size: 14px; font-weight: 700;
+  font-family: 'Inter', sans-serif; cursor: pointer;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+.follow-btn:hover { opacity: 0.9; }
+.follow-btn.following {
+  background: transparent; color: var(--text);
+  border: 1px solid var(--border);
+}
+.follow-btn.following:hover { background: rgba(249,24,128,0.1); color: var(--like); border-color: var(--like); }
+
+/* ===== POST MODAL ===== */
+#post-modal {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 500;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 60px;
+}
+#post-modal.open { display: flex; }
+.post-modal-inner {
+  background: var(--bg);
+  border-radius: 16px;
+  width: 600px;
+  max-width: 95vw;
+  padding: 16px;
+  position: relative;
+}
+.post-modal-close {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: none; background: none; cursor: pointer;
+  color: var(--text); font-size: 20px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 8px;
+}
+.post-modal-close:hover { background: var(--hover-bg); }
+.post-modal-compose {
+  display: flex; gap: 12px;
+}
+.post-modal-textarea {
+  flex: 1; background: none; border: none; outline: none;
+  color: var(--text); font-size: 20px;
+  font-family: 'Inter', sans-serif; resize: none;
+  line-height: 1.5; min-height: 120px;
+  placeholder-color: var(--text2);
+}
+.post-modal-textarea::placeholder { color: var(--text2); }
+.post-modal-footer {
+  display: flex; align-items: center;
+  border-top: 1px solid var(--border);
+  padding-top: 12px; margin-top: 12px; gap: 8px;
+}
+.char-count {
+  font-size: 14px; color: var(--text2); margin-right: 8px;
+}
+.char-count.warn { color: #ffd400; }
+.char-count.over { color: var(--like); }
+
+/* ===== TOAST ===== */
+#toast {
+  display: none;
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent); color: white;
+  padding: 14px 20px; border-radius: 4px;
+  font-size: 15px; font-weight: 500; z-index: 9000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+#toast.show { display: block; }
+
+/* ===== CUSTOMISE MODAL ===== */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7); z-index: 1000;
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg);
+  border-radius: 16px; width: 680px;
+  max-width: 95vw; max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 30px rgba(0,0,0,0.6);
+  border: 1px solid var(--border);
+}
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; background: var(--bg); z-index: 1;
+}
+.modal-header h2 { font-size: 20px; font-weight: 800; color: var(--text); }
+.modal-close {
+  background: none; border: none; font-size: 22px;
+  cursor: pointer; color: var(--text2); padding: 2px 8px;
+  border-radius: 50%; width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-close:hover { background: var(--hover-bg); color: var(--text); }
+.modal-body { padding: 20px 24px; }
+.modal-section { margin-bottom: 24px; }
+.modal-section h3 {
+  font-size: 15px; font-weight: 700; color: var(--text);
+  margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px;
+}
+.modal-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.modal-row label { font-size: 13px; color: var(--text2); }
+.modal-row input[type="text"],
+.modal-row input[type="url"],
+.modal-row textarea {
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 12px; font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  color: var(--text); width: 100%; outline: none;
+  resize: vertical; background: var(--bg2);
+}
+.modal-row input[type="color"] {
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 2px 4px; height: 36px; width: 60px; cursor: pointer;
+  background: var(--bg2);
+}
+.modal-row input:focus, .modal-row textarea:focus { border-color: var(--accent); }
+.post-preset {
+  background: var(--bg2); border-radius: 12px; padding: 14px;
+  margin-bottom: 10px; border: 1px solid var(--border);
+}
+.post-preset-title { font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.modal-row-inline { display: flex; gap: 10px; }
+.modal-row-inline .modal-row { flex: 1; }
+.tabs-nav {
+  display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 20px;
+}
+.tabs-nav-btn {
+  padding: 12px 16px; font-size: 15px; color: var(--text2); cursor: pointer;
+  border: none; background: none; border-bottom: 2px solid transparent;
+  font-family: 'Inter', sans-serif; font-weight: 500;
+}
+.tabs-nav-btn:hover { color: var(--text); }
+.tabs-nav-btn.active { color: var(--text); border-bottom-color: var(--accent); font-weight: 700; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.modal-footer {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 16px 24px; border-top: 1px solid var(--border);
+  position: sticky; bottom: 0; background: var(--bg);
+}
+.btn-cancel {
+  background: none; border: 1px solid var(--border); border-radius: 9999px;
+  padding: 8px 20px; font-size: 14px; cursor: pointer; color: var(--text);
+  font-family: 'Inter', sans-serif; font-weight: 700;
+}
+.btn-cancel:hover { background: var(--hover-bg); }
+.btn-save {
+  background: var(--text); border: none; border-radius: 9999px;
+  padding: 8px 20px; font-size: 14px; color: var(--bg);
+  cursor: pointer; font-weight: 700; font-family: 'Inter', sans-serif;
+}
+.btn-save:hover { opacity: 0.9; }
+
+@media (max-width: 1100px) { #right-panel { display: none; } }
+@media (max-width: 700px) {
+  #left-nav { width: 68px; }
+  .nav-item .nav-label, .nav-post-btn span, .nav-profile-info, .nav-profile-dots { display: none; }
+  .nav-post-btn { width: 50px; padding: 14px; border-radius: 50%; }
+  .nav-profile { padding: 8px; justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash" style="position:fixed;inset:0;background:#000000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;opacity:1;transition:opacity 0.6s ease;">
+  <p style="font-family:sans-serif;font-size:14px;color:#e7e9ea;opacity:0.6;margin-bottom:6px;letter-spacing:0.5px;">An App by</p>
+  <p style="font-family:sans-serif;font-size:26px;font-weight:700;color:#e7e9ea;letter-spacing:-0.5px;">Leon Dudhill</p>
+  <div style="display:flex;gap:8px;margin-top:24px;"><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:#1d9bf0;animation-delay:0.0s"></div><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:#f91880;animation-delay:0.15s"></div><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:#00ba7c;animation-delay:0.3s"></div><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:#ffd400;animation-delay:0.44999999999999996s"></div></div>
+</div>
+
+
+
+<div id="app">
+
+  <!-- LEFT NAV -->
+  <nav id="left-nav">
+    <div class="nav-logo" id="nav-logo-el">✦</div>
+
+    <button class="nav-item active" onclick="showTab('for-you')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-item" onclick="">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <span class="nav-label">Explore</span>
+    </button>
+    <button class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span class="nav-label">Notifications</span>
+    </button>
+    <button class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span class="nav-label">Messages</span>
+    </button>
+    <button class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      <span class="nav-label">Bookmarks</span>
+    </button>
+    <button class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="nav-label">Profile</span>
+    </button>
+    <button class="nav-item" onclick="openCustomise()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      <span class="nav-label">Customise</span>
+    </button>
+
+    <button class="nav-post-btn" onclick="openPostModal()">Post</button>
+
+    <div class="nav-profile" onclick="">
+      <div class="nav-profile-avatar" id="nav-avatar">L</div>
+      <div class="nav-profile-info" id="nav-profile-info">
+        <div class="nav-profile-name" id="nav-profile-name">Leon Dudhill</div>
+        <div class="nav-profile-handle" id="nav-profile-handle">@leondudhill</div>
+      </div>
+      <div class="nav-profile-dots">···</div>
+    </div>
+  </nav>
+
+  <!-- MAIN FEED -->
+  <main id="main-feed">
+    <div class="feed-header">
+      <div class="feed-header-tabs">
+        <button class="feed-tab active" onclick="showTab('for-you',this)">For you</button>
+        <button class="feed-tab" onclick="showTab('following',this)">Following</button>
+      </div>
+    </div>
+
+    <!-- Inline compose -->
+    <div class="compose-box">
+      <div class="compose-avatar" id="compose-avatar-inline">L</div>
+      <div class="compose-right">
+        <textarea class="compose-input" placeholder="What is happening?!" rows="2" onclick="openPostModal()" readonly style="cursor:pointer"></textarea>
+        <div class="compose-actions">
+          <button class="compose-action-btn" title="Media">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </button>
+          <button class="compose-action-btn" title="GIF">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm-7 12H8v-2h4v2zm4-4H8V9h8v2z"/></svg>
+          </button>
+          <button class="compose-action-btn" title="Emoji">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+          </button>
+          <button class="compose-post-btn" onclick="openPostModal()">Post</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="feed-posts"></div>
+  </main>
+
+  <!-- RIGHT PANEL -->
+  <aside id="right-panel">
+    <div class="search-box">
+      <div class="search-inner">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <input type="text" placeholder="Search">
+      </div>
+    </div>
+
+    <div class="panel-card">
+      <div class="panel-card-title">Trends for you</div>
+      <div id="trends-container"></div>
+      <a class="show-more">Show more</a>
+    </div>
+
+    <div class="panel-card">
+      <div class="panel-card-title">Who to follow</div>
+      <div id="follow-container"></div>
+      <a class="show-more">Show more</a>
+    </div>
+  </aside>
+
+</div>
+
+<!-- POST MODAL -->
+<div id="post-modal">
+  <div class="post-modal-inner">
+    <button class="post-modal-close" onclick="closePostModal()">✕</button>
+    <div class="post-modal-compose">
+      <div class="compose-avatar" id="post-modal-avatar">L</div>
+      <textarea class="post-modal-textarea" id="post-modal-text" placeholder="What is happening?!" maxlength="280" oninput="updateCharCount()"></textarea>
+    </div>
+    <div class="post-modal-footer">
+      <button class="compose-action-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      </button>
+      <button class="compose-action-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+      </button>
+      <span class="char-count" id="char-count">280</span>
+      <button class="compose-post-btn" onclick="submitPost()">Post</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" id="toast-msg"></div>
+
+<!-- CUSTOMISE MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>⚙️ Customise</h2>
+      <button class="modal-close" onclick="closeCustomise()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="tabs-nav">
+        <button class="tabs-nav-btn active" onclick="switchModalTab('general',this)">General</button>
+        <button class="tabs-nav-btn" onclick="switchModalTab('posts',this)">Posts</button>
+        <button class="tabs-nav-btn" onclick="switchModalTab('trends',this)">Trends</button>
+        <button class="tabs-nav-btn" onclick="switchModalTab('follow',this)">Who to Follow</button>
+      </div>
+
+      <div id="modal-general" class="tab-content active">
+        <div class="modal-section">
+          <h3>Appearance</h3>
+          <div class="modal-row">
+            <label>Background Colour</label>
+            <input type="color" id="cfg-bg">
+          </div>
+          <div class="modal-row">
+            <label>App Name / Logo text</label>
+            <input type="text" id="cfg-name" placeholder="Movie Social">
+          </div>
+          <div class="modal-row">
+            <label>Logo Image URL (replaces name)</label>
+            <input type="url" id="cfg-logo" placeholder="https://example.com/logo.png">
+          </div>
+        </div>
+        <div class="modal-section">
+          <h3>Your Profile</h3>
+          <div class="modal-row-inline">
+            <div class="modal-row"><label>Display Name</label><input type="text" id="cfg-display-name" placeholder="Leon Dudhill"></div>
+            <div class="modal-row"><label>Handle (without @)</label><input type="text" id="cfg-handle" placeholder="leondudhill"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="modal-posts" class="tab-content">
+        <div class="modal-section">
+          <h3>Feed Posts (10 posts)</h3>
+          <div id="posts-editor"></div>
+        </div>
+      </div>
+
+      <div id="modal-trends" class="tab-content">
+        <div class="modal-section">
+          <h3>Trending Topics (5 shown)</h3>
+          <div id="trends-editor"></div>
+        </div>
+      </div>
+
+      <div id="modal-follow" class="tab-content">
+        <div class="modal-section">
+          <h3>Who to Follow (3 shown)</h3>
+          <div id="follow-editor"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeCustomise()">Cancel</button>
+      <button class="btn-save" onclick="saveConfig()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// AVATAR COLOURS
+// ============================================================
+const AVATAR_COLORS = ['#1d9bf0','#ff6b35','#7856ff','#00ba7c','#f91880','#ffd400','#ff4500','#4285F4'];
+function avatarColor(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+  return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
+}
+
+// ============================================================
+// DEFAULT CONFIG
+// ============================================================
+const DEFAULT_CONFIG = {
+  bgColor: '#000000',
+  appName: 'Movie Social',
+  logoUrl: '',
+  displayName: 'Leon Dudhill',
+  handle: 'leondudhill',
+  posts: [
+    {
+      name: 'Leon Dudhill',
+      handle: 'leondudhill',
+      verified: true,
+      time: '2h',
+      body: 'Just wrapped on an incredible shoot day. The kind of day that reminds you why you do this. 🎬 #filmmaking #onset',
+      image: '',
+      likes: 284,
+      reposts: 47,
+      replies: 31,
+      views: '12K',
+      liked: false,
+      reposted: false
+    },
+    {
+      name: 'The Beastologist',
+      handle: 'thebeastologist',
+      verified: true,
+      time: '4h',
+      body: 'New episode drops FRIDAY. You are not ready for what we found in the Amazon. 🐍🌿 Stay tuned. #wildlife #documentary',
+      image: '',
+      likes: 1842,
+      reposts: 312,
+      replies: 198,
+      views: '89K',
+      liked: false,
+      reposted: false
+    },
+    {
+      name: 'Film Daily',
+      handle: 'filmdaily',
+      verified: true,
+      time: '5h',
+      body: 'BREAKING: Production has officially wrapped on the most anticipated film of the year. The director says it\'s "unlike anything you\'ve ever seen." Are you excited? 🎥',
+      image: '',
+      likes: 5621,
+      reposts: 1204,
+      replies: 847,
+      views: '421K',
+      liked: false,
+      reposted: false
+    },
+    {
+      name: 'Cinema Weekly',
+      handle: 'cinemaweekly',
+      verified: false,
+      time: '7h',
+      body: 'Hot take: practical effects will always beat CGI for creating tension. Change my mind. 👇',
+      image: '',
+      likes: 3211,
+      reposts: 621,
+      replies: 1043,
+      views: '198K',
+      liked: false,
+      reposted: false
+    },
+    {
+      name: 'Leon Dudhill',
+      handle: 'leondudhill',
+      verified: true,
+      time: '12h',
+      body: 'Excited to announce that my latest project will be premiering at the festival this autumn. More details very soon. 🙌',
+      image: '',
+      likes: 921,
+      reposts: 183,
+      replies: 74,
+      views: '34K',
+      liked: false,
+      reposted: false
+    },
+    {
+      name: 'Production News',
+      handle: 'prodnews',
+      verified: false,
+      time: '1d',
+      body: 'The golden hour doesn\'t last long. That\'s what makes it magic. 📸 #photography #filmmaking #golden',
+      image: '',
+      likes: 4102,
+      reposts: 823,
+      replies: 215,
+      views: '312K',
+      liked: false,
+      reposted: false
+    },
+    {
+      name: 'The Beastologist',
+      handle: 'thebeastologist',
+      verified: true,
+      time: '1d',
+      body: 'Fun fact: the species we filmed last week hadn\'t been documented on camera since 1987. Science is wild. 🔬',
+      image: '',
+      likes: 7832,
+      reposts: 2104,
+      replies: 431,
+      views: '654K',
+      liked: false,
+      reposted: false
+    },
+    {
+      name: 'Director\'s Eye',
+      handle: 'directorseye',
+      verified: false,
+      time: '2d',
+      body: 'A scene only works if the audience feels it before they understand it. That\'s the whole job.',
+      image: '',
+      likes: 12043,
+      reposts: 3841,
+      replies: 912,
+      views: '1.2M',
+      liked: false,
+      reposted: false
+    },
+    {
+      name: 'Film Score Daily',
+      handle: 'filmscoredaily',
+      verified: false,
+      time: '2d',
+      body: 'Name a film where the score made the movie. I\'ll start: There Will Be Blood. 🎵',
+      image: '',
+      likes: 8941,
+      reposts: 1923,
+      replies: 3201,
+      views: '891K',
+      liked: false,
+      reposted: false
+    },
+    {
+      name: 'Leon Dudhill',
+      handle: 'leondudhill',
+      verified: true,
+      time: '3d',
+      body: 'Sometimes the best shot is the one you weren\'t planning to take. Keep the camera rolling. 🎬',
+      image: '',
+      likes: 2341,
+      reposts: 412,
+      replies: 187,
+      views: '87K',
+      liked: false,
+      reposted: false
+    }
+  ],
+  trends: [
+    { category: 'Entertainment · Trending', name: '#FilmFestival', posts: '42.1K posts' },
+    { category: 'Nature · Trending', name: '#TheBeastologist', posts: '18.4K posts' },
+    { category: 'Technology · Trending', name: '#AIFilmmaking', posts: '31.2K posts' },
+    { category: 'Film · Trending', name: '#PracticalEffects', posts: '9.8K posts' },
+    { category: 'Entertainment', name: '#GoldenHour', posts: '7.3K posts' }
+  ],
+  whoToFollow: [
+    { name: 'The Beastologist', handle: 'thebeastologist', verified: true },
+    { name: 'Film Daily', handle: 'filmdaily', verified: true },
+    { name: 'Cinema Weekly', handle: 'cinemaweekly', verified: false }
+  ]
+};
+
+// ============================================================
+// LOAD / SAVE
+// ============================================================
+function loadConfig() {
+  try {
+    const saved = localStorage.getItem('movieSocialConfig');
+    if (saved) {
+      const p = JSON.parse(saved);
+      const m = Object.assign({}, JSON.parse(JSON.stringify(DEFAULT_CONFIG)), p);
+      ['posts','trends','whoToFollow'].forEach(key => {
+        if (!p[key] || p[key].length < DEFAULT_CONFIG[key].length) {
+          m[key] = DEFAULT_CONFIG[key].map((d, i) => (p[key] && p[key][i]) ? p[key][i] : d);
+        }
+      });
+      return m;
+    }
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+}
+
+let config = loadConfig();
+
+// ============================================================
+// APPLY CONFIG
+// ============================================================
+function applyConfig() {
+  document.body.style.background = config.bgColor;
+  document.getElementById('app').style.background = config.bgColor;
+
+  // Avatar initials
+  const initial = (config.displayName || 'L')[0].toUpperCase();
+  document.getElementById('nav-avatar').textContent = initial;
+  document.getElementById('compose-avatar-inline').textContent = initial;
+  document.getElementById('post-modal-avatar').textContent = initial;
+  document.getElementById('nav-profile-name').textContent = config.displayName || 'Leon Dudhill';
+  document.getElementById('nav-profile-handle').textContent = '@' + (config.handle || 'leondudhill');
+
+  renderLogo();
+  renderPosts();
+  renderTrends();
+  renderWhoToFollow();
+}
+
+function renderLogo() {
+  const el = document.getElementById('nav-logo-el');
+  if (config.logoUrl) {
+    el.innerHTML = `<img src="${config.logoUrl}" alt="logo">`;
+  } else {
+    el.textContent = config.appName ? config.appName[0] : '✦';
+  }
+}
+
+// ============================================================
+// RENDER POSTS
+// ============================================================
+function formatNum(n) {
+  if (typeof n === 'string') return n;
+  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+  return String(n);
+}
+
+function renderPosts() {
+  const container = document.getElementById('feed-posts');
+  container.innerHTML = config.posts.map((p, i) => {
+    const bg = avatarColor(p.name);
+    const initial = p.name[0].toUpperCase();
+    const verifiedBadge = p.verified ? `<span class="post-verified"><svg width="18" height="18" viewBox="0 0 24 24" fill="#1d9bf0"><path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91-1.01-1.01-2.52-1.27-3.91-.81-.67-1.31-1.91-2.19-3.34-2.19-1.43 0-2.67.88-3.34 2.19-1.39-.46-2.9-.2-3.91.81-1.01 1.01-1.27 2.52-.81 3.91-1.31.67-2.19 1.91-2.19 3.34 0 1.43.88 2.67 2.19 3.34-.46 1.39-.2 2.9.81 3.91 1.01 1.01 2.52 1.27 3.91.81.67 1.31 1.91 2.19 3.34 2.19 1.43 0 2.67-.88 3.34-2.19 1.39.46 2.9.2 3.91-.81 1.01-1.01 1.27-2.52.81-3.91 1.31-.67 2.19-1.91 2.19-3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z"/></svg></span>` : '';
+    const imgHtml = p.image ? `<img class="post-image" src="${p.image}" onerror="this.style.display='none'">` : '';
+    const likedClass = p.liked ? 'liked' : '';
+    const repostedClass = p.reposted ? 'reposted' : '';
+    return `
+      <div class="post">
+        <div class="post-avatar" style="background:${bg}">${initial}</div>
+        <div class="post-right">
+          <div class="post-header">
+            <span class="post-name">${escHtml(p.name)}</span>
+            ${verifiedBadge}
+            <span class="post-handle">@${escHtml(p.handle)}</span>
+            <span class="post-dot">·</span>
+            <span class="post-time">${escHtml(p.time)}</span>
+            <button class="post-menu">···</button>
+          </div>
+          <div class="post-body">${escHtml(p.body)}</div>
+          ${imgHtml}
+          <div class="post-actions">
+            <button class="post-action reply" onclick="event.stopPropagation()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              ${formatNum(p.replies)}
+            </button>
+            <button class="post-action repost ${repostedClass}" onclick="event.stopPropagation();toggleRepost(${i})">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+              ${formatNum(p.reposted ? p.reposts + 1 : p.reposts)}
+            </button>
+            <button class="post-action like ${likedClass}" onclick="event.stopPropagation();toggleLike(${i})">
+              <svg viewBox="0 0 24 24" fill="${p.liked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              ${formatNum(p.liked ? p.likes + 1 : p.likes)}
+            </button>
+            <button class="post-action views">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              ${formatNum(p.views)}
+            </button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleLike(i) {
+  config.posts[i].liked = !config.posts[i].liked;
+  localStorage.setItem('movieSocialConfig', JSON.stringify(config));
+  renderPosts();
+}
+function toggleRepost(i) {
+  config.posts[i].reposted = !config.posts[i].reposted;
+  localStorage.setItem('movieSocialConfig', JSON.stringify(config));
+  renderPosts();
+}
+
+// ============================================================
+// RENDER TRENDS
+// ============================================================
+function renderTrends() {
+  document.getElementById('trends-container').innerHTML = config.trends.map(t => `
+    <div class="trend-item">
+      <div class="trend-cat">${escHtml(t.category)}</div>
+      <div class="trend-name">${escHtml(t.name)}</div>
+      <div class="trend-posts">${escHtml(t.posts)}</div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// RENDER WHO TO FOLLOW
+// ============================================================
+function renderWhoToFollow() {
+  document.getElementById('follow-container').innerHTML = config.whoToFollow.map((w, i) => {
+    const bg = avatarColor(w.name);
+    const verBadge = w.verified ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="#1d9bf0" style="vertical-align:middle;margin-left:2px"><path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91-1.01-1.01-2.52-1.27-3.91-.81-.67-1.31-1.91-2.19-3.34-2.19-1.43 0-2.67.88-3.34 2.19-1.39-.46-2.9-.2-3.91.81-1.01 1.01-1.27 2.52-.81 3.91-1.31.67-2.19 1.91-2.19 3.34 0 1.43.88 2.67 2.19 3.34-.46 1.39-.2 2.9.81 3.91 1.01 1.01 2.52 1.27 3.91.81.67 1.31 1.91 2.19 3.34 2.19 1.43 0 2.67-.88 3.34-2.19 1.39.46 2.9.2 3.91-.81 1.01-1.01 1.27-2.52.81-3.91 1.31-.67 2.19-1.91 2.19-3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z"/></svg>` : '';
+    return `
+    <div class="who-item">
+      <div class="who-avatar" style="background:${bg}">${w.name[0].toUpperCase()}</div>
+      <div class="who-info">
+        <div class="who-name">${escHtml(w.name)}${verBadge}</div>
+        <div class="who-handle">@${escHtml(w.handle)}</div>
+      </div>
+      <button class="follow-btn" id="follow-btn-${i}" onclick="toggleFollow(${i},this)">Follow</button>
+    </div>`;
+  }).join('');
+}
+
+function toggleFollow(i, btn) {
+  if (btn.classList.contains('following')) {
+    btn.classList.remove('following');
+    btn.textContent = 'Follow';
+  } else {
+    btn.classList.add('following');
+    btn.textContent = 'Following';
+  }
+}
+
+// ============================================================
+// TABS
+// ============================================================
+function showTab(name, btn) {
+  if (btn) {
+    document.querySelectorAll('.feed-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+}
+
+// ============================================================
+// POST MODAL
+// ============================================================
+function openPostModal() {
+  document.getElementById('post-modal').classList.add('open');
+  setTimeout(() => document.getElementById('post-modal-text').focus(), 50);
+}
+function closePostModal() {
+  document.getElementById('post-modal').classList.remove('open');
+  document.getElementById('post-modal-text').value = '';
+  document.getElementById('char-count').textContent = '280';
+}
+function updateCharCount() {
+  const len = document.getElementById('post-modal-text').value.length;
+  const remaining = 280 - len;
+  const el = document.getElementById('char-count');
+  el.textContent = remaining;
+  el.className = 'char-count' + (remaining < 20 ? ' warn' : '') + (remaining < 0 ? ' over' : '');
+}
+function submitPost() {
+  const text = document.getElementById('post-modal-text').value.trim();
+  if (!text) return;
+  // Prepend new post to feed
+  const newPost = {
+    name: config.displayName || 'Leon Dudhill',
+    handle: config.handle || 'leondudhill',
+    verified: false,
+    time: 'now',
+    body: text,
+    image: '',
+    likes: 0, reposts: 0, replies: 0, views: '0',
+    liked: false, reposted: false
+  };
+  config.posts.unshift(newPost);
+  localStorage.setItem('movieSocialConfig', JSON.stringify(config));
+  renderPosts();
+  closePostModal();
+  showToast('Your post was sent.');
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ============================================================
+// CUSTOMISE MODAL
+// ============================================================
+function openCustomise() {
+  populateModal();
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeCustomise() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+function switchModalTab(name, btn) {
+  document.querySelectorAll('.tabs-nav-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.modal .tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('modal-' + name).classList.add('active');
+}
+
+function populateModal() {
+  document.getElementById('cfg-bg').value = config.bgColor;
+  document.getElementById('cfg-name').value = config.appName || '';
+  document.getElementById('cfg-logo').value = config.logoUrl || '';
+  document.getElementById('cfg-display-name').value = config.displayName || '';
+  document.getElementById('cfg-handle').value = config.handle || '';
+
+  // Posts editor
+  document.getElementById('posts-editor').innerHTML = config.posts.slice(0,10).map((p, i) => `
+    <div class="post-preset">
+      <div class="post-preset-title">Post ${i+1}</div>
+      <div class="modal-row-inline">
+        <div class="modal-row"><label>Display Name</label><input type="text" id="pp-name-${i}" value="${escHtml(p.name)}"></div>
+        <div class="modal-row"><label>Handle</label><input type="text" id="pp-handle-${i}" value="${escHtml(p.handle)}"></div>
+      </div>
+      <div class="modal-row-inline">
+        <div class="modal-row"><label>Time</label><input type="text" id="pp-time-${i}" value="${escHtml(p.time)}"></div>
+        <div class="modal-row"><label>Likes</label><input type="text" id="pp-likes-${i}" value="${escHtml(String(p.likes))}"></div>
+        <div class="modal-row"><label>Reposts</label><input type="text" id="pp-reposts-${i}" value="${escHtml(String(p.reposts))}"></div>
+      </div>
+      <div class="modal-row"><label>Post text</label><textarea id="pp-body-${i}" rows="3">${escHtml(p.body)}</textarea></div>
+      <div class="modal-row"><label>Image URL (optional)</label><input type="text" id="pp-img-${i}" value="${escHtml(p.image||'')}"></div>
+    </div>
+  `).join('');
+
+  // Trends editor
+  document.getElementById('trends-editor').innerHTML = config.trends.map((t, i) => `
+    <div class="post-preset">
+      <div class="post-preset-title">Trend ${i+1}</div>
+      <div class="modal-row-inline">
+        <div class="modal-row"><label>Category</label><input type="text" id="tr-cat-${i}" value="${escHtml(t.category)}"></div>
+        <div class="modal-row"><label>Hashtag / Name</label><input type="text" id="tr-name-${i}" value="${escHtml(t.name)}"></div>
+        <div class="modal-row"><label>Post count</label><input type="text" id="tr-posts-${i}" value="${escHtml(t.posts)}"></div>
+      </div>
+    </div>
+  `).join('');
+
+  // Who to follow editor
+  document.getElementById('follow-editor').innerHTML = config.whoToFollow.map((w, i) => `
+    <div class="post-preset">
+      <div class="post-preset-title">Account ${i+1}</div>
+      <div class="modal-row-inline">
+        <div class="modal-row"><label>Name</label><input type="text" id="wf-name-${i}" value="${escHtml(w.name)}"></div>
+        <div class="modal-row"><label>Handle</label><input type="text" id="wf-handle-${i}" value="${escHtml(w.handle)}"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function saveConfig() {
+  config.bgColor = document.getElementById('cfg-bg').value;
+  config.appName = document.getElementById('cfg-name').value;
+  config.logoUrl = document.getElementById('cfg-logo').value;
+  config.displayName = document.getElementById('cfg-display-name').value;
+  config.handle = document.getElementById('cfg-handle').value;
+
+  config.posts = config.posts.slice(0,10).map((p, i) => ({
+    ...p,
+    name: document.getElementById(`pp-name-${i}`).value,
+    handle: document.getElementById(`pp-handle-${i}`).value,
+    time: document.getElementById(`pp-time-${i}`).value,
+    likes: parseInt(document.getElementById(`pp-likes-${i}`).value) || 0,
+    reposts: parseInt(document.getElementById(`pp-reposts-${i}`).value) || 0,
+    body: document.getElementById(`pp-body-${i}`).value,
+    image: document.getElementById(`pp-img-${i}`).value
+  }));
+
+  config.trends = config.trends.map((t, i) => ({
+    category: document.getElementById(`tr-cat-${i}`).value,
+    name: document.getElementById(`tr-name-${i}`).value,
+    posts: document.getElementById(`tr-posts-${i}`).value
+  }));
+
+  config.whoToFollow = config.whoToFollow.map((w, i) => ({
+    ...w,
+    name: document.getElementById(`wf-name-${i}`).value,
+    handle: document.getElementById(`wf-handle-${i}`).value
+  }));
+
+  localStorage.setItem('movieSocialConfig', JSON.stringify(config));
+  applyConfig();
+  closeCustomise();
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Close on overlay click
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeCustomise();
+});
+document.getElementById('post-modal').addEventListener('click', function(e) {
+  if (e.target === this) closePostModal();
+});
+
+// ============================================================
+// SPLASH
+// ============================================================
+(function() {
+  const splash = document.getElementById('splash');
+  if (sessionStorage.getItem('socialSplashShown')) {
+    splash.classList.add('hidden'); return;
+  }
+  sessionStorage.setItem('socialSplashShown', '1');
+  setTimeout(() => {
+    splash.classList.add('fade-out');
+    setTimeout(() => splash.classList.add('hidden'), 650);
+  }, 1600);
+})();
+
+// Init
+applyConfig();
+</script>
+</body>
+</html>

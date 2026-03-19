@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Movie Email</title>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #f6f8fc;
+  --sidebar-bg: #f6f8fc;
+  --white: #ffffff;
+  --text: #202124;
+  --text-light: #5f6368;
+  --text-lighter: #80868b;
+  --border: #e0e0e0;
+  --hover: #e8eaed;
+  --active: #d3e3fd;
+  --active-text: #041e49;
+  --red: #d93025;
+  --blue: #1a73e8;
+  --unread-bg: #ffffff;
+  --read-bg: #f2f6fc;
+  --unread-text: #202124;
+  --read-text: #5f6368;
+  --unread-weight: 600;
+  --read-weight: 400;
+  --shadow: 0 1px 2px rgba(60,64,67,0.3), 0 1px 3px rgba(60,64,67,0.15);
+  --shadow-lg: 0 2px 6px rgba(60,64,67,0.3), 0 1px 6px rgba(60,64,67,0.15);
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== SPLASH ===== */
+#splash {
+  position: fixed; inset: 0;
+  background: #fff;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity 0.6s ease;
+}
+#splash.fade-out { opacity: 0; pointer-events: none; }
+#splash.hidden { display: none; }
+.splash-by { font-family: 'Google Sans', sans-serif; font-size: 16px; color: #5f6368; }
+.splash-name { font-family: 'Google Sans', sans-serif; font-size: 30px; font-weight: 500; color: #202124; margin-top: 4px; }
+.splash-dots { display: flex; gap: 8px; margin-top: 28px; }
+.splash-dot { width: 10px; height: 10px; border-radius: 50%; animation: bounce 1.2s ease-in-out infinite; }
+.splash-dot:nth-child(1) { background: #4285F4; animation-delay: 0s; }
+.splash-dot:nth-child(2) { background: #EA4335; animation-delay: 0.15s; }
+.splash-dot:nth-child(3) { background: #FBBC05; animation-delay: 0.3s; }
+.splash-dot:nth-child(4) { background: #34A853; animation-delay: 0.45s; }
+@keyframes bounce { 0%,80%,100%{transform:scale(0.7);opacity:0.5}40%{transform:scale(1.1);opacity:1} }
+
+/* ===== TOP BAR ===== */
+#topbar {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 8px;
+  background: var(--bg);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+.menu-btn {
+  width: 40px; height: 40px;
+  border-radius: 50%; border: none;
+  background: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-light);
+  font-size: 20px;
+}
+.menu-btn:hover { background: var(--hover); }
+
+.app-logo {
+  display: flex; align-items: center; gap: 4px;
+  font-family: 'Google Sans', sans-serif;
+  font-size: 22px; font-weight: 400;
+  color: var(--text-light);
+  margin-right: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.app-logo img { max-height: 32px; max-width: 140px; object-fit: contain; }
+.logo-char { display: inline-block; }
+
+.search-bar {
+  flex: 1;
+  max-width: 720px;
+  background: #eaf1fb;
+  border-radius: 24px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 10px;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.search-bar:focus-within {
+  background: white;
+  box-shadow: var(--shadow);
+}
+.search-bar svg { color: var(--text-light); flex-shrink: 0; }
+.search-bar input {
+  flex: 1; border: none; background: none;
+  font-size: 16px; font-family: 'Roboto', sans-serif;
+  color: var(--text); outline: none;
+}
+
+.topbar-right {
+  display: flex; align-items: center; gap: 4px;
+  margin-left: auto;
+}
+.icon-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: none; background: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-light);
+}
+.icon-btn:hover { background: var(--hover); }
+.avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: #1a73e8; color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Google Sans', sans-serif;
+  font-size: 14px; font-weight: 500; cursor: pointer;
+}
+.customize-btn {
+  font-size: 13px; color: var(--text);
+  background: none; border: none; cursor: pointer;
+  padding: 8px 12px; border-radius: 4px;
+  font-family: 'Roboto', sans-serif;
+}
+.customize-btn:hover { background: var(--hover); }
+
+/* ===== MAIN LAYOUT ===== */
+#main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ===== SIDEBAR ===== */
+#sidebar {
+  width: 256px;
+  flex-shrink: 0;
+  padding: 8px 0;
+  overflow-y: auto;
+  transition: width 0.2s;
+}
+
+.compose-btn {
+  margin: 4px 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  background: var(--white);
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  font-family: 'Google Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.2s, background 0.2s;
+  width: calc(100% - 16px);
+}
+.compose-btn:hover { box-shadow: var(--shadow-lg); background: #f0f4ff; }
+.compose-btn svg { color: var(--blue); flex-shrink: 0; }
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 4px 16px 4px 26px;
+  height: 32px;
+  border-radius: 0 16px 16px 0;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text);
+  width: calc(100% - 8px);
+  border: none; background: none;
+  font-family: 'Roboto', sans-serif;
+  text-align: left;
+}
+.nav-item:hover { background: var(--hover); }
+.nav-item.active { background: var(--active); font-weight: 500; }
+.nav-item svg { color: var(--text-light); flex-shrink: 0; }
+.nav-item.active svg { color: var(--active-text); }
+.nav-count { margin-left: auto; font-size: 12px; color: var(--text); font-weight: 500; }
+
+.nav-section { margin-top: 8px; padding: 0 0 0 0; }
+.nav-divider { height: 1px; background: var(--border); margin: 8px 0; }
+
+/* ===== EMAIL LIST ===== */
+#email-list-panel {
+  flex: 1;
+  overflow-y: auto;
+  border-left: 1px solid var(--border);
+  background: var(--white);
+  border-radius: 16px 0 0 0;
+  margin-top: 0;
+}
+
+.email-list-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  height: 48px;
+  position: sticky; top: 0;
+  background: var(--white);
+  z-index: 5;
+}
+.toolbar-btn {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: none; background: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-light);
+}
+.toolbar-btn:hover { background: var(--hover); }
+.toolbar-divider { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+
+.inbox-label {
+  font-family: 'Google Sans', sans-serif;
+  font-size: 16px;
+  color: var(--text);
+  padding: 12px 20px 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.inbox-count-badge {
+  font-size: 12px;
+  background: #1a73e8;
+  color: white;
+  border-radius: 10px;
+  padding: 1px 8px;
+}
+
+/* Email row */
+.email-row {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  height: 52px;
+  gap: 8px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  transition: box-shadow 0.1s, background 0.1s;
+  position: relative;
+}
+.email-row.unread { background: var(--unread-bg); }
+.email-row.read { background: var(--read-bg); }
+.email-row:hover {
+  box-shadow: var(--shadow);
+  z-index: 1;
+}
+.email-row .check-box {
+  width: 18px; height: 18px; border: 2px solid #bdc1c6;
+  border-radius: 2px; flex-shrink: 0; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; color: white;
+}
+.email-row:hover .check-box { border-color: #5f6368; }
+.email-row.selected .check-box { background: #1a73e8; border-color: #1a73e8; }
+
+.star-btn {
+  width: 24px; flex-shrink: 0;
+  background: none; border: none; cursor: pointer;
+  color: #bdc1c6; font-size: 18px; padding: 0;
+  line-height: 1;
+}
+.star-btn.starred { color: #f4b400; }
+.star-btn:hover { color: #f4b400; }
+
+.email-from {
+  width: 180px;
+  flex-shrink: 0;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.email-row.unread .email-from { font-weight: var(--unread-weight); color: var(--unread-text); }
+.email-row.read .email-from { font-weight: var(--read-weight); color: var(--read-text); }
+
+.email-body-preview {
+  flex: 1;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.email-subject-inline {
+  font-weight: inherit;
+}
+.email-snippet-inline {
+  color: var(--text-lighter);
+  font-weight: 400;
+}
+.email-row.unread .email-subject-inline { font-weight: 600; color: var(--unread-text); }
+.email-row.read .email-subject-inline { font-weight: 400; color: var(--read-text); }
+
+.email-time {
+  font-size: 12px;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+.email-row.unread .email-time { font-weight: 600; color: var(--text); }
+.email-row.read .email-time { color: var(--text-lighter); }
+
+/* ===== EMAIL VIEW PANEL ===== */
+#email-view-panel {
+  display: none;
+  flex: 1;
+  border-left: 1px solid var(--border);
+  background: var(--white);
+  overflow-y: auto;
+  padding: 20px 28px;
+  border-radius: 16px 0 0 0;
+}
+#email-view-panel.open { display: block; }
+
+.email-view-back {
+  display: flex; align-items: center; gap: 4px;
+  margin-bottom: 16px;
+}
+.back-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: none; background: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-light);
+}
+.back-btn:hover { background: var(--hover); }
+
+.email-view-subject {
+  font-family: 'Google Sans', sans-serif;
+  font-size: 22px;
+  color: var(--text);
+  margin-bottom: 16px;
+  line-height: 1.3;
+}
+
+.email-view-meta {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.sender-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: #4285F4; color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Google Sans', sans-serif;
+  font-size: 16px; font-weight: 500; flex-shrink: 0;
+}
+.email-view-from-name {
+  font-family: 'Google Sans', sans-serif;
+  font-size: 14px; font-weight: 500; color: var(--text);
+}
+.email-view-addresses {
+  font-size: 12px; color: var(--text-lighter); margin-top: 2px;
+}
+.email-view-time {
+  margin-left: auto; font-size: 12px; color: var(--text-lighter);
+  flex-shrink: 0;
+}
+
+.email-view-body {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* ===== COMPOSE MODAL ===== */
+#compose-modal {
+  display: none;
+  position: fixed;
+  bottom: 0; right: 24px;
+  width: 540px;
+  max-width: calc(100vw - 48px);
+  background: white;
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 8px 10px 1px rgba(0,0,0,0.14), 0 3px 14px 2px rgba(0,0,0,0.12), 0 5px 5px -3px rgba(0,0,0,0.2);
+  z-index: 500;
+  flex-direction: column;
+}
+#compose-modal.open { display: flex; }
+.compose-header {
+  background: #404040;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+.compose-header span {
+  font-family: 'Google Sans', sans-serif;
+  font-size: 14px;
+  flex: 1;
+}
+.compose-header-btns { display: flex; gap: 4px; }
+.compose-hdr-btn {
+  width: 24px; height: 24px; border-radius: 50%;
+  border: none; background: none; color: white; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+.compose-hdr-btn:hover { background: rgba(255,255,255,0.2); }
+
+.compose-field {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding: 4px 16px;
+  gap: 8px;
+  min-height: 40px;
+}
+.compose-field label {
+  font-size: 13px; color: var(--text-lighter);
+  flex-shrink: 0; width: 36px;
+}
+.compose-field input {
+  flex: 1; border: none; outline: none;
+  font-size: 14px; font-family: 'Roboto', sans-serif;
+  color: var(--text);
+}
+.compose-body-area {
+  flex: 1;
+  padding: 12px 16px;
+  min-height: 200px;
+}
+.compose-body-area textarea {
+  width: 100%; height: 200px;
+  border: none; outline: none; resize: none;
+  font-size: 14px; font-family: 'Roboto', sans-serif;
+  color: var(--text); line-height: 1.6;
+}
+.compose-footer {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px 12px;
+  gap: 8px;
+  border-top: 1px solid var(--border);
+}
+.send-btn {
+  background: var(--blue); color: white;
+  border: none; border-radius: 4px;
+  padding: 8px 24px;
+  font-family: 'Google Sans', sans-serif;
+  font-size: 14px; font-weight: 500; cursor: pointer;
+}
+.send-btn:hover { background: #1765cc; }
+
+/* ===== SENT TOAST ===== */
+#toast {
+  display: none;
+  position: fixed;
+  bottom: 24px; left: 50%;
+  transform: translateX(-50%);
+  background: #323232;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  z-index: 9000;
+  box-shadow: var(--shadow-lg);
+  gap: 16px;
+  align-items: center;
+}
+#toast.show { display: flex; }
+
+/* ===== CUSTOMISE MODAL ===== */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: white;
+  border-radius: 8px;
+  width: 680px;
+  max-width: 95vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+}
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; background: white; z-index: 1;
+}
+.modal-header h2 { font-size: 18px; font-weight: 500; }
+.modal-close {
+  background: none; border: none; font-size: 22px;
+  cursor: pointer; color: var(--text-lighter); padding: 2px 8px; border-radius: 4px;
+}
+.modal-close:hover { background: var(--hover); }
+.modal-body { padding: 20px 24px; }
+.modal-section { margin-bottom: 24px; }
+.modal-section h3 {
+  font-size: 14px; font-weight: 500;
+  margin-bottom: 12px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px;
+}
+.modal-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.modal-row label { font-size: 13px; color: var(--text-lighter); }
+.modal-row input[type="text"],
+.modal-row input[type="url"],
+.modal-row textarea {
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 8px 10px; font-size: 14px; font-family: 'Roboto', sans-serif;
+  color: var(--text); width: 100%; outline: none; resize: vertical;
+}
+.modal-row input[type="color"] {
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 2px 4px; height: 36px; width: 60px; cursor: pointer;
+}
+.modal-row input:focus, .modal-row textarea:focus { border-color: var(--blue); }
+.email-preset {
+  background: #f8f9fa; border-radius: 6px; padding: 12px;
+  margin-bottom: 10px; border: 1px solid #e0e0e0;
+}
+.email-preset-title {
+  font-size: 12px; font-weight: 500; color: var(--text-lighter); margin-bottom: 8px;
+}
+.modal-row-inline { display: flex; gap: 10px; }
+.modal-row-inline .modal-row { flex: 1; }
+.tabs-nav {
+  display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 20px;
+}
+.tabs-nav-btn {
+  padding: 8px 16px; font-size: 13px; color: var(--text-lighter); cursor: pointer;
+  border: none; background: none; border-bottom: 2px solid transparent;
+  font-family: 'Roboto', sans-serif;
+}
+.tabs-nav-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.modal-footer {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 16px 24px; border-top: 1px solid var(--border);
+  position: sticky; bottom: 0; background: white;
+}
+.btn-cancel {
+  background: none; border: 1px solid var(--border); border-radius: 4px;
+  padding: 8px 20px; font-size: 14px; cursor: pointer; color: var(--text);
+}
+.btn-cancel:hover { background: var(--hover); }
+.btn-save {
+  background: var(--blue); border: none; border-radius: 4px;
+  padding: 8px 20px; font-size: 14px; color: white; cursor: pointer; font-weight: 500;
+}
+.btn-save:hover { background: #1765cc; }
+
+@media (max-width: 768px) {
+  #sidebar { width: 72px; }
+  .nav-item span, .nav-count, .compose-btn span { display: none; }
+  .compose-btn { padding: 12px; justify-content: center; width: calc(100% - 16px); }
+  .email-from { width: 120px; }
+}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash" style="position:fixed;inset:0;background:#ffffff;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;opacity:1;transition:opacity 0.6s ease;">
+  <p style="font-family:sans-serif;font-size:14px;color:#202124;opacity:0.6;margin-bottom:6px;letter-spacing:0.5px;">An App by</p>
+  <p style="font-family:sans-serif;font-size:26px;font-weight:700;color:#202124;letter-spacing:-0.5px;">Leon Dudhill</p>
+  <div style="display:flex;gap:8px;margin-top:24px;"><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:#4285F4;animation-delay:0.0s"></div><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:#EA4335;animation-delay:0.15s"></div><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:#FBBC05;animation-delay:0.3s"></div><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:#34A853;animation-delay:0.44999999999999996s"></div></div>
+</div>
+
+
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <button class="menu-btn">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+  </button>
+
+  <a class="app-logo" href="#" onclick="return false;" id="app-logo-el">
+    <span style="color:#EA4335" class="logo-char">M</span><span style="color:#4285F4" class="logo-char">o</span><span style="color:#FBBC05" class="logo-char">v</span><span style="color:#34A853" class="logo-char">i</span><span style="color:#EA4335" class="logo-char">e</span>&nbsp;<span style="color:#4285F4" class="logo-char">M</span><span style="color:#FBBC05" class="logo-char">a</span><span style="color:#34A853" class="logo-char">i</span><span style="color:#EA4335" class="logo-char">l</span>
+  </a>
+
+  <div class="search-bar">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+    <input type="text" placeholder="Search mail">
+  </div>
+
+  <div class="topbar-right">
+    <button class="customize-btn" onclick="openCustomise()">Customise</button>
+    <button class="icon-btn" title="Settings">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+    </button>
+    <div class="avatar" id="user-avatar">L</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <button class="compose-btn" onclick="openCompose()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+      <span>Compose</span>
+    </button>
+
+    <button class="nav-item active" onclick="showInbox()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H4.99c-1.11 0-1.98.89-1.98 2L3 19c0 1.1.88 2 1.99 2H19c1.1 0 2-.9 2-2V5c0-1.11-.9-2-2-2zm0 12h-4c0 1.66-1.35 3-3 3s-3-1.34-3-3H4.99V5H19v10z"/></svg>
+      <span>Inbox</span>
+      <span class="nav-count" id="unread-count-badge"></span>
+    </button>
+    <button class="nav-item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M22 9V7h-2V5c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-2h2v-2h-2v-2h2v-2h-2V9h2zm-4 10H4V5h14v14z"/><path d="M6 13h5v4H6zm6 0h2v2h-2zm0-6h2v4h-2zM6 7h5v4H6zm6 0h2v2h-2z"/></svg>
+      <span>Starred</span>
+    </button>
+    <button class="nav-item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      <span>Sent</span>
+    </button>
+    <button class="nav-item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H4.99c-1.1 0-1.99.9-1.99 2v14c0 1.1.89 2 1.99 2H19c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+      <span>Drafts</span>
+    </button>
+    <div class="nav-divider"></div>
+    <button class="nav-item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+      <span>Spam</span>
+    </button>
+    <button class="nav-item">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M15 16h4v2h-4zm0-8h7v2h-7zm0 4h6v2h-6zM3 18c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2V8H3v10zM14 5h-3l-1-1H6L5 5H2v2h12z"/></svg>
+      <span>Bin</span>
+    </button>
+  </div>
+
+  <!-- EMAIL LIST -->
+  <div id="email-list-panel">
+    <div class="email-list-toolbar">
+      <button class="toolbar-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/></svg>
+      </button>
+      <button class="toolbar-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+      </button>
+      <div class="toolbar-divider"></div>
+      <button class="toolbar-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+      </button>
+      <button class="toolbar-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+      </button>
+      <div class="toolbar-divider"></div>
+      <button class="toolbar-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+      </button>
+    </div>
+
+    <div class="inbox-label">
+      Inbox <span class="inbox-count-badge" id="inbox-badge">0</span>
+    </div>
+
+    <div id="email-rows"></div>
+  </div>
+
+  <!-- EMAIL VIEW -->
+  <div id="email-view-panel">
+    <div class="email-view-back">
+      <button class="back-btn" onclick="closeEmail()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      </button>
+      <button class="toolbar-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+      </button>
+      <button class="toolbar-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+      </button>
+    </div>
+    <div class="email-view-subject" id="view-subject"></div>
+    <div class="email-view-meta">
+      <div class="sender-avatar" id="view-avatar"></div>
+      <div>
+        <div class="email-view-from-name" id="view-from-name"></div>
+        <div class="email-view-addresses" id="view-addresses"></div>
+      </div>
+      <div class="email-view-time" id="view-time"></div>
+    </div>
+    <div class="email-view-body" id="view-body"></div>
+  </div>
+
+</div>
+
+<!-- COMPOSE MODAL -->
+<div id="compose-modal">
+  <div class="compose-header" onclick="toggleCompose()">
+    <span>New Message</span>
+    <div class="compose-header-btns">
+      <button class="compose-hdr-btn" onclick="event.stopPropagation();toggleCompose()">&#8211;</button>
+      <button class="compose-hdr-btn" onclick="event.stopPropagation();closeCompose()">&#x2715;</button>
+    </div>
+  </div>
+  <div id="compose-body">
+    <div class="compose-field">
+      <label>To</label>
+      <input type="text" id="compose-to" placeholder="">
+    </div>
+    <div class="compose-field">
+      <label>Cc</label>
+      <input type="text" id="compose-cc" placeholder="">
+    </div>
+    <div class="compose-field">
+      <label>Sub</label>
+      <input type="text" id="compose-subject" placeholder="">
+    </div>
+    <div class="compose-body-area">
+      <textarea id="compose-body-text" placeholder=""></textarea>
+    </div>
+    <div class="compose-footer">
+      <button class="send-btn" onclick="sendEmail()">Send</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast">
+  <span id="toast-msg">Message sent.</span>
+</div>
+
+<!-- CUSTOMISE MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>⚙️ Customise Movie Mail</h2>
+      <button class="modal-close" onclick="closeCustomise()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="tabs-nav">
+        <button class="tabs-nav-btn active" onclick="switchModalTab('general',this)">General</button>
+        <button class="tabs-nav-btn" onclick="switchModalTab('emails',this)">Inbox Emails</button>
+      </div>
+
+      <!-- GENERAL -->
+      <div id="modal-general" class="tab-content active">
+        <div class="modal-section">
+          <h3>Appearance</h3>
+          <div class="modal-row">
+            <label>Background Colour</label>
+            <input type="color" id="cfg-bg">
+          </div>
+          <div class="modal-row">
+            <label>App Name (e.g. Movie Mail)</label>
+            <input type="text" id="cfg-name" placeholder="Movie Mail">
+          </div>
+          <div class="modal-row">
+            <label>Logo Image URL (replaces name text)</label>
+            <input type="url" id="cfg-logo" placeholder="https://example.com/logo.png">
+          </div>
+          <div class="modal-row">
+            <label>Your Name / Account Initial</label>
+            <input type="text" id="cfg-user" placeholder="L">
+          </div>
+          <div class="modal-row">
+            <label>Your Email Address (shown in emails)</label>
+            <input type="text" id="cfg-my-email" placeholder="you@moviemail.com">
+          </div>
+        </div>
+      </div>
+
+      <!-- EMAILS -->
+      <div id="modal-emails" class="tab-content">
+        <div class="modal-section">
+          <h3>Inbox Emails (up to 10)</h3>
+          <div id="email-presets-editor"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeCustomise()">Cancel</button>
+      <button class="btn-save" onclick="saveConfig()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DEFAULT CONFIG
+// ============================================================
+const DEFAULT_CONFIG = {
+  bgColor: '#f6f8fc',
+  appName: 'Movie Mail',
+  logoUrl: '',
+  userInitial: 'L',
+  myEmail: 'you@moviemail.com',
+  emails: [
+    {
+      from: 'Leon Dudhill',
+      fromEmail: 'leon@leondudhill.com',
+      to: 'you@moviemail.com',
+      subject: 'Welcome to Movie Mail!',
+      body: 'Hi there,\n\nWelcome to Movie Mail — your on-set communications app.\n\nFeel free to customise everything using the Customise button at the top right.\n\nBest,\nLeon',
+      time: '10:42 AM',
+      unread: true,
+      starred: false
+    },
+    {
+      from: 'The Beastologist',
+      fromEmail: 'beast@thebeastologist.com',
+      to: 'you@moviemail.com',
+      subject: 'New episode dropping this week',
+      body: 'Hey,\n\nJust wanted to give you a heads up — our new episode goes live on Friday. It features some incredible never-before-seen footage from the Amazon.\n\nMake sure you\'re subscribed!\n\nCheers,\nThe Beastologist',
+      time: '9:15 AM',
+      unread: true,
+      starred: true
+    },
+    {
+      from: 'Production Office',
+      fromEmail: 'production@studio.com',
+      to: 'you@moviemail.com',
+      subject: 'Call sheet for Thursday shoot',
+      body: 'Hi,\n\nPlease find the call sheet for Thursday\'s shoot below.\n\nLocation: Stage 4, Pinewood Studios\nCall time: 06:00\nWrap: 20:00\n\nPlease confirm receipt.\n\nThanks,\nProduction Office',
+      time: 'Yesterday',
+      unread: false,
+      starred: false
+    },
+    {
+      from: 'Director',
+      fromEmail: 'director@film.com',
+      to: 'you@moviemail.com',
+      subject: 'Script revisions — please review',
+      body: 'Hi,\n\nI\'ve attached the latest script revisions for scenes 14 through 22. Please review before we meet on Wednesday.\n\nKey changes:\n- Scene 17 has been rewritten\n- Scene 20 is now an exterior\n- Scene 22 moves to act two\n\nLet me know your thoughts.\n\nBest',
+      time: 'Yesterday',
+      unread: false,
+      starred: true
+    },
+    {
+      from: 'Catering Team',
+      fromEmail: 'catering@onset.com',
+      to: 'you@moviemail.com',
+      subject: 'Lunch menu for next week',
+      body: 'Hi all,\n\nHere is next week\'s lunch menu for the shoot:\n\nMonday: Pasta bar + salads\nTuesday: BBQ + sides\nWednesday: Asian street food\nThursday: Burgers + fries\nFriday: Roast dinner\n\nPlease advise of any dietary requirements by end of day today.\n\nThanks,\nCatering',
+      time: 'Mon',
+      unread: false,
+      starred: false
+    },
+    {
+      from: 'Costume Department',
+      fromEmail: 'costume@studio.com',
+      to: 'you@moviemail.com',
+      subject: 'Fitting appointment reminder',
+      body: 'Hi,\n\nThis is a reminder that your costume fitting is scheduled for Tuesday at 2pm in the Costume Dept (Building C).\n\nPlease bring any personal items you\'d like considered for continuity.\n\nSee you then!',
+      time: 'Mon',
+      unread: false,
+      starred: false
+    },
+    {
+      from: 'Post-Production',
+      fromEmail: 'post@studio.com',
+      to: 'you@moviemail.com',
+      subject: 'Rough cut ready for review',
+      body: 'Hi,\n\nThe rough cut of scenes 1–10 is now ready for your review. You can access the secure screening link below.\n\nScreening link: [private link]\nPassword: roughcut2024\n\nPlease provide notes by Friday.\n\nThanks,\nPost',
+      time: 'Sun',
+      unread: false,
+      starred: false
+    },
+    {
+      from: 'Transport',
+      fromEmail: 'transport@studio.com',
+      to: 'you@moviemail.com',
+      subject: 'Car pick-up times this week',
+      body: 'Hi,\n\nYour car pick-up schedule for the week is as follows:\n\nTuesday: 05:30 from home\nThursday: 05:15 from home\nFriday: 06:00 from hotel\n\nPlease confirm these times are correct.\n\nThanks,\nTransport',
+      time: 'Sat',
+      unread: false,
+      starred: false
+    },
+    {
+      from: 'Accounts',
+      fromEmail: 'accounts@studio.com',
+      to: 'you@moviemail.com',
+      subject: 'Expense claim — action required',
+      body: 'Hi,\n\nWe have received your expense claim for last month. However, we require the original receipts for items over £50.\n\nPlease submit these at your earliest convenience to avoid delays in processing.\n\nRegards,\nAccounts',
+      time: '14 Mar',
+      unread: false,
+      starred: false
+    },
+    {
+      from: 'Security',
+      fromEmail: 'security@studio.com',
+      to: 'you@moviemail.com',
+      subject: 'New access pass ready for collection',
+      body: 'Hi,\n\nYour new studio access pass is ready for collection from the main security lodge (Gate 1).\n\nOpening hours: Monday–Friday, 08:00–18:00.\n\nPlease bring valid photo ID.\n\nSecurity Team',
+      time: '13 Mar',
+      unread: false,
+      starred: false
+    }
+  ]
+};
+
+// ============================================================
+// LOAD / SAVE
+// ============================================================
+function loadConfig() {
+  try {
+    const saved = localStorage.getItem('movieMailConfig');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      const merged = Object.assign({}, JSON.parse(JSON.stringify(DEFAULT_CONFIG)), parsed);
+      if (!parsed.emails || parsed.emails.length < DEFAULT_CONFIG.emails.length) {
+        merged.emails = DEFAULT_CONFIG.emails.map((def, i) =>
+          (parsed.emails && parsed.emails[i]) ? parsed.emails[i] : def
+        );
+      }
+      return merged;
+    }
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+}
+
+function saveToStorage(cfg) {
+  localStorage.setItem('movieMailConfig', JSON.stringify(cfg));
+}
+
+let config = loadConfig();
+
+// ============================================================
+// APPLY CONFIG
+// ============================================================
+function applyConfig() {
+  document.body.style.background = config.bgColor;
+  document.getElementById('topbar').style.background = config.bgColor;
+  document.getElementById('sidebar').style.background = config.bgColor;
+  document.getElementById('user-avatar').textContent = (config.userInitial || 'L')[0].toUpperCase();
+  renderLogo();
+  renderEmailList();
+  updateUnreadBadge();
+}
+
+function renderLogo() {
+  const el = document.getElementById('app-logo-el');
+  if (!el) return;
+  if (config.logoUrl) {
+    el.innerHTML = `<img src="${config.logoUrl}" alt="Logo">`;
+  } else {
+    const name = config.appName || 'Movie Mail';
+    const colors = ['#EA4335','#4285F4','#FBBC05','#34A853','#EA4335','#4285F4','#FBBC05','#34A853','#EA4335','#4285F4'];
+    el.innerHTML = name.split('').map((c, i) => {
+      if (c === ' ') return '&nbsp;';
+      return `<span style="color:${colors[i%colors.length]}" class="logo-char">${c}</span>`;
+    }).join('');
+  }
+}
+
+// ============================================================
+// RENDER EMAILS
+// ============================================================
+function renderEmailList() {
+  const container = document.getElementById('email-rows');
+  container.innerHTML = config.emails.map((e, i) => `
+    <div class="email-row ${e.unread ? 'unread' : 'read'}" onclick="openEmail(${i})">
+      <div class="check-box"></div>
+      <button class="star-btn ${e.starred ? 'starred' : ''}" onclick="event.stopPropagation();toggleStar(${i})">&#9733;</button>
+      <span class="email-from">${escHtml(e.from)}</span>
+      <span class="email-body-preview">
+        <span class="email-subject-inline">${escHtml(e.subject)}</span>
+        <span class="email-snippet-inline"> &mdash; ${escHtml(e.body.replace(/\n/g,' ').substring(0,80))}</span>
+      </span>
+      <span class="email-time">${escHtml(e.time)}</span>
+    </div>
+  `).join('');
+}
+
+function updateUnreadBadge() {
+  const count = config.emails.filter(e => e.unread).length;
+  document.getElementById('unread-count-badge').textContent = count || '';
+  document.getElementById('inbox-badge').textContent = count || '';
+}
+
+function toggleStar(i) {
+  config.emails[i].starred = !config.emails[i].starred;
+  saveToStorage(config);
+  renderEmailList();
+}
+
+// ============================================================
+// OPEN / CLOSE EMAIL
+// ============================================================
+function openEmail(i) {
+  const e = config.emails[i];
+  config.emails[i].unread = false;
+  saveToStorage(config);
+  updateUnreadBadge();
+  renderEmailList();
+
+  document.getElementById('view-subject').textContent = e.subject;
+  document.getElementById('view-avatar').textContent = e.from[0].toUpperCase();
+  document.getElementById('view-from-name').textContent = e.from;
+  document.getElementById('view-addresses').textContent = `<${e.fromEmail}> to ${e.to || config.myEmail}`;
+  document.getElementById('view-time').textContent = e.time;
+  document.getElementById('view-body').textContent = e.body;
+
+  document.getElementById('email-list-panel').style.display = 'none';
+  document.getElementById('email-view-panel').classList.add('open');
+}
+
+function closeEmail() {
+  document.getElementById('email-view-panel').classList.remove('open');
+  document.getElementById('email-list-panel').style.display = '';
+}
+
+function showInbox() {
+  closeEmail();
+}
+
+// ============================================================
+// COMPOSE
+// ============================================================
+let composeMinimised = false;
+
+function openCompose() {
+  document.getElementById('compose-modal').classList.add('open');
+  composeMinimised = false;
+  document.getElementById('compose-body').style.display = '';
+  document.getElementById('compose-to').focus();
+}
+
+function closeCompose() {
+  document.getElementById('compose-modal').classList.remove('open');
+  document.getElementById('compose-to').value = '';
+  document.getElementById('compose-cc').value = '';
+  document.getElementById('compose-subject').value = '';
+  document.getElementById('compose-body-text').value = '';
+}
+
+function toggleCompose() {
+  composeMinimised = !composeMinimised;
+  document.getElementById('compose-body').style.display = composeMinimised ? 'none' : '';
+}
+
+function sendEmail() {
+  closeCompose();
+  showToast('Message sent.');
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ============================================================
+// CUSTOMISE MODAL
+// ============================================================
+function openCustomise() {
+  populateModal();
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeCustomise() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+function switchModalTab(name, btn) {
+  document.querySelectorAll('.tabs-nav-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.modal .tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('modal-' + name).classList.add('active');
+}
+
+function populateModal() {
+  document.getElementById('cfg-bg').value = config.bgColor;
+  document.getElementById('cfg-name').value = config.appName || 'Movie Mail';
+  document.getElementById('cfg-logo').value = config.logoUrl || '';
+  document.getElementById('cfg-user').value = config.userInitial || 'L';
+  document.getElementById('cfg-my-email').value = config.myEmail || 'you@moviemail.com';
+
+  const ee = document.getElementById('email-presets-editor');
+  ee.innerHTML = config.emails.map((e, i) => `
+    <div class="email-preset">
+      <div class="email-preset-title">Email ${i+1}</div>
+      <div class="modal-row-inline">
+        <div class="modal-row"><label>From (name)</label><input type="text" id="ep-from-${i}" value="${escHtml(e.from)}"></div>
+        <div class="modal-row"><label>From (email)</label><input type="text" id="ep-fromemail-${i}" value="${escHtml(e.fromEmail)}"></div>
+      </div>
+      <div class="modal-row-inline">
+        <div class="modal-row"><label>To</label><input type="text" id="ep-to-${i}" value="${escHtml(e.to)}"></div>
+        <div class="modal-row"><label>Time / Date</label><input type="text" id="ep-time-${i}" value="${escHtml(e.time)}"></div>
+      </div>
+      <div class="modal-row"><label>Subject</label><input type="text" id="ep-subject-${i}" value="${escHtml(e.subject)}"></div>
+      <div class="modal-row"><label>Email Body</label><textarea id="ep-body-${i}" rows="4">${escHtml(e.body)}</textarea></div>
+    </div>
+  `).join('');
+}
+
+function saveConfig() {
+  config.bgColor = document.getElementById('cfg-bg').value;
+  config.appName = document.getElementById('cfg-name').value;
+  config.logoUrl = document.getElementById('cfg-logo').value;
+  config.userInitial = document.getElementById('cfg-user').value;
+  config.myEmail = document.getElementById('cfg-my-email').value;
+
+  config.emails = config.emails.map((e, i) => ({
+    from: document.getElementById(`ep-from-${i}`).value,
+    fromEmail: document.getElementById(`ep-fromemail-${i}`).value,
+    to: document.getElementById(`ep-to-${i}`).value,
+    time: document.getElementById(`ep-time-${i}`).value,
+    subject: document.getElementById(`ep-subject-${i}`).value,
+    body: document.getElementById(`ep-body-${i}`).value,
+    unread: e.unread,
+    starred: e.starred
+  }));
+
+  saveToStorage(config);
+  applyConfig();
+  closeCustomise();
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Close modal on overlay click
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeCustomise();
+});
+
+// ============================================================
+// SPLASH
+// ============================================================
+(function() {
+  const splash = document.getElementById('splash');
+  if (sessionStorage.getItem('mailSplashShown')) {
+    splash.classList.add('hidden'); return;
+  }
+  sessionStorage.setItem('mailSplashShown', '1');
+  setTimeout(() => {
+    splash.classList.add('fade-out');
+    setTimeout(() => splash.classList.add('hidden'), 650);
+  }, 1600);
+})();
+
+// Init
+applyConfig();
+</script>
+</body>
+</html>

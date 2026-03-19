@@ -1,0 +1,1610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Movie Connect</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #f0f2f5;
+  --white: #ffffff;
+  --accent: #1877f2;
+  --accent-hover: #166fe5;
+  --accent-light: #e7f0fd;
+  --text: #050505;
+  --text2: #65676b;
+  --text3: #1877f2;
+  --border: #ced0d4;
+  --border-light: #e4e6eb;
+  --card-bg: #ffffff;
+  --hover: #f2f2f2;
+  --hover2: #e4e6eb;
+  --like: #1877f2;
+  --love: #f33e58;
+  --haha: #f7b125;
+  --shadow: 0 1px 2px rgba(0,0,0,0.1);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.12);
+  --radius: 8px;
+  --topbar-h: 56px;
+}
+
+body {
+  font-family: 'Source Sans 3', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ===== SPLASH ===== */
+#splash {
+  position: fixed; inset: 0;
+  background: var(--accent);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity 0.6s ease;
+}
+#splash.fade-out { opacity: 0; pointer-events: none; }
+#splash.hidden { display: none; }
+.splash-logo-text {
+  font-family: 'Nunito', sans-serif;
+  font-size: 56px; font-weight: 800;
+  color: white; letter-spacing: -1px;
+  margin-bottom: 8px;
+}
+.splash-logo-text img { max-height: 72px; max-width: 300px; object-fit: contain; }
+.splash-by { font-size: 15px; color: rgba(255,255,255,0.75); margin-top: 16px; }
+.splash-name { font-family: 'Nunito', sans-serif; font-size: 22px; font-weight: 700; color: white; margin-top: 4px; }
+.splash-dots { display: flex; gap: 8px; margin-top: 28px; }
+.splash-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.6); animation: sdot 1.2s ease-in-out infinite; }
+.splash-dot:nth-child(1){animation-delay:0s}.splash-dot:nth-child(2){animation-delay:0.15s}.splash-dot:nth-child(3){animation-delay:0.3s}.splash-dot:nth-child(4){animation-delay:0.45s}
+@keyframes sdot{0%,80%,100%{transform:scale(0.7);opacity:0.4}40%{transform:scale(1.1);opacity:1}}
+
+/* ===== TOPBAR ===== */
+#topbar {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: var(--topbar-h);
+  background: var(--white);
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 8px;
+  z-index: 100;
+}
+
+.topbar-logo {
+  font-family: 'Nunito', sans-serif;
+  font-size: 28px; font-weight: 800;
+  color: var(--accent);
+  cursor: pointer;
+  flex-shrink: 0;
+  text-decoration: none;
+  letter-spacing: -0.5px;
+  min-width: 180px;
+}
+.topbar-logo img { max-height: 36px; max-width: 160px; object-fit: contain; vertical-align: middle; }
+
+.topbar-search {
+  display: flex; align-items: center;
+  background: var(--bg); border-radius: 9999px;
+  padding: 8px 14px; gap: 8px;
+  min-width: 240px;
+}
+.topbar-search svg { color: var(--text2); flex-shrink: 0; }
+.topbar-search input {
+  background: none; border: none; outline: none;
+  font-size: 15px; color: var(--text); font-family: inherit;
+  width: 160px;
+}
+.topbar-search input::placeholder { color: var(--text2); }
+
+.topbar-nav {
+  display: flex; gap: 2px;
+  margin: 0 auto;
+}
+.topbar-nav-btn {
+  width: 112px; height: 48px;
+  border: none; background: none; cursor: pointer;
+  border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text2);
+  position: relative;
+  transition: background 0.1s;
+}
+.topbar-nav-btn:hover { background: var(--hover2); }
+.topbar-nav-btn.active { color: var(--accent); }
+.topbar-nav-btn.active::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 3px; background: var(--accent);
+  border-radius: 3px 3px 0 0;
+}
+.topbar-nav-btn svg { width: 24px; height: 24px; }
+
+.topbar-right {
+  display: flex; align-items: center; gap: 8px; margin-left: auto;
+}
+.topbar-icon-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--hover2); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text);
+  font-size: 18px;
+  transition: background 0.15s;
+}
+.topbar-icon-btn:hover { background: var(--border-light); }
+.topbar-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--accent); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 16px;
+  cursor: pointer; flex-shrink: 0;
+}
+.customize-topbar-btn {
+  background: var(--accent-light); color: var(--accent);
+  border: none; border-radius: 6px; padding: 7px 14px;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  font-family: inherit;
+}
+.customize-topbar-btn:hover { background: #d0e4fc; }
+
+/* ===== MAIN LAYOUT ===== */
+#main {
+  display: flex;
+  width: 100%;
+  padding-top: calc(var(--topbar-h) + 16px);
+  gap: 0;
+  min-height: calc(100vh - var(--topbar-h));
+  align-items: flex-start;
+}
+
+/* ===== LEFT SIDEBAR ===== */
+#left-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  position: sticky;
+  top: calc(var(--topbar-h) + 16px);
+  height: fit-content;
+  padding: 0 8px 16px 16px;
+}
+
+.profile-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 0 0 8px;
+  box-shadow: var(--shadow);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.profile-cover {
+  height: 80px;
+  background: linear-gradient(135deg, #1877f2, #42a5f5);
+  position: relative;
+}
+.profile-card-avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--accent); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 28px;
+  border: 4px solid white;
+  position: absolute; bottom: -36px; left: 16px;
+  box-shadow: var(--shadow);
+}
+.profile-card-info { padding: 44px 16px 8px; }
+.profile-card-name {
+  font-family: 'Nunito', sans-serif;
+  font-size: 17px; font-weight: 700; color: var(--text);
+}
+.profile-card-handle { font-size: 14px; color: var(--text2); margin-top: 2px; }
+.profile-stats {
+  display: flex; gap: 16px; margin-top: 10px;
+  padding-top: 10px; border-top: 1px solid var(--border-light);
+}
+.stat-item { text-align: center; flex: 1; }
+.stat-num { font-family: 'Nunito', sans-serif; font-size: 17px; font-weight: 700; }
+.stat-label { font-size: 12px; color: var(--text2); }
+
+.sidebar-nav { }
+.sidebar-nav-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 8px; border-radius: var(--radius);
+  cursor: pointer; font-size: 15px; font-weight: 600;
+  color: var(--text);
+  border: none; background: none; width: 100%;
+  text-align: left; font-family: inherit;
+  transition: background 0.1s;
+}
+.sidebar-nav-item:hover { background: var(--hover); }
+.sidebar-nav-item svg { width: 26px; height: 26px; color: var(--accent); }
+.sidebar-nav-item.active { color: var(--accent); }
+
+/* ===== FEED ===== */
+#feed {
+  flex: 1;
+  min-width: 0;
+  max-width: 620px;
+  padding: 0 16px 16px;
+}
+
+/* stories removed */
+
+/* Compose post box */
+.compose-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+.compose-top {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+}
+.compose-field-btn {
+  flex: 1; background: var(--bg); border: none; border-radius: 9999px;
+  padding: 10px 16px; font-size: 15px; color: var(--text2);
+  cursor: pointer; text-align: left; font-family: inherit;
+  transition: background 0.1s;
+}
+.compose-field-btn:hover { background: var(--hover2); }
+.compose-divider { height: 1px; background: var(--border-light); margin-bottom: 8px; }
+.compose-actions {
+  display: flex; gap: 4px;
+}
+.compose-action {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  gap: 6px; padding: 8px;
+  border: none; background: none; cursor: pointer;
+  border-radius: var(--radius); font-size: 14px; font-weight: 600;
+  color: var(--text2); font-family: inherit;
+  transition: background 0.1s;
+}
+.compose-action:hover { background: var(--hover); }
+.compose-action svg { width: 22px; height: 22px; }
+.compose-action.photo svg { color: #45bd62; }
+.compose-action.feeling svg { color: #f7b125; }
+.compose-action.live svg { color: #f02849; }
+
+/* ===== POST CARD ===== */
+.post-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.post-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px 0;
+}
+.post-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  color: white; font-family: 'Nunito', sans-serif; font-weight: 700;
+  font-size: 16px; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.post-author-name {
+  font-size: 15px; font-weight: 700; color: var(--text); cursor: pointer;
+}
+.post-author-name:hover { text-decoration: underline; }
+.post-meta { font-size: 13px; color: var(--text2); }
+.post-menu {
+  margin-left: auto; width: 36px; height: 36px; border-radius: 50%;
+  background: none; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text2); font-size: 18px;
+}
+.post-menu:hover { background: var(--hover); }
+
+.post-body {
+  padding: 10px 16px;
+  font-size: 15px; line-height: 1.5; color: var(--text);
+  white-space: pre-wrap; word-wrap: break-word;
+}
+.post-body.large { font-size: 24px; line-height: 1.3; font-weight: 500; }
+
+.post-image {
+  width: 100%; max-height: 500px; object-fit: cover;
+  display: block; background: var(--bg);
+}
+.post-image-placeholder {
+  width: 100%; height: 240px; background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text2); font-size: 14px;
+}
+
+/* Reactions summary */
+.post-stats {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 16px;
+  font-size: 14px; color: var(--text2);
+  border-bottom: 1px solid var(--border-light);
+}
+.reaction-icons { display: flex; align-items: center; gap: 2px; }
+.reaction-icon {
+  width: 20px; height: 20px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 12px; border: 2px solid white;
+  margin-left: -4px;
+}
+.reaction-icon:first-child { margin-left: 0; }
+.ri-like { background: #1877f2; }
+.ri-love { background: #f33e58; }
+.ri-haha { background: #f7b125; }
+.reactions-count { margin-left: 6px; cursor: pointer; }
+.reactions-count:hover { text-decoration: underline; color: var(--text); }
+.post-comments-count { cursor: pointer; }
+.post-comments-count:hover { text-decoration: underline; color: var(--text); }
+
+/* Action buttons */
+.post-actions {
+  display: flex; border-bottom: 1px solid var(--border-light);
+}
+.post-action-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  gap: 6px; padding: 4px 8px; height: 40px;
+  border: none; background: none; cursor: pointer;
+  font-size: 14px; font-weight: 600; color: var(--text2);
+  border-radius: var(--radius); margin: 4px;
+  font-family: inherit; transition: background 0.1s, color 0.1s;
+}
+.post-action-btn:hover { background: var(--hover); color: var(--text); }
+.post-action-btn.liked { color: var(--accent); }
+.post-action-btn svg { width: 20px; height: 20px; }
+
+/* Comments */
+.post-comments { padding: 8px 16px 12px; }
+.comment {
+  display: flex; gap: 8px; margin-bottom: 8px;
+  align-items: flex-start;
+}
+.comment-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  color: white; font-family: 'Nunito', sans-serif; font-weight: 700;
+  font-size: 13px; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.comment-bubble {
+  background: var(--bg); border-radius: 18px;
+  padding: 8px 12px; max-width: calc(100% - 48px);
+}
+.comment-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.comment-text { font-size: 14px; color: var(--text); line-height: 1.4; }
+.comment-actions {
+  display: flex; gap: 12px; margin-top: 4px; padding-left: 8px;
+  font-size: 12px; color: var(--text2); font-weight: 600;
+}
+.comment-action { cursor: pointer; }
+.comment-action:hover { text-decoration: underline; }
+
+.comment-input-row {
+  display: flex; align-items: center; gap: 8px; margin-top: 8px;
+}
+.comment-input {
+  flex: 1; background: var(--bg); border: none; border-radius: 9999px;
+  padding: 8px 16px; font-size: 14px; font-family: inherit;
+  color: var(--text); outline: none;
+}
+.comment-input::placeholder { color: var(--text2); }
+.comment-send {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--accent); border: none; cursor: pointer;
+  color: white; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.comment-send:hover { background: var(--accent-hover); }
+
+/* ===== RIGHT SIDEBAR ===== */
+#right-sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  position: sticky;
+  top: calc(var(--topbar-h) + 16px);
+  height: fit-content;
+  padding: 0 16px 16px 8px;
+  display: block;
+}
+
+.sidebar-card {
+  background: none;
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+}
+.sidebar-card-title {
+  font-family: 'Nunito', sans-serif;
+  font-size: 17px; font-weight: 700;
+  color: var(--text); margin-bottom: 8px;
+  padding: 0 4px;
+}
+
+.friends-online { }
+.friend-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 8px; border-radius: var(--radius);
+  cursor: pointer; transition: background 0.1s;
+}
+.friend-item:hover { background: var(--hover); }
+.friend-avatar-wrap { position: relative; }
+.friend-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  color: white; font-family: 'Nunito', sans-serif;
+  font-weight: 700; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+}
+.online-dot {
+  position: absolute; bottom: 0; right: 0;
+  width: 11px; height: 11px; border-radius: 50%;
+  background: #45bd62; border: 2px solid white;
+}
+.friend-name { font-size: 15px; font-weight: 600; color: var(--text); }
+
+.birthday-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+  display: flex; gap: 12px; align-items: center;
+  margin-bottom: 16px;
+}
+.birthday-card svg { color: var(--accent); flex-shrink: 0; }
+.birthday-text { font-size: 14px; color: var(--text); line-height: 1.4; }
+.birthday-text strong { font-weight: 700; }
+
+.events-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.event-item {
+  display: flex; gap: 10px; padding: 10px 14px;
+  border-bottom: 1px solid var(--border-light); cursor: pointer;
+  transition: background 0.1s;
+}
+.event-item:last-child { border-bottom: none; }
+.event-item:hover { background: var(--hover); }
+.event-date-box {
+  width: 42px; text-align: center; flex-shrink: 0;
+}
+.event-month { font-size: 11px; color: var(--accent); font-weight: 700; text-transform: uppercase; }
+.event-day { font-size: 20px; font-weight: 800; font-family: 'Nunito', sans-serif; color: var(--text); }
+.event-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.event-desc { font-size: 13px; color: var(--text2); }
+
+
+/* ===== COMMENT EDITOR IN MODAL ===== */
+.comment-editor-section {
+  margin-top: 10px;
+  border-top: 1px solid var(--border-light);
+  padding-top: 10px;
+}
+.comment-editor-title {
+  font-size: 12px; font-weight: 700; color: var(--text2);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.comment-editor-row {
+  display: flex; flex-direction: column; gap: 6px;
+  background: white; border-radius: 6px;
+  padding: 10px; margin-bottom: 8px;
+  border: 1px solid var(--border-light);
+  position: relative;
+}
+.comment-editor-row .modal-row-inline { margin-bottom: 0; }
+.comment-editor-row .modal-row { margin-bottom: 0; }
+.comment-editor-row input[type="text"],
+.comment-editor-row textarea {
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 7px 10px; font-size: 13px; font-family: inherit;
+  color: var(--text); width: 100%; outline: none; resize: vertical;
+  background: white;
+}
+.comment-editor-row input:focus,
+.comment-editor-row textarea:focus { border-color: var(--accent); }
+.comment-editor-row label { font-size: 12px; color: var(--text2); font-weight: 600; }
+.remove-comment-btn {
+  position: absolute; top: 8px; right: 8px;
+  background: #fee2e2; color: #dc2626; border: none;
+  border-radius: 50%; width: 22px; height: 22px;
+  font-size: 14px; cursor: pointer; display: flex;
+  align-items: center; justify-content: center;
+  line-height: 1; font-weight: 700;
+}
+.remove-comment-btn:hover { background: #fca5a5; }
+.add-comment-btn {
+  background: var(--accent-light); color: var(--accent);
+  border: none; border-radius: 6px;
+  padding: 6px 12px; font-size: 12px; font-weight: 700;
+  cursor: pointer; font-family: inherit; width: 100%;
+  margin-top: 2px;
+}
+.add-comment-btn:hover { background: #d0e4fc; }
+
+/* ===== COMPOSE POST MODAL ===== */
+#compose-modal {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.65); z-index: 500;
+  align-items: center; justify-content: center;
+  padding: 16px;
+}
+#compose-modal.open { display: flex; }
+.compose-modal-inner {
+  background: var(--white);
+  border-radius: var(--radius);
+  width: 500px; max-width: 100%;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+.compose-modal-header {
+  display: flex; align-items: center; justify-content: center;
+  position: relative; padding: 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+.compose-modal-title {
+  font-family: 'Nunito', sans-serif;
+  font-size: 20px; font-weight: 800;
+}
+.compose-modal-close {
+  position: absolute; right: 12px;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--hover2); border: none; cursor: pointer;
+  font-size: 20px; color: var(--text);
+  display: flex; align-items: center; justify-content: center;
+}
+.compose-modal-close:hover { background: var(--border); }
+.compose-modal-body { padding: 16px; }
+.compose-user-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.compose-user-name { font-size: 15px; font-weight: 700; }
+.compose-audience {
+  font-size: 12px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 4px; padding: 2px 8px; font-weight: 600; display: flex;
+  align-items: center; gap: 4px; cursor: pointer;
+}
+.compose-textarea {
+  width: 100%; border: none; outline: none; resize: none;
+  font-size: 20px; font-family: inherit; color: var(--text);
+  min-height: 120px; line-height: 1.4;
+}
+.compose-textarea::placeholder { color: var(--text2); }
+.compose-media-row {
+  display: flex; gap: 8px;
+  border: 1px solid var(--border-light); border-radius: var(--radius);
+  padding: 10px 14px; margin-bottom: 12px;
+  align-items: center;
+}
+.compose-media-row span { font-size: 14px; font-weight: 600; color: var(--text); margin-right: auto; }
+.compose-media-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: none; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.1s;
+}
+.compose-media-btn:hover { background: var(--hover); }
+.compose-post-btn {
+  width: 100%; padding: 10px;
+  background: var(--accent); color: white;
+  border: none; border-radius: var(--radius);
+  font-size: 16px; font-weight: 700; cursor: pointer;
+  font-family: inherit; transition: background 0.1s;
+}
+.compose-post-btn:hover { background: var(--accent-hover); }
+.compose-post-btn:disabled { background: var(--hover2); color: var(--text2); cursor: default; }
+
+/* ===== TOAST ===== */
+#toast {
+  display: none; position: fixed;
+  bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: #333; color: white;
+  padding: 14px 24px; border-radius: var(--radius);
+  font-size: 15px; z-index: 9000;
+  box-shadow: var(--shadow-md);
+}
+#toast.show { display: block; }
+
+/* ===== CUSTOMISE MODAL ===== */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6); z-index: 1000;
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--white); border-radius: var(--radius);
+  width: 680px; max-width: 95vw; max-height: 90vh;
+  overflow-y: auto; box-shadow: var(--shadow-md);
+}
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border-light);
+  position: sticky; top: 0; background: white; z-index: 1;
+}
+.modal-header h2 { font-family: 'Nunito', sans-serif; font-size: 20px; font-weight: 800; }
+.modal-close {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--hover2); border: none; cursor: pointer;
+  font-size: 20px; display: flex; align-items: center; justify-content: center;
+  color: var(--text);
+}
+.modal-close:hover { background: var(--border); }
+.modal-body { padding: 20px 24px; }
+.modal-section { margin-bottom: 24px; }
+.modal-section h3 {
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px; font-weight: 700;
+  margin-bottom: 12px; border-bottom: 1px solid var(--border-light); padding-bottom: 8px;
+}
+.modal-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.modal-row label { font-size: 13px; color: var(--text2); font-weight: 600; }
+.modal-row input[type="text"],
+.modal-row input[type="url"],
+.modal-row textarea {
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 9px 12px; font-size: 14px; font-family: inherit;
+  color: var(--text); width: 100%; outline: none; resize: vertical;
+  background: white;
+}
+.modal-row input[type="color"] {
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 2px 4px; height: 36px; width: 60px; cursor: pointer;
+}
+.modal-row input:focus, .modal-row textarea:focus { border-color: var(--accent); }
+.post-preset {
+  background: var(--bg); border-radius: var(--radius); padding: 14px;
+  margin-bottom: 10px; border: 1px solid var(--border-light);
+}
+.post-preset-title { font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.modal-row-inline { display: flex; gap: 10px; }
+.modal-row-inline .modal-row { flex: 1; }
+.tabs-nav { display: flex; gap: 0; border-bottom: 1px solid var(--border-light); margin-bottom: 20px; }
+.tabs-nav-btn {
+  padding: 10px 16px; font-size: 14px; color: var(--text2); cursor: pointer;
+  border: none; background: none; border-bottom: 3px solid transparent;
+  font-family: inherit; font-weight: 600;
+}
+.tabs-nav-btn:hover { color: var(--text); background: var(--hover); }
+.tabs-nav-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.modal-footer {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 16px 24px; border-top: 1px solid var(--border-light);
+  position: sticky; bottom: 0; background: white;
+}
+.btn-cancel {
+  background: var(--hover2); border: none; border-radius: 6px;
+  padding: 8px 20px; font-size: 15px; cursor: pointer; color: var(--text);
+  font-family: inherit; font-weight: 700;
+}
+.btn-cancel:hover { background: var(--border); }
+.btn-save {
+  background: var(--accent); border: none; border-radius: 6px;
+  padding: 8px 24px; font-size: 15px; color: white;
+  cursor: pointer; font-weight: 700; font-family: inherit;
+}
+.btn-save:hover { background: var(--accent-hover); }
+
+@media (max-width: 1200px) { #right-sidebar { display: none; } }
+@media (max-width: 900px) {
+  #left-sidebar { display: none; }
+  #main { padding-top: calc(var(--topbar-h) + 8px); }
+  #feed { padding: 0 8px 16px; }
+  .topbar-nav { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash" style="position:fixed;inset:0;background:#1877f2;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;opacity:1;transition:opacity 0.6s ease;">
+  <p style="font-family:sans-serif;font-size:14px;color:#ffffff;opacity:0.6;margin-bottom:6px;letter-spacing:0.5px;">An App by</p>
+  <p style="font-family:sans-serif;font-size:26px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;">Leon Dudhill</p>
+  <div style="display:flex;gap:8px;margin-top:24px;"><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:rgba(255,255,255,0.6);animation-delay:0.0s"></div><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:rgba(255,255,255,0.6);animation-delay:0.15s"></div><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:rgba(255,255,255,0.6);animation-delay:0.3s"></div><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:rgba(255,255,255,0.6);animation-delay:0.44999999999999996s"></div></div>
+</div>
+
+
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <a class="topbar-logo" href="#" onclick="return false;" id="topbar-logo-el">MovieConnect</a>
+
+  <div class="topbar-search">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+    <input type="text" placeholder="Search MovieConnect">
+  </div>
+
+  <div class="topbar-nav">
+    <button class="topbar-nav-btn active">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    </button>
+    <button class="topbar-nav-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    </button>
+    <button class="topbar-nav-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+    </button>
+    <button class="topbar-nav-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+    </button>
+  </div>
+
+  <div class="topbar-right">
+    <button class="customize-topbar-btn" onclick="openCustomise()">Customise</button>
+    <button class="topbar-icon-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+    </button>
+    <button class="topbar-icon-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </button>
+    <button class="topbar-icon-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </button>
+    <div class="topbar-avatar" id="topbar-avatar">L</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- LEFT SIDEBAR -->
+  <aside id="left-sidebar">
+    <div class="profile-card">
+      <div class="profile-cover" id="profile-cover"></div>
+      <div class="profile-card-avatar" id="sidebar-avatar">L</div>
+      <div class="profile-card-info">
+        <div class="profile-card-name" id="sidebar-name">Leon Dudhill</div>
+        <div class="profile-card-handle" id="sidebar-handle">@leondudhill</div>
+        <div class="profile-stats">
+          <div class="stat-item"><div class="stat-num">842</div><div class="stat-label">Friends</div></div>
+          <div class="stat-item"><div class="stat-num">124</div><div class="stat-label">Posts</div></div>
+          <div class="stat-item"><div class="stat-num">3.2K</div><div class="stat-label">Followers</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-nav">
+      <button class="sidebar-nav-item active">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        News Feed
+      </button>
+      <button class="sidebar-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Friends
+      </button>
+      <button class="sidebar-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        Groups
+      </button>
+      <button class="sidebar-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Events
+      </button>
+      <button class="sidebar-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        Watch
+      </button>
+      <button class="sidebar-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        Memories
+      </button>
+    </div>
+  </aside>
+
+  <!-- FEED -->
+  <main id="feed">
+
+    <!-- Compose box -->
+    <div class="compose-card">
+      <div class="compose-top">
+        <div class="compose-avatar post-avatar" id="compose-avatar-inline" style="background:var(--accent)">L</div>
+        <button class="compose-field-btn" onclick="openCompose()" id="compose-placeholder-btn">What's on your mind, Leon?</button>
+      </div>
+      <div class="compose-divider"></div>
+      <div class="compose-actions">
+        <button class="compose-action live" onclick="openCompose()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+          Live Video
+        </button>
+        <button class="compose-action photo" onclick="openCompose()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Photo/Video
+        </button>
+        <button class="compose-action feeling" onclick="openCompose()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+          Feeling/Activity
+        </button>
+      </div>
+    </div>
+
+    <div id="feed-posts"></div>
+  </main>
+
+  <!-- RIGHT SIDEBAR -->
+  <aside id="right-sidebar">
+    <div class="birthday-card">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <div class="birthday-text"><strong id="birthday-name">Sarah Mitchell</strong> and <strong>2 others</strong> have birthdays today 🎂</div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sidebar-card-title">Friends online</div>
+      <div class="friends-online" id="friends-online"></div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sidebar-card-title">Upcoming events</div>
+      <div class="events-card" id="events-list"></div>
+    </div>
+  </aside>
+
+</div>
+
+<!-- COMPOSE MODAL -->
+<div id="compose-modal">
+  <div class="compose-modal-inner">
+    <div class="compose-modal-header">
+      <div class="compose-modal-title">Create Post</div>
+      <button class="compose-modal-close" onclick="closeCompose()">✕</button>
+    </div>
+    <div class="compose-modal-body">
+      <div class="compose-user-row">
+        <div class="post-avatar" id="compose-modal-avatar" style="width:42px;height:42px;background:var(--accent);font-size:18px;font-family:'Nunito',sans-serif;font-weight:700;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;">L</div>
+        <div>
+          <div class="compose-user-name" id="compose-modal-name">Leon Dudhill</div>
+          <div class="compose-audience">🌍 Friends</div>
+        </div>
+      </div>
+      <textarea class="compose-textarea" id="compose-text" placeholder="" rows="5"></textarea>
+      <div class="compose-media-row">
+        <span>Add to your post</span>
+        <button class="compose-media-btn" title="Photo/Video">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="#45bd62"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+        </button>
+        <button class="compose-media-btn" title="Tag people">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="#1877f2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+        </button>
+        <button class="compose-media-btn" title="Feeling">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="#f7b125"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2" stroke="white" stroke-width="1.5" fill="none"/><circle cx="9" cy="9" r="1" fill="white"/><circle cx="15" cy="9" r="1" fill="white"/></svg>
+        </button>
+      </div>
+      <button class="compose-post-btn" id="compose-post-btn" onclick="submitPost()">Post</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- CUSTOMISE MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>⚙️ Customise MovieConnect</h2>
+      <button class="modal-close" onclick="closeCustomise()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="tabs-nav">
+        <button class="tabs-nav-btn active" onclick="switchModalTab('general',this)">General</button>
+        <button class="tabs-nav-btn" onclick="switchModalTab('posts',this)">Posts</button>
+        <button class="tabs-nav-btn" onclick="switchModalTab('friends',this)">Friends</button>
+        <button class="tabs-nav-btn" onclick="switchModalTab('events',this)">Events</button>
+      </div>
+
+      <div id="modal-general" class="tab-content active">
+        <div class="modal-section">
+          <h3>Appearance</h3>
+          <div class="modal-row"><label>Background Colour</label><input type="color" id="cfg-bg"></div>
+          <div class="modal-row"><label>App Name</label><input type="text" id="cfg-name" placeholder="MovieConnect"></div>
+          <div class="modal-row"><label>Logo Image URL (replaces name)</label><input type="url" id="cfg-logo" placeholder="https://example.com/logo.png"></div>
+        </div>
+        <div class="modal-section">
+          <h3>Your Profile</h3>
+          <div class="modal-row-inline">
+            <div class="modal-row"><label>Display Name</label><input type="text" id="cfg-display-name" placeholder="Leon Dudhill"></div>
+            <div class="modal-row"><label>Handle</label><input type="text" id="cfg-handle" placeholder="leondudhill"></div>
+          </div>
+        </div>
+        <div class="modal-section">
+          <h3>Profile Photos</h3>
+          <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Upload a photo for yourself or any person who appears in posts, comments or the friends list. Leave blank to keep the coloured initial. Photos are saved in your browser.</p>
+          <div id="photo-upload-list"></div>
+          <button onclick="addPhotoField()" style="margin-top:8px;background:var(--accent-light);color:var(--accent);border:none;border-radius:6px;padding:8px 16px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">+ Add another person</button>
+        </div>
+      </div>
+
+      <div id="modal-posts" class="tab-content">
+        <div class="modal-section">
+          <h3>Feed Posts (10 posts)</h3>
+          <div id="posts-editor"></div>
+        </div>
+      </div>
+
+      <div id="modal-friends" class="tab-content">
+        <div class="modal-section">
+          <h3>Friends Online (shown in sidebar)</h3>
+          <div id="friends-editor"></div>
+        </div>
+      </div>
+
+      <div id="modal-events" class="tab-content">
+        <div class="modal-section">
+          <h3>Upcoming Events</h3>
+          <div id="events-editor"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeCustomise()">Cancel</button>
+      <button class="btn-save" onclick="saveConfig()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// AVATAR COLOURS
+// ============================================================
+// ============================================================
+// AVATAR HELPER — returns img tag or coloured initial div html
+// ============================================================
+function avatarImg(name, size, extraStyle) {
+  const photo = config.avatarPhotos && config.avatarPhotos[name];
+  const s = size || 40;
+  const extra = extraStyle || '';
+  if (photo) {
+    return `<img src="${photo}" style="width:${s}px;height:${s}px;border-radius:50%;object-fit:cover;flex-shrink:0;${extra}" alt="${name}">`;
+  }
+  const bg = avatarColor(name);
+  return `<div style="width:${s}px;height:${s}px;border-radius:50%;background:${bg};color:white;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:700;font-size:${Math.round(s*0.4)}px;flex-shrink:0;${extra}">${(name||'?')[0].toUpperCase()}</div>`;
+}
+
+// My own avatar (uses displayName)
+function myAvatarImg(size, extraStyle) {
+  return avatarImg(config.displayName || 'Leon Dudhill', size, extraStyle);
+}
+
+const AVATAR_COLORS = ['#1877f2','#e4405f','#45bd62','#f7b125','#7856ff','#ff6b35','#00b4d8','#e63946'];
+function avatarColor(name) {
+  let h = 0;
+  for (let i = 0; i < (name||'A').length; i++) h = (name||'A').charCodeAt(i) + ((h << 5) - h);
+  return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length];
+}
+
+// ============================================================
+// DEFAULT CONFIG
+// ============================================================
+const DEFAULT_CONFIG = {
+  bgColor: '#f0f2f5',
+  appName: 'MovieConnect',
+  logoUrl: '',
+  avatarPhotos: {},
+  displayName: 'Leon Dudhill',
+  handle: 'leondudhill',
+  posts: [
+    {
+      author: 'Leon Dudhill', handle: 'leondudhill', time: '2 hours ago',
+      body: 'Just wrapped the most incredible shoot day. Golden hour through Stage 4 — I wish you could have been there. 🎬✨',
+      image: '', likes: 284, comments: [
+        { author: 'Sarah Mitchell', text: 'Looks absolutely stunning! 😍' },
+        { author: 'James Thornton', text: 'Love following your journey on set!' }
+      ], liked: false
+    },
+    {
+      author: 'The Beastologist', handle: 'thebeastologist', time: '4 hours ago',
+      body: 'New episode drops FRIDAY. We found something in the Amazon that hasn\'t been documented since 1987. Your timeline is about to change. 🐍🌿',
+      image: '', likes: 1842, comments: [
+        { author: 'Marcus Webb', text: 'I\'ve been waiting for this! 🙌' },
+        { author: 'Priya Nair', text: 'Already set a reminder 🔔' }
+      ], liked: false
+    },
+    {
+      author: 'Production Office', handle: 'prodoffice', time: 'Yesterday at 3:45 PM',
+      body: '🎬 FILMING UPDATE: We\'ve officially passed the halfway point on principal photography. Incredible work from the whole crew this week. Here\'s to the second half!',
+      image: '', likes: 512, comments: [
+        { author: 'Leon Dudhill', text: 'The team has been phenomenal. So proud of everyone 💪' }
+      ], liked: false
+    },
+    {
+      author: 'Sarah Mitchell', handle: 'sarahmitchell', time: 'Yesterday at 11:20 AM',
+      body: 'When your scene partner just gets it on the first take. No notes. Just magic. 🎭',
+      image: '', likes: 723, comments: [
+        { author: 'Leon Dudhill', text: 'You two were electric together! ⚡' },
+        { author: 'James Thornton', text: 'First take energy! 🎬' }
+      ], liked: false
+    },
+    {
+      author: 'Film Festival UK', handle: 'filmfestivaluk', time: '2 days ago',
+      body: '🏆 Submissions are now OPEN for this year\'s festival. We\'re looking for bold, original voices in short film, documentary, and feature. Apply before the deadline — link in bio.',
+      image: '', likes: 3204, comments: [
+        { author: 'Marcus Webb', text: 'Already submitted — fingers crossed! 🤞' }
+      ], liked: false
+    },
+    {
+      author: 'James Thornton', handle: 'jamesthornton', time: '2 days ago',
+      body: 'Practical effects > CGI. I will die on this hill. A real explosion on screen just *feels* different. Change my mind. 🔥',
+      image: '', likes: 1901, comments: [
+        { author: 'Leon Dudhill', text: 'Agreed 1000%. Nothing beats the real thing.' },
+        { author: 'Sarah Mitchell', text: 'Both have their place but yeah... practical wins 😅' }
+      ], liked: false
+    },
+    {
+      author: 'Leon Dudhill', handle: 'leondudhill', time: '3 days ago',
+      body: 'Very excited to share that my latest project will be screening at the festival this autumn. Cannot say more just yet but... watch this space. 🙌',
+      image: '', likes: 921, comments: [
+        { author: 'The Beastologist', text: 'HUGE news! Congratulations!! 🎉' },
+        { author: 'Priya Nair', text: 'So deserved. Can\'t wait to see it 🙏' }
+      ], liked: false
+    },
+    {
+      author: 'Priya Nair', handle: 'priyanair', time: '4 days ago',
+      body: 'On-set catering really said "today we\'re making it a day" 🍜 This crew takes care of each other and it shows in every frame we shoot.',
+      image: '', likes: 487, comments: [
+        { author: 'James Thornton', text: 'The ramen was elite 😭' }
+      ], liked: false
+    },
+    {
+      author: 'Marcus Webb', handle: 'marcuswebb', time: '5 days ago',
+      body: 'Reminder that the best camera is the one you have with you. Started shooting behind-the-scenes on my phone six months ago. Now I have 40,000 followers. Don\'t wait for perfect. Start now.',
+      image: '', likes: 6201, comments: [
+        { author: 'Leon Dudhill', text: 'This. Exactly this. 💯' }
+      ], liked: false
+    },
+    {
+      author: 'The Beastologist', handle: 'thebeastologist', time: '6 days ago',
+      body: 'Fun fact: the Amazon rainforest produces 20% of the world\'s oxygen. We filmed in a tiny corner of it and I still felt completely overwhelmed by its scale. Respect the planet. 🌍',
+      image: '', likes: 8421, comments: [
+        { author: 'Priya Nair', text: 'Thank you for bringing these places to our screens 🙏' },
+        { author: 'Sarah Mitchell', text: 'Every episode teaches me something new 🌿' }
+      ], liked: false
+    }
+  ],
+  friends: [
+    { name: 'Sarah Mitchell', online: true },
+    { name: 'James Thornton', online: true },
+    { name: 'Marcus Webb', online: true },
+    { name: 'Priya Nair', online: false },
+    { name: 'The Beastologist', online: true },
+    { name: 'Emma Clarke', online: false }
+  ],
+  events: [
+    { month: 'MAR', day: '22', name: 'Film Festival Gala', desc: 'Opening night ceremony · 7:00 PM' },
+    { month: 'APR', day: '5', name: 'Wrap Party', desc: 'Studio Bar · 8:00 PM' },
+    { month: 'APR', day: '12', name: 'Premiere Screening', desc: 'Leicester Square · 6:30 PM' }
+  ]
+};
+
+// ============================================================
+// LOAD / SAVE
+// ============================================================
+function loadConfig() {
+  try {
+    const saved = localStorage.getItem('movieConnectConfig');
+    if (saved) {
+      const p = JSON.parse(saved);
+      const m = Object.assign({}, JSON.parse(JSON.stringify(DEFAULT_CONFIG)), p);
+      ['posts','friends','events'].forEach(key => {
+        if (!p[key] || p[key].length < DEFAULT_CONFIG[key].length) {
+          m[key] = DEFAULT_CONFIG[key].map((d, i) => (p[key] && p[key][i]) ? p[key][i] : d);
+        }
+      });
+      return m;
+    }
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+}
+
+let config = loadConfig();
+
+// ============================================================
+// APPLY CONFIG
+// ============================================================
+function applyConfig() {
+  document.body.style.background = config.bgColor;
+  document.getElementById('main').style.background = config.bgColor;
+
+  // Re-render my own avatars dynamically
+  const _myPhoto = config.avatarPhotos && config.avatarPhotos[config.displayName || 'Leon Dudhill'];
+  const _initial = (config.displayName || 'L')[0].toUpperCase();
+  const _myBg = avatarColor(config.displayName || 'Leon Dudhill');
+  function _setAvatar(id, size) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (_myPhoto) {
+      el.outerHTML = `<img id="${id}" src="${_myPhoto}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;cursor:pointer;" alt="avatar">`;
+    } else {
+      // restore as div if it was previously an img
+      const cur = document.getElementById(id);
+      if (cur && cur.tagName === 'IMG') {
+        const d = document.createElement('div');
+        d.id = id; d.textContent = _initial;
+        d.className = cur.className || '';
+        d.style.cssText = `width:${size}px;height:${size}px;border-radius:50%;background:${_myBg};color:white;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:700;font-size:${Math.round(size*0.4)}px;cursor:pointer;flex-shrink:0;`;
+        cur.replaceWith(d);
+      } else if (cur) {
+        cur.textContent = _initial;
+        cur.style.background = _myBg;
+      }
+    }
+  }
+  _setAvatar('topbar-avatar', 40);
+  _setAvatar('sidebar-avatar', 72);
+  _setAvatar('compose-avatar-inline', 40);
+  _setAvatar('compose-modal-avatar', 42);
+  document.getElementById('sidebar-name').textContent = config.displayName || 'Leon Dudhill';
+  document.getElementById('sidebar-handle').textContent = '@' + (config.handle || 'leondudhill');
+  document.getElementById('compose-modal-name').textContent = config.displayName || 'Leon Dudhill';
+  document.getElementById('compose-placeholder-btn').textContent = `What's on your mind, ${(config.displayName||'Leon').split(' ')[0]}?`;
+
+  renderLogo();
+  renderPosts();
+  renderFriends();
+  renderEvents();
+}
+
+function renderLogo() {
+  const name = config.appName || 'MovieConnect';
+  if (config.logoUrl) {
+    document.getElementById('topbar-logo-el').innerHTML = `<img src="${config.logoUrl}" alt="logo">`;
+    document.getElementById('splash-logo').innerHTML = `<img src="${config.logoUrl}" alt="logo">`;
+  } else {
+    document.getElementById('topbar-logo-el').textContent = name;
+    document.getElementById('splash-logo').textContent = name;
+  }
+}
+
+
+// ============================================================
+// RENDER POSTS
+// ============================================================
+function renderPosts() {
+  const container = document.getElementById('feed-posts');
+  container.innerHTML = config.posts.map((p, pi) => {
+    const authorAvatarHtml = avatarImg(p.author, 40);
+    const commentsHtml = (p.comments || []).map((c, ci) => {
+      return `
+      <div class="comment">
+        ${avatarImg(c.author, 32)}
+        <div>
+          <div class="comment-bubble">
+            <div class="comment-name">${escHtml(c.author)}</div>
+            <div class="comment-text">${escHtml(c.text)}</div>
+          </div>
+          <div class="comment-actions">
+            <span class="comment-action">Like</span>
+            <span class="comment-action">Reply</span>
+            <span style="color:var(--text2)">${['Just now','1 min','2 min','5 min','12 min'][ci % 5]}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+    const imgHtml = p.image ? `<img class="post-image" src="${p.image}" onerror="this.style.display='none'" alt="">` : '';
+    const likeCount = p.liked ? p.likes + 1 : p.likes;
+    const reactions = likeCount > 0 ? `
+      <div style="display:flex;align-items:center;gap:4px">
+        <div class="reaction-icons">
+          <div class="reaction-icon ri-like">👍</div>
+          ${likeCount > 5 ? '<div class="reaction-icon ri-love">❤️</div>' : ''}
+        </div>
+        <span class="reactions-count">${likeCount.toLocaleString()}</span>
+      </div>` : '<div></div>';
+
+    const commentCount = (p.comments || []).length;
+    return `
+    <div class="post-card">
+      <div class="post-header">
+        ${authorAvatarHtml}
+        <div>
+          <div class="post-author-name">${escHtml(p.author)}</div>
+          <div class="post-meta">${escHtml(p.time)} · 🌍</div>
+        </div>
+        <button class="post-menu">···</button>
+      </div>
+      <div class="post-body ${p.body.length < 80 && !p.image ? 'large' : ''}">${escHtml(p.body)}</div>
+      ${imgHtml}
+      <div class="post-stats">
+        ${reactions}
+        <span class="post-comments-count">${commentCount > 0 ? commentCount + ' comment' + (commentCount > 1 ? 's' : '') : ''}</span>
+      </div>
+      <div class="post-actions">
+        <button class="post-action-btn ${p.liked ? 'liked' : ''}" onclick="toggleLike(${pi})">
+          <svg viewBox="0 0 24 24" fill="${p.liked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+          Like
+        </button>
+        <button class="post-action-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Comment
+        </button>
+        <button class="post-action-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Share
+        </button>
+      </div>
+      ${commentCount > 0 ? `<div class="post-comments">${commentsHtml}<div class="comment-input-row">
+        ${myAvatarImg(32)}
+        <input class="comment-input" placeholder="Write a comment..." onkeydown="if(event.key==='Enter')addComment(${pi},this)">
+        <button class="comment-send" onclick="addComment(${pi},this.previousElementSibling)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
+      </div></div>` : `<div class="post-comments"><div class="comment-input-row">
+        ${myAvatarImg(32)}
+        <input class="comment-input" placeholder="Write a comment..." onkeydown="if(event.key==='Enter')addComment(${pi},this)">
+        <button class="comment-send" onclick="addComment(${pi},this.previousElementSibling)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
+      </div></div>`}
+    </div>`;
+  }).join('');
+}
+
+function toggleLike(i) {
+  config.posts[i].liked = !config.posts[i].liked;
+  localStorage.setItem('movieConnectConfig', JSON.stringify(config));
+  renderPosts();
+}
+
+function addComment(pi, input) {
+  const text = input.value.trim();
+  if (!text) return;
+  if (!config.posts[pi].comments) config.posts[pi].comments = [];
+  config.posts[pi].comments.push({ author: config.displayName || 'Leon Dudhill', text });
+  localStorage.setItem('movieConnectConfig', JSON.stringify(config));
+  renderPosts();
+}
+
+// ============================================================
+// RENDER FRIENDS & EVENTS
+// ============================================================
+function renderFriends() {
+  document.getElementById('friends-online').innerHTML = config.friends.map(f => {
+    return `
+    <div class="friend-item">
+      <div class="friend-avatar-wrap" style="position:relative;flex-shrink:0">
+        ${avatarImg(f.name, 36)}
+        ${f.online ? '<div class="online-dot"></div>' : ''}
+      </div>
+      <span class="friend-name">${escHtml(f.name)}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderEvents() {
+  document.getElementById('events-list').innerHTML = config.events.map(e => `
+    <div class="event-item">
+      <div class="event-date-box">
+        <div class="event-month">${escHtml(e.month)}</div>
+        <div class="event-day">${escHtml(e.day)}</div>
+      </div>
+      <div>
+        <div class="event-name">${escHtml(e.name)}</div>
+        <div class="event-desc">${escHtml(e.desc)}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ============================================================
+// COMPOSE POST
+// ============================================================
+function openCompose() {
+  document.getElementById('compose-modal').classList.add('open');
+  setTimeout(() => document.getElementById('compose-text').focus(), 50);
+}
+function closeCompose() {
+  document.getElementById('compose-modal').classList.remove('open');
+  document.getElementById('compose-text').value = '';
+}
+function submitPost() {
+  const text = document.getElementById('compose-text').value.trim();
+  if (!text) return;
+  config.posts.unshift({
+    author: config.displayName || 'Leon Dudhill',
+    handle: config.handle || 'leondudhill',
+    time: 'Just now',
+    body: text, image: '',
+    likes: 0, comments: [], liked: false
+  });
+  localStorage.setItem('movieConnectConfig', JSON.stringify(config));
+  renderPosts();
+  closeCompose();
+  showToast('Post shared!');
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+
+// ============================================================
+// PHOTO UPLOAD HELPERS
+// ============================================================
+function buildPhotoFields() {
+  const list = document.getElementById('photo-upload-list');
+  if (!list) return;
+  // Collect all unique names from posts, comments, friends + own name
+  const names = new Set();
+  names.add(config.displayName || 'Leon Dudhill');
+  (config.posts || []).forEach(p => {
+    names.add(p.author);
+    (p.comments || []).forEach(c => names.add(c.author));
+  });
+  (config.friends || []).forEach(f => names.add(f.name));
+
+  list.innerHTML = [...names].map(name => {
+    const existing = (config.avatarPhotos || {})[name] || '';
+    const preview = existing ? `<img src="${existing}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--border);margin-right:8px;" id="prev-${btoa(name).replace(/=/g,'')}">` : `<div style="width:40px;height:40px;border-radius:50%;background:${avatarColor(name)};color:white;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:700;font-size:16px;border:2px solid var(--border);margin-right:8px;flex-shrink:0">${name[0].toUpperCase()}</div>`;
+    const safeId = 'photo-' + name.replace(/[^a-zA-Z0-9]/g,'_');
+    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;background:var(--bg);padding:8px 10px;border-radius:8px;border:1px solid var(--border-light)">
+      ${preview}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">${escHtml(name)}</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <label style="display:inline-flex;align-items:center;gap:6px;background:var(--accent-light);color:var(--accent);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">
+            📷 Upload photo
+            <input type="file" accept="image/*" style="display:none" onchange="handlePhotoUpload(this,'${name.replace(/'/g,"\'")}')">
+          </label>
+          ${existing ? `<button onclick="removePhoto('${name.replace(/'/g,"\'")}',this)" style="background:none;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;color:var(--text2)">Remove</button>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function addPhotoField() {
+  const name = prompt('Enter the person\'s name exactly as it appears in posts or friends:');
+  if (!name || !name.trim()) return;
+  if (!config.avatarPhotos) config.avatarPhotos = {};
+  buildPhotoFields();
+}
+
+function handlePhotoUpload(input, name) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    if (!config.avatarPhotos) config.avatarPhotos = {};
+    config.avatarPhotos[name] = e.target.result;
+    buildPhotoFields(); // re-render with preview
+  };
+  reader.readAsDataURL(file);
+}
+
+function removePhoto(name, btn) {
+  if (config.avatarPhotos) delete config.avatarPhotos[name];
+  buildPhotoFields();
+}
+
+
+// ============================================================
+// POSTS EDITOR (with comment management)
+// ============================================================
+function renderPostsEditor() {
+  const container = document.getElementById('posts-editor');
+  if (!container) return;
+  container.innerHTML = config.posts.slice(0,10).map((p, i) => {
+    const commentsHtml = (p.comments || []).map((c, ci) => renderCommentEditorRow(i, ci, c)).join('');
+    return `
+    <div class="post-preset" id="post-preset-${i}">
+      <div class="post-preset-title">Post ${i+1}</div>
+      <div class="modal-row-inline">
+        <div class="modal-row"><label>Author Name</label><input type="text" id="pp-author-${i}" value="${escHtml(p.author)}"></div>
+        <div class="modal-row"><label>Time</label><input type="text" id="pp-time-${i}" value="${escHtml(p.time)}"></div>
+      </div>
+      <div class="modal-row"><label>Post text</label><textarea id="pp-body-${i}" rows="3">${escHtml(p.body)}</textarea></div>
+      <div class="modal-row-inline">
+        <div class="modal-row"><label>Image URL (optional)</label><input type="text" id="pp-img-${i}" value="${escHtml(p.image||'')}"></div>
+        <div class="modal-row"><label>Like count</label><input type="text" id="pp-likes-${i}" value="${escHtml(String(p.likes))}"></div>
+      </div>
+      <div class="comment-editor-section">
+        <div class="comment-editor-title">
+          <span>Comments &amp; Replies</span>
+          <span style="font-size:11px;color:var(--text2);font-weight:400;text-transform:none">${(p.comments||[]).length} comment${(p.comments||[]).length !== 1 ? 's' : ''}</span>
+        </div>
+        <div id="comments-for-post-${i}">${commentsHtml}</div>
+        <button class="add-comment-btn" onclick="addCommentField(${i})">+ Add comment</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderCommentEditorRow(pi, ci, c) {
+  return `<div class="comment-editor-row" id="comment-row-${pi}-${ci}">
+    <button class="remove-comment-btn" onclick="removeCommentField(${pi},${ci})" title="Remove comment">✕</button>
+    <div class="modal-row-inline">
+      <div class="modal-row" style="flex:1">
+        <label>From (name)</label>
+        <input type="text" id="cc-author-${pi}-${ci}" value="${escHtml(c.author)}" placeholder="e.g. Sarah Mitchell">
+      </div>
+    </div>
+    <div class="modal-row">
+      <label>Comment text</label>
+      <textarea id="cc-text-${pi}-${ci}" rows="2" placeholder="What they said...">${escHtml(c.text)}</textarea>
+    </div>
+  </div>`;
+}
+
+function addCommentField(pi) {
+  // Save current state first so we don't lose edits
+  syncPostsEditorToConfig();
+  if (!config.posts[pi].comments) config.posts[pi].comments = [];
+  config.posts[pi].comments.push({ author: '', text: '' });
+  renderPostsEditor();
+  // Scroll to the new comment
+  const newRow = document.getElementById('comments-for-post-' + pi);
+  if (newRow) newRow.lastElementChild && newRow.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function removeCommentField(pi, ci) {
+  syncPostsEditorToConfig();
+  config.posts[pi].comments.splice(ci, 1);
+  renderPostsEditor();
+}
+
+// Read current editor values back into config without saving to storage
+function syncPostsEditorToConfig() {
+  config.posts.slice(0,10).forEach((p, i) => {
+    const authorEl = document.getElementById('pp-author-' + i);
+    if (authorEl) p.author = authorEl.value;
+    const timeEl = document.getElementById('pp-time-' + i);
+    if (timeEl) p.time = timeEl.value;
+    const bodyEl = document.getElementById('pp-body-' + i);
+    if (bodyEl) p.body = bodyEl.value;
+    const imgEl = document.getElementById('pp-img-' + i);
+    if (imgEl) p.image = imgEl.value;
+    const likesEl = document.getElementById('pp-likes-' + i);
+    if (likesEl) p.likes = parseInt(likesEl.value) || 0;
+    // sync comments
+    (p.comments || []).forEach((c, ci) => {
+      const aEl = document.getElementById('cc-author-' + i + '-' + ci);
+      if (aEl) c.author = aEl.value;
+      const tEl = document.getElementById('cc-text-' + i + '-' + ci);
+      if (tEl) c.text = tEl.value;
+    });
+  });
+}
+
+// ============================================================
+// CUSTOMISE MODAL
+// ============================================================
+function openCustomise() {
+  populateModal();
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeCustomise() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+function switchModalTab(name, btn) {
+  document.querySelectorAll('.tabs-nav-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.modal .tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('modal-' + name).classList.add('active');
+}
+
+function populateModal() {
+  document.getElementById('cfg-bg').value = config.bgColor;
+  document.getElementById('cfg-name').value = config.appName || '';
+  document.getElementById('cfg-logo').value = config.logoUrl || '';
+  document.getElementById('cfg-display-name').value = config.displayName || '';
+  document.getElementById('cfg-handle').value = config.handle || '';
+  buildPhotoFields();
+
+  renderPostsEditor();
+
+  document.getElementById('friends-editor').innerHTML = config.friends.map((f, i) => `
+    <div class="post-preset">
+      <div class="modal-row-inline">
+        <div class="modal-row"><label>Name</label><input type="text" id="fr-name-${i}" value="${escHtml(f.name)}"></div>
+        <div class="modal-row"><label>Online?</label>
+          <select id="fr-online-${i}" style="border:1px solid var(--border);border-radius:6px;padding:9px 12px;font-family:inherit;font-size:14px;color:var(--text)">
+            <option value="true" ${f.online?'selected':''}>Online</option>
+            <option value="false" ${!f.online?'selected':''}>Offline</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('events-editor').innerHTML = config.events.map((e, i) => `
+    <div class="post-preset">
+      <div class="post-preset-title">Event ${i+1}</div>
+      <div class="modal-row-inline">
+        <div class="modal-row"><label>Month (e.g. MAR)</label><input type="text" id="ev-month-${i}" value="${escHtml(e.month)}"></div>
+        <div class="modal-row"><label>Day</label><input type="text" id="ev-day-${i}" value="${escHtml(e.day)}"></div>
+      </div>
+      <div class="modal-row"><label>Event Name</label><input type="text" id="ev-name-${i}" value="${escHtml(e.name)}"></div>
+      <div class="modal-row"><label>Description</label><input type="text" id="ev-desc-${i}" value="${escHtml(e.desc)}"></div>
+    </div>
+  `).join('');
+}
+
+function saveConfig() {
+  config.bgColor = document.getElementById('cfg-bg').value;
+  config.appName = document.getElementById('cfg-name').value;
+  config.logoUrl = document.getElementById('cfg-logo').value;
+  config.displayName = document.getElementById('cfg-display-name').value;
+  config.handle = document.getElementById('cfg-handle').value;
+  // avatarPhotos are already live-updated in config.avatarPhotos by handlePhotoUpload
+
+  // Sync all post + comment editor fields into config
+  syncPostsEditorToConfig();
+  // Comments are already synced, just keep the full post structure
+  config.posts = config.posts.slice(0,10).map((p, i) => {
+    const authorEl = document.getElementById('pp-author-' + i);
+    const timeEl = document.getElementById('pp-time-' + i);
+    const bodyEl = document.getElementById('pp-body-' + i);
+    const imgEl = document.getElementById('pp-img-' + i);
+    const likesEl = document.getElementById('pp-likes-' + i);
+    // Rebuild comments array from editor
+    const comments = [];
+    (p.comments || []).forEach((c, ci) => {
+      const aEl = document.getElementById('cc-author-' + i + '-' + ci);
+      const tEl = document.getElementById('cc-text-' + i + '-' + ci);
+      const author = aEl ? aEl.value.trim() : c.author;
+      const text = tEl ? tEl.value.trim() : c.text;
+      if (author || text) comments.push({ author: author || 'Anonymous', text });
+    });
+    return {
+      ...p,
+      author: authorEl ? authorEl.value : p.author,
+      time: timeEl ? timeEl.value : p.time,
+      body: bodyEl ? bodyEl.value : p.body,
+      image: imgEl ? imgEl.value : p.image,
+      likes: likesEl ? (parseInt(likesEl.value) || 0) : p.likes,
+      comments
+    };
+  });
+
+  config.friends = config.friends.map((f, i) => ({
+    name: document.getElementById(`fr-name-${i}`).value,
+    online: document.getElementById(`fr-online-${i}`).value === 'true'
+  }));
+
+  config.events = config.events.map((e, i) => ({
+    month: document.getElementById(`ev-month-${i}`).value,
+    day: document.getElementById(`ev-day-${i}`).value,
+    name: document.getElementById(`ev-name-${i}`).value,
+    desc: document.getElementById(`ev-desc-${i}`).value
+  }));
+
+  localStorage.setItem('movieConnectConfig', JSON.stringify(config));
+  applyConfig();
+  closeCustomise();
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeCustomise();
+});
+document.getElementById('compose-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeCompose();
+});
+
+// ============================================================
+// SPLASH
+// ============================================================
+(function() {
+  const splash = document.getElementById('splash');
+  if (sessionStorage.getItem('mcSplashShown')) {
+    splash.classList.add('hidden'); return;
+  }
+  sessionStorage.setItem('mcSplashShown', '1');
+  setTimeout(() => {
+    splash.classList.add('fade-out');
+    setTimeout(() => splash.classList.add('hidden'), 650);
+  }, 1600);
+})();
+
+applyConfig();
+</script>
+</body>
+</html>
