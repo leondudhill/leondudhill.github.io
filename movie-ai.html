@@ -694,7 +694,7 @@ let isTyping = false;
 function applyConfig() {
   const name = config.appName || 'MovieAI';
   document.title = name;
-  document.getElementById('splash-title-el').textContent = name;
+  const splashTitle = document.getElementById('splash-title-el'); if (splashTitle) splashTitle.textContent = name;
   document.getElementById('model-name-display').textContent = name;
   document.getElementById('welcome-title').textContent = config.welcomeTitle || 'How can I help you?';
   document.getElementById('welcome-subtitle').textContent = config.welcomeSub || '';
@@ -985,11 +985,11 @@ document.getElementById('chat-input').addEventListener('input', function() {
 // ============================================================
 (function() {
   const splash = document.getElementById('splash');
-  if (sessionStorage.getItem('movieAISplash')) { splash.classList.add('hidden'); return; }
+  if (sessionStorage.getItem('movieAISplash')) { splash.style.display='none'; return; }
   sessionStorage.setItem('movieAISplash', '1');
   setTimeout(() => {
-    splash.classList.add('fade-out');
-    setTimeout(() => splash.classList.add('hidden'), 650);
+    splash.style.opacity='0'; splash.style.pointerEvents='none'; splash.style.transition='opacity 0.6s ease';
+    setTimeout(() => { splash.style.display='none'; }, 650);
   }, 1600);
 })();
 
