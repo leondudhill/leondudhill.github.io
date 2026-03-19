@@ -1328,12 +1328,12 @@ document.getElementById('post-modal').addEventListener('click', function(e) {
 (function() {
   const splash = document.getElementById('splash');
   if (sessionStorage.getItem('socialSplashShown')) {
-    splash.classList.add('hidden'); return;
+    splash.style.display='none'; return;
   }
   sessionStorage.setItem('socialSplashShown', '1');
   setTimeout(() => {
-    splash.classList.add('fade-out');
-    setTimeout(() => splash.classList.add('hidden'), 650);
+    splash.style.opacity='0'; splash.style.pointerEvents='none'; splash.style.transition='opacity 0.6s ease';
+    setTimeout(() => { splash.style.display='none'; }, 650);
   }, 1600);
 })();
 
