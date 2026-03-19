@@ -318,13 +318,13 @@ body::after {
 <body>
 
 <!-- SPLASH -->
-<div id="splash">
-  <div class="splash-text">
-    <div class="splash-title">[ TERMINAL ]</div>
-    <div>SYSTEM BOOT...</div>
-    <div style="color:var(--green-dim);font-size:12px;margin-top:16px">An App by Leon Dudhill</div>
-  </div>
+<div id="splash" style="position:fixed;inset:0;background:#000000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;opacity:1;transition:opacity 0.6s ease;">
+  <p style="font-family:sans-serif;font-size:14px;color:#00ff41;opacity:0.6;margin-bottom:6px;letter-spacing:0.5px;">An App by</p>
+  <p style="font-family:sans-serif;font-size:26px;font-weight:700;color:#00ff41;letter-spacing:-0.5px;">Leon Dudhill</p>
+  <div style="display:flex;gap:8px;margin-top:24px;"><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:#00ff41;animation-delay:0.0s"></div><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:#00ff41;animation-delay:0.15s"></div><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:#00ff41;animation-delay:0.3s"></div><div style="width:10px;height:10px;border-radius:50%;animation:splash_bounce 1.2s ease-in-out infinite;background:#00ff41;animation-delay:0.44999999999999996s"></div></div>
 </div>
+
+
 
 <!-- CUSTOMISE BUTTON -->
 <button id="customize-fab" onclick="openCustomise()">[CUSTOMISE]</button>
@@ -868,16 +868,16 @@ document.getElementById('modal-overlay').addEventListener('click', e => {
 (function() {
   const splash = document.getElementById('splash');
   if (sessionStorage.getItem('terminalBooted')) {
-    splash.classList.add('hidden');
+    splash.style.display='none';
     applyConfig();
     runBootSequence();
     return;
   }
   sessionStorage.setItem('terminalBooted', '1');
   setTimeout(() => {
-    splash.classList.add('fade-out');
+    splash.style.opacity='0'; splash.style.pointerEvents='none'; splash.style.transition='opacity 0.6s ease';
     setTimeout(() => {
-      splash.classList.add('hidden');
+      splash.style.display='none';
       applyConfig();
       runBootSequence();
     }, 650);
