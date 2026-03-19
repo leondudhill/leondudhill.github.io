@@ -1,1 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Games – Leon Dudhill</title>
+  <link rel="icon" href="favicon.png" type="image/png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
 
+  <header>
+    <a href="index.html" class="logo">LD</a>
+    <button class="nav-toggle" id="navToggle" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <nav id="navMenu">
+      <a href="games.html" class="active">Games</a>
+      <a href="retrogames.html">Retro Games</a>
+      <a href="apps.html">Apps</a>
+      <a href="movieprops.html">Movie Props</a>
+      <a href="experiments.html">Experiments</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </header>
+
+  <div class="page-header">
+    <span class="tag">🎮 Play</span>
+    <h1>Games</h1>
+    <p>Games built from scratch. Pick one and play.</p>
+  </div>
+
+  <div class="page-content">
+    <div class="empty-state">
+      <div class="big">🎮</div>
+      <h2>Coming soon</h2>
+      <p>New games in progress — check back soon. In the meantime, try <a href="retrogames.html" style="color:var(--accent)">Retro Games</a>.</p>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2025 Leon Dudhill</p>
+  </footer>
+
+  <script>
+    const toggle = document.getElementById("navToggle");
+    const menu = document.getElementById("navMenu");
+    toggle.addEventListener("click", () => {
+      toggle.classList.toggle("open");
+      menu.classList.toggle("open");
+    });
+  </script>
+</body>
+</html>
