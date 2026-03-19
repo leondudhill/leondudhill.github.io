@@ -7,33 +7,15 @@
   <link rel="icon" href="favicon.png" type="image/png" />
   <link rel="stylesheet" href="style.css" />
   <style>
-    /* Page-specific overrides — inherits everything from style.css */
     .props-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 20px;
     }
-
-     <header>
-        <a href="index.html" class="logo">LD</a>
-        <button class="nav-toggle" id="navToggle" aria-label="Menu">
-          <span></span><span></span><span></span>
-        </button>
-        <nav id="navMenu">
-        <a href="retrogames.html">Retro Games</a>
-        <a href="apps.html">Apps</a>
-        <a href="movieprops.html">Movie Props</a>
-        <a href="experiments.html">Experiments</a>
-        <a href="about.html" class="active">About</a>
-        <a href="contact.html">Contact</a>
-      </nav>
-    </header>
-
-    
     .prop-card {
-      background: var(--card, #0d0d0d);
-      border: 1px solid var(--border, rgba(255,255,255,0.07));
-      border-radius: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
       overflow: hidden;
       text-decoration: none;
       color: inherit;
@@ -42,11 +24,10 @@
       transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     }
     .prop-card:hover {
+      border-color: var(--accent);
       transform: translateY(-4px);
-      border-color: rgba(255,255,255,0.18);
       box-shadow: 0 12px 40px rgba(0,0,0,0.5);
     }
-
     .prop-preview {
       height: 160px;
       display: flex;
@@ -54,67 +35,53 @@
       justify-content: center;
       position: relative;
       overflow: hidden;
+      border-bottom: 1px solid var(--border);
     }
     .prop-preview .pp-emoji {
-      font-size: 56px;
-      line-height: 1;
-      filter: drop-shadow(0 0 20px rgba(255,255,255,0.15));
-      transition: transform 0.2s ease;
+      font-size: 4rem;
+      opacity: 0.7;
+      filter: drop-shadow(0 0 12px rgba(232,255,71,0.2));
+      transition: transform 0.2s ease, opacity 0.2s;
     }
-    .prop-card:hover .pp-emoji {
-      transform: scale(1.1);
-    }
-
+    .prop-card:hover .pp-emoji { transform: scale(1.1); opacity: 0.95; }
     .prop-info {
-      padding: 18px 20px 20px;
+      padding: 1.4rem 1.6rem;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 0.5rem;
       flex: 1;
     }
-    .prop-meta {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
+    .prop-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     .prop-tag {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      padding: 3px 9px;
-      border-radius: 20px;
-      background: rgba(255,255,255,0.07);
-      color: rgba(255,255,255,0.5);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid rgba(232,255,71,0.3);
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
     }
     .prop-info h2 {
-      font-size: 18px;
-      font-weight: 700;
-      color: #fff;
-      margin: 0;
-      line-height: 1.2;
+      font-family: var(--font-display);
+      font-size: 2rem;
+      letter-spacing: 0.05em;
     }
     .prop-info p {
-      font-size: 13px;
-      color: rgba(255,255,255,0.45);
-      line-height: 1.55;
-      margin: 0;
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.6;
       flex: 1;
     }
     .open-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      color: rgba(255,255,255,0.7);
-      transition: color 0.15s;
+      display: inline-block;
+      margin-top: 0.8rem;
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 500;
     }
-    .prop-card:hover .open-btn { color: #fff; }
-
-    /* Responsive */
-    @media (max-width: 600px) {
+    @media (max-width: 640px) {
       .props-grid { grid-template-columns: 1fr; }
       .prop-preview { height: 130px; }
     }
@@ -129,7 +96,9 @@
     </button>
     <nav id="navMenu">
       <a href="games.html">Games</a>
+      <a href="retrogames.html">Retro Games</a>
       <a href="apps.html">Apps</a>
+      <a href="movieprops.html" class="active">Movie Props</a>
       <a href="experiments.html">Experiments</a>
       <a href="about.html">About</a>
       <a href="contact.html">Contact</a>
@@ -145,114 +114,86 @@
   <div class="page-content">
     <div class="props-grid">
 
-      <!-- Movie Search -->
       <a href="movie-search.html" class="prop-card" target="_blank">
-        <div class="prop-preview" style="background:radial-gradient(ellipse at 50% 60%, rgba(66,133,244,0.15) 0%, #020a14 70%);">
+        <div class="prop-preview" style="background:radial-gradient(ellipse at 50% 60%,rgba(66,133,244,0.15) 0%,#020a14 70%);">
           <div class="pp-emoji">🔍</div>
         </div>
         <div class="prop-info">
-          <div class="prop-meta">
-            <span class="prop-tag">Search Engine</span>
-            <span class="prop-tag">Customisable</span>
-          </div>
+          <div class="prop-meta"><span class="prop-tag">Search Engine</span><span class="prop-tag">Customisable</span></div>
           <h2>Movie Search</h2>
           <p>A Google-style search engine with preset results, image grid, video listings and fake news stories. All editable.</p>
           <span class="open-btn">Open prop →</span>
         </div>
       </a>
 
-      <!-- Movie Mail -->
       <a href="movie-email.html" class="prop-card" target="_blank">
-        <div class="prop-preview" style="background:radial-gradient(ellipse at 50% 60%, rgba(26,115,232,0.15) 0%, #020814 70%);">
+        <div class="prop-preview" style="background:radial-gradient(ellipse at 50% 60%,rgba(26,115,232,0.15) 0%,#020814 70%);">
           <div class="pp-emoji">📧</div>
         </div>
         <div class="prop-info">
-          <div class="prop-meta">
-            <span class="prop-tag">Email</span>
-            <span class="prop-tag">Gmail Style</span>
-          </div>
+          <div class="prop-meta"><span class="prop-tag">Email</span><span class="prop-tag">Gmail Style</span></div>
           <h2>Movie Mail</h2>
           <p>A Gmail-style inbox with up to 10 customisable emails. Compose window lets you write and fake-send messages on screen.</p>
           <span class="open-btn">Open prop →</span>
         </div>
       </a>
 
-      <!-- Movie Social (Twitter/X) -->
       <a href="movie-social.html" class="prop-card" target="_blank">
-        <div class="prop-preview" style="background:radial-gradient(ellipse at 50% 50%, rgba(29,155,240,0.12) 0%, #000000 70%);">
+        <div class="prop-preview" style="background:radial-gradient(ellipse at 50% 50%,rgba(29,155,240,0.12) 0%,#000000 70%);">
           <div class="pp-emoji">✦</div>
         </div>
         <div class="prop-info">
-          <div class="prop-meta">
-            <span class="prop-tag">Social Media</span>
-            <span class="prop-tag">X / Twitter</span>
-          </div>
+          <div class="prop-meta"><span class="prop-tag">Social Media</span><span class="prop-tag">X / Twitter</span></div>
           <h2>Movie Social</h2>
           <p>A dark-mode X-style feed with 10 preset posts, trending topics, working like and repost buttons, and a post compose flow.</p>
           <span class="open-btn">Open prop →</span>
         </div>
       </a>
 
-      <!-- Movie Connect (Facebook) -->
       <a href="movie-connect.html" class="prop-card" target="_blank">
-        <div class="prop-preview" style="background:radial-gradient(ellipse at 50% 60%, rgba(24,119,242,0.15) 0%, #020814 70%);">
+        <div class="prop-preview" style="background:radial-gradient(ellipse at 50% 60%,rgba(24,119,242,0.15) 0%,#020814 70%);">
           <div class="pp-emoji">👥</div>
         </div>
         <div class="prop-info">
-          <div class="prop-meta">
-            <span class="prop-tag">Social Media</span>
-            <span class="prop-tag">Facebook Style</span>
-          </div>
+          <div class="prop-meta"><span class="prop-tag">Social Media</span><span class="prop-tag">Facebook Style</span></div>
           <h2>Movie Connect</h2>
           <p>A Facebook-style social network with a news feed, friends sidebar, events, working likes, comments and photo upload support.</p>
           <span class="open-btn">Open prop →</span>
         </div>
       </a>
 
-      <!-- Movie Gram (Instagram) -->
       <a href="movie-gram.html" class="prop-card" target="_blank">
-        <div class="prop-preview" style="background:radial-gradient(ellipse at 50% 50%, rgba(220,39,67,0.12) 0%, #0a020a 70%);">
+        <div class="prop-preview" style="background:radial-gradient(ellipse at 50% 50%,rgba(220,39,67,0.12) 0%,#0a020a 70%);">
           <div class="pp-emoji">📸</div>
         </div>
         <div class="prop-info">
-          <div class="prop-meta">
-            <span class="prop-tag">Social Media</span>
-            <span class="prop-tag">Instagram Style</span>
-          </div>
+          <div class="prop-meta"><span class="prop-tag">Social Media</span><span class="prop-tag">Instagram Style</span></div>
           <h2>Movie Gram</h2>
           <p>An Instagram-style photo feed with stories, 10 posts, comments, likes, a post detail modal and suggested accounts panel.</p>
           <span class="open-btn">Open prop →</span>
         </div>
       </a>
 
-      <!-- Movie AI (ChatGPT) -->
       <a href="movie-ai.html" class="prop-card" target="_blank">
-        <div class="prop-preview" style="background:radial-gradient(ellipse at 50% 50%, rgba(16,163,127,0.14) 0%, #111211 70%);">
+        <div class="prop-preview" style="background:radial-gradient(ellipse at 50% 50%,rgba(16,163,127,0.14) 0%,#111211 70%);">
           <div class="pp-emoji">🤖</div>
         </div>
         <div class="prop-info">
-          <div class="prop-meta">
-            <span class="prop-tag">AI Chat</span>
-            <span class="prop-tag">ChatGPT Style</span>
-          </div>
+          <div class="prop-meta"><span class="prop-tag">AI Chat</span><span class="prop-tag">ChatGPT Style</span></div>
           <h2>Movie AI</h2>
           <p>A ChatGPT-style AI interface. Every message triggers one of up to 5 preset responses, cycled sequentially or at random.</p>
           <span class="open-btn">Open prop →</span>
         </div>
       </a>
 
-      <!-- Hacking Terminal -->
       <a href="movie-terminal.html" class="prop-card" target="_blank">
-        <div class="prop-preview" style="background:radial-gradient(ellipse at 50% 70%, rgba(0,255,65,0.1) 0%, #000000 70%);">
-          <div class="pp-emoji" style="font-family:'Courier New',monospace;font-size:32px;color:#00ff41;text-shadow:0 0 12px #00ff41;letter-spacing:-1px;">&gt;_</div>
+        <div class="prop-preview" style="background:radial-gradient(ellipse at 50% 70%,rgba(0,255,65,0.1) 0%,#000000 70%);">
+          <div class="pp-emoji" style="font-family:'Courier New',monospace;font-size:2.2rem;color:#00ff41;text-shadow:0 0 12px #00ff41;letter-spacing:-1px;">&gt;_</div>
         </div>
         <div class="prop-info">
-          <div class="prop-meta">
-            <span class="prop-tag">Hacking</span>
-            <span class="prop-tag">Terminal</span>
-          </div>
+          <div class="prop-meta"><span class="prop-tag">Hacking</span><span class="prop-tag">Terminal</span></div>
           <h2>Hacking Terminal</h2>
-          <p>A realistic green-on-black hacking terminal. Every keypress types a preset word. Boot sequence, scan output and CRT glow effect included.</p>
+          <p>A realistic green-on-black hacking terminal. Every keypress types a preset word. Boot sequence, scan output and CRT glow included.</p>
           <span class="open-btn">Open prop →</span>
         </div>
       </a>
