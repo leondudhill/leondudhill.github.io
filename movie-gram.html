@@ -1530,11 +1530,11 @@ document.getElementById('new-post-modal').addEventListener('click', e => { if(e.
 // ============================================================
 (function() {
   const splash = document.getElementById('splash');
-  if (sessionStorage.getItem('movieGramSplash')) { splash.classList.add('hidden'); return; }
+  if (sessionStorage.getItem('movieGramSplash')) { splash.style.display='none'; return; }
   sessionStorage.setItem('movieGramSplash', '1');
   setTimeout(() => {
-    splash.classList.add('fade-out');
-    setTimeout(() => splash.classList.add('hidden'), 650);
+    splash.style.opacity='0'; splash.style.pointerEvents='none'; splash.style.transition='opacity 0.6s ease';
+    setTimeout(() => { splash.style.display='none'; }, 650);
   }, 1600);
 })();
 
