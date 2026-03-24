@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Open Profile — Leon Dudhill</title>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600&family=Roboto:wght@300;400;500&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8f9fa;--white:#fff;--border:#dadce0;--border-light:#e8eaed;
+  --text:#202124;--muted:#5f6368;
+  --blue:#1a73e8;--blue-light:#e8f0fe;
+  --green:#1e8e3e;--green-light:#e6f4ea;
+  --red:#d93025;--red-light:#fce8e6;
+  --yellow:#f9ab00;--yellow-light:#fef7e0;
+  --purple:#7c4dff;--purple-light:#ede7f6;
+  --shadow-sm:0 1px 2px rgba(60,64,67,.10),0 1px 3px rgba(60,64,67,.15);
+  --shadow:0 1px 3px rgba(60,64,67,.12),0 2px 6px rgba(60,64,67,.15);
+  --r:12px;
+}
+body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-height:100vh}
+
+/* SPLASH */
+#splash{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#fff;animation:splashLife 1.8s ease forwards;pointer-events:none}
+@keyframes splashLife{0%{opacity:0}22%{opacity:1}78%{opacity:1}100%{opacity:0;visibility:hidden}}
+.splash-by{font-size:clamp(0.95rem,3vw,1.2rem);font-weight:400;color:#111;letter-spacing:0.01em}
+
+/* TOPBAR */
+#topbar{background:var(--white);border-bottom:1px solid var(--border-light);position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(60,64,67,.08)}
+.topbar-inner{max-width:1280px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:16px}
+.topbar-title{font-family:'Google Sans',sans-serif;font-size:20px;font-weight:500}
+.topbar-title span{color:var(--blue)}
+.topbar-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.collapse-btn{font-size:13px;color:var(--blue);font-weight:500;background:none;border:none;cursor:pointer;padding:6px 14px;border-radius:20px;transition:background .15s;font-family:'Roboto',sans-serif;margin-left:auto}
+.collapse-btn:hover{background:var(--blue-light)}
+
+/* TWO-COLUMN LAYOUT */
+#layout{display:grid;grid-template-columns:1fr 340px;gap:20px;max-width:1280px;margin:0 auto;padding:24px 24px 60px;opacity:0;animation:fadeIn .4s 2s ease forwards}
+@keyframes fadeIn{to{opacity:1}}
+@media(max-width:960px){#layout{grid-template-columns:1fr;}}
+
+/* ACCORDION */
+.accordion{background:var(--white);border:1px solid var(--border);border-radius:var(--r);margin-bottom:12px;overflow:hidden;box-shadow:var(--shadow-sm);transition:box-shadow .2s;opacity:0;transform:translateY(12px);animation:slideUp .4s ease forwards}
+.accordion:hover{box-shadow:var(--shadow)}
+@keyframes slideUp{to{opacity:1;transform:none}}
+.accordion:nth-child(1){animation-delay:2.1s}.accordion:nth-child(2){animation-delay:2.2s}
+.accordion:nth-child(3){animation-delay:2.3s}.accordion:nth-child(4){animation-delay:2.4s}
+.accordion:nth-child(5){animation-delay:2.5s}.accordion:nth-child(6){animation-delay:2.6s}
+.accordion:nth-child(7){animation-delay:2.7s}.accordion:nth-child(8){animation-delay:2.8s}
+.accordion:nth-child(9){animation-delay:2.9s}.accordion:nth-child(10){animation-delay:3.0s}
+.accordion:nth-child(11){animation-delay:3.1s}.accordion:nth-child(12){animation-delay:3.2s}
+.accordion:nth-child(13){animation-delay:3.3s}.accordion:nth-child(14){animation-delay:3.4s}
+.accordion:nth-child(15){animation-delay:3.5s}.accordion:nth-child(16){animation-delay:3.6s}
+.accordion:nth-child(17){animation-delay:3.7s}
+.accordion-header{display:flex;align-items:center;gap:14px;padding:16px 20px;cursor:pointer;user-select:none;background:var(--white);transition:background .15s}
+.accordion-header:hover{background:#f8f9fa}
+.acc-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.acc-title{font-family:'Google Sans',sans-serif;font-size:15px;font-weight:500;color:var(--text)}
+.acc-subtitle{font-size:11px;color:var(--muted);margin-top:2px}
+.acc-status{margin-left:auto;font-size:11px;color:var(--muted);flex-shrink:0;text-align:right;max-width:160px}
+.acc-chevron{width:18px;height:18px;flex-shrink:0;color:var(--muted);transition:transform .25s ease;margin-left:8px}
+.accordion.open .acc-chevron{transform:rotate(180deg)}
+.accordion-body{max-height:0;overflow:hidden;transition:max-height .4s ease}
+.accordion.open .accordion-body{max-height:9999px}
+.accordion-inner{padding:16px 20px 20px;border-top:1px solid var(--border-light)}
+
+/* TABLE */
+.info-table{width:100%;border-collapse:collapse}
+.info-table tr{border-bottom:1px solid var(--border-light)}
+.info-table tr:last-child{border-bottom:none}
+.info-table td{padding:9px 4px;vertical-align:top}
+.info-table td:first-child{font-size:12px;color:var(--muted);font-weight:500;width:190px;min-width:130px;padding-right:14px;white-space:nowrap}
+.info-table td:last-child{font-size:13px;color:var(--text);word-break:break-word}
+
+/* CHIPS */
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:12px;font-size:11px;font-weight:500}
+.chip-blue{background:var(--blue-light);color:var(--blue)}
+.chip-green{background:var(--green-light);color:var(--green)}
+.chip-red{background:var(--red-light);color:var(--red)}
+.chip-yellow{background:var(--yellow-light);color:#7d5700}
+.chip-grey{background:#f1f3f4;color:var(--muted)}
+.chip-purple{background:var(--purple-light);color:var(--purple)}
+
+.mono{font-family:'Roboto Mono',monospace;font-size:12px}
+a.ip-link{color:var(--blue);text-decoration:none;font-family:'Roboto Mono',monospace;font-size:12px}
+a.ip-link:hover{text-decoration:underline}
+
+/* LOADING */
+.loading{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px}
+.spin{width:12px;height:12px;border:2px solid #dadce0;border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* IP BANNER */
+.ip-banner{padding:9px 13px;border-radius:8px;font-size:12px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.ip-banner.ok{background:var(--green-light);color:var(--green)}
+.ip-banner.warn{background:var(--yellow-light);color:#7d5700}
+.ip-banner.err{background:var(--red-light);color:var(--red)}
+
+/* MAP */
+.map-box{border-radius:8px;overflow:hidden;border:1px solid var(--border-light);height:220px;margin-top:12px}
+.map-box iframe{width:100%;height:100%;border:0}
+
+/* ROUTER GRID */
+.router-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin-bottom:12px}
+.router-card{background:#f8f9fa;border:1px solid var(--border-light);border-radius:8px;padding:10px 12px}
+.router-card .rk{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.router-card .rv{font-size:12px;color:var(--text);word-break:break-all}
+
+/* MEDIA */
+.media-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:600px){.media-grid{grid-template-columns:1fr}}
+.media-card{border:1px solid var(--border-light);border-radius:8px;overflow:hidden;background:#fafafa}
+.media-card-header{padding:10px 14px;background:#f1f3f4;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:8px;font-family:'Google Sans',sans-serif;font-size:13px;font-weight:500}
+.media-card-body{padding:12px 14px}
+#webcam-wrap{background:#000;border-radius:6px;overflow:hidden;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center}
+#webcam{width:100%;height:100%;object-fit:cover;display:none;transform:scaleX(-1)}
+#webcam-placeholder{color:#fff;font-size:12px;text-align:center;padding:12px;opacity:0.6}
+#snapshot-canvas{display:none}
+.webcam-controls{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.media-btn{padding:6px 14px;border-radius:20px;border:none;cursor:pointer;font-size:12px;font-weight:500;font-family:'Roboto',sans-serif;transition:all .2s}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#1557b0}
+.btn-grey{background:#e8eaed;color:var(--text)}.btn-grey:hover{background:#dadce0}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#166130}
+#snapshot-preview{display:none;margin-top:8px;border-radius:6px;width:100%;border:1px solid var(--border-light)}
+#webcam-info{font-size:11px;color:var(--muted);margin-top:6px}
+.mic-meter-wrap{margin:10px 0}
+.mic-label{font-size:11px;color:var(--muted);margin-bottom:4px}
+.mic-bar-track{background:#e8eaed;border-radius:6px;height:14px;overflow:hidden}
+.mic-bar-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#34a853,#fbbc04,#ea4335);width:0%;transition:width .05s linear}
+.mic-peak{font-size:11px;color:var(--muted);margin-top:3px}
+.mic-freq-canvas{width:100%;height:70px;border-radius:6px;background:#202124;border:1px solid var(--border-light);margin-top:8px}
+#mic-info{font-size:11px;color:var(--muted);margin-top:6px}
+#mic-transcript{margin-top:8px;font-size:12px;padding:8px;background:#f8f9fa;border-radius:6px;border:1px solid var(--border-light);min-height:36px;display:none}
+
+/* FONT PILLS */
+.font-wrap{display:flex;flex-wrap:wrap;gap:5px}
+.font-pill{font-size:11px;padding:2px 9px;border-radius:12px;background:var(--blue-light);color:var(--blue);border:1px solid #c5d8fb}
+
+/* PERMISSIONS */
+.perm-wrap{display:flex;flex-wrap:wrap;gap:7px}
+.perm-card{padding:7px 12px;border-radius:8px;font-size:11px;font-weight:500;border:1px solid;min-width:110px;text-align:center}
+.perm-granted{background:var(--red-light);color:var(--red);border-color:#f5c6c3}
+.perm-denied{background:var(--green-light);color:var(--green);border-color:#b7dfbf}
+.perm-prompt{background:var(--yellow-light);color:#7d5700;border-color:#fde096}
+.perm-na{background:#f1f3f4;color:var(--muted);border-color:#e0e0e0}
+
+/* VOICES */
+.voice-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:5px;max-height:200px;overflow-y:auto}
+.voice-item{font-size:11px;padding:4px 9px;border-radius:5px;background:#f8f9fa;border:1px solid var(--border-light)}
+.voice-lang{color:var(--muted);font-size:10px}
+
+/* CSS FEATURES */
+.feature-wrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:5px}
+.feature-item{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-radius:6px;border:1px solid var(--border-light);font-size:12px;background:#fafafa}
+
+/* GPU PARAMS */
+.param-wrap{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.param-item{display:flex;justify-content:space-between;padding:6px 10px;border-radius:6px;border:1px solid var(--border-light);background:#fafafa;font-size:11px;gap:8px}
+.param-k{color:var(--muted)}.param-v{color:var(--blue);font-family:'Roboto Mono',monospace;text-align:right}
+
+/* TYPING TEST */
+.typing-test-area{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:'Roboto',sans-serif;font-size:13px;resize:none;height:70px;background:#fafafa;color:var(--text)}
+.typing-test-area:focus{outline:none;border-color:var(--blue);background:#fff}
+
+/* BEHAVIOUR BARS */
+.beh-bar-wrap{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.beh-bar{background:#f8f9fa;border:1px solid var(--border-light);border-radius:8px;padding:10px 12px}
+.beh-bar-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px}
+.beh-bar-track{background:#e8eaed;border-radius:4px;height:8px;overflow:hidden}
+.beh-bar-fill{height:100%;border-radius:4px;background:var(--blue);transition:width .5s ease}
+.beh-bar-val{font-size:12px;color:var(--text);margin-top:4px;font-family:'Roboto Mono',monospace}
+
+/* ── SIDEBAR ── */
+#sidebar{display:flex;flex-direction:column;gap:14px}
+
+/* IDENTITY CARD */
+.id-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-sm);opacity:0;animation:slideUp .4s 2.2s ease forwards}
+.id-card-header{background:linear-gradient(135deg,#1a73e8,#0d47a1);padding:16px 18px;color:#fff}
+.id-card-header-title{font-family:'Google Sans',sans-serif;font-size:13px;font-weight:500;opacity:.8;letter-spacing:.05em;text-transform:uppercase}
+.id-card-header-name{font-family:'Google Sans',sans-serif;font-size:17px;font-weight:600;margin-top:4px}
+.id-card-header-sub{font-size:11px;opacity:.75;margin-top:2px}
+.id-card-body{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.id-card-row{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;border-bottom:1px solid var(--border-light);padding-bottom:7px}
+.id-card-row:last-child{border-bottom:none;padding-bottom:0}
+.id-card-key{color:var(--muted)}
+.id-card-val{color:var(--text);font-weight:500;text-align:right;max-width:160px}
+
+/* UNIQUENESS SCORE */
+.score-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow-sm);opacity:0;animation:slideUp .4s 2.3s ease forwards}
+.score-title{font-family:'Google Sans',sans-serif;font-size:14px;font-weight:500;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.score-ring-wrap{display:flex;justify-content:center;margin:8px 0 12px}
+.score-ring{position:relative;width:110px;height:110px}
+.score-ring svg{width:110px;height:110px;transform:rotate(-90deg)}
+.score-ring-bg{fill:none;stroke:#e8eaed;stroke-width:10}
+.score-ring-fill{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1.5s ease;stroke-dasharray:283;stroke-dashoffset:283}
+.score-ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.score-ring-num{font-family:'Google Sans',sans-serif;font-size:24px;font-weight:600;line-height:1}
+.score-ring-label{font-size:10px;color:var(--muted);margin-top:2px}
+.score-1in{font-size:12px;color:var(--muted);text-align:center;margin-bottom:10px}
+.score-1in strong{color:var(--text)}
+
+/* THREAT METER */
+.threat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow-sm);opacity:0;animation:slideUp .4s 2.4s ease forwards}
+.threat-title{font-family:'Google Sans',sans-serif;font-size:14px;font-weight:500;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.threat-track{background:#e8eaed;border-radius:6px;height:18px;overflow:hidden;position:relative;margin-bottom:6px}
+.threat-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#34a853,#fbbc04,#ea4335);transition:width 1s ease;width:0%}
+.threat-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:10px}
+.threat-level{font-size:13px;font-weight:500;text-align:center;padding:6px;border-radius:6px;background:#f1f3f4;color:var(--muted)}
+.threat-items{margin-top:10px;display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto}
+.threat-item{font-size:11px;padding:4px 8px;border-radius:5px;background:#fce8e6;color:var(--red);border:1px solid #f5c6c3}
+
+/* RADAR CHART */
+.radar-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow-sm);opacity:0;animation:slideUp .4s 2.5s ease forwards}
+.radar-title{font-family:'Google Sans',sans-serif;font-size:14px;font-weight:500;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+#radar-canvas{width:100%;height:220px}
+.radar-legend{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.radar-legend-item{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted)}
+.radar-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* FOOTER */
+.footer{text-align:center;font-size:11px;color:var(--muted);padding:20px;grid-column:1/-1}
+</style>
+</head>
+<body>
+
+<div id="splash"><div class="splash-by">A tool by <strong>Leon Dudhill</strong></div></div>
+
+<div id="topbar">
+  <div class="topbar-inner">
+    <div>
+      <div class="topbar-title">Open <span>Profile</span></div>
+      <div class="topbar-sub">Everything a website can see — no cookies used</div>
+    </div>
+    <button class="collapse-btn" onclick="toggleAll()">Expand all</button>
+  </div>
+</div>
+
+<div id="layout">
+
+<!-- LEFT: ACCORDIONS -->
+<div id="accordions">
+
+  <!-- 1. INTERNET PROVIDER -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggle(this)">
+      <div class="acc-icon" style="background:#e8f0fe">🌐</div>
+      <div><div class="acc-title">Internet Provider</div><div class="acc-subtitle">IP address, ISP, ASN, proxy &amp; VPN detection</div></div>
+      <div class="acc-status" id="isp-status"><span class="loading"><span class="spin"></span></span></div>
+      <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="accordion-body"><div class="accordion-inner">
+      <div id="ip-banner" class="ip-banner warn"><span class="spin"></span> Fetching IP…</div>
+      <table class="info-table">
+        <tr><td>Public IP</td><td id="ip"><span class="loading"><span class="spin"></span></span></td></tr>
+        <tr><td>Hostname</td><td id="hostname">—</td></tr>
+        <tr><td>ISP</td><td id="isp">—</td></tr>
+        <tr><td>Organisation / ASN</td><td id="org">—</td></tr>
+        <tr><td>Proxy / VPN</td><td id="proxy">—</td></tr>
+        <tr><td>IPv6 (WebRTC)</td><td id="ipv6"><span class="loading"><span class="spin"></span></span></td></tr>
+        <tr><td>Local IP (WebRTC)</td><td id="webrtc"><span class="loading"><span class="spin"></span></span></td></tr>
+        <tr><td>DNS-over-HTTPS</td><td id="doh">—</td></tr>
+        <tr><td>Network Type</td><td id="nettype">—</td></tr>
+        <tr><td>Est. Downlink</td><td id="netspeed">—</td></tr>
+        <tr><td>Round-Trip Time</td><td id="netrtt">—</td></tr>
+      </table>
+      <div class="map-box"><div id="map-isp-inner" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f8f9fa"><span class="loading"><span class="spin"></span>&nbsp;Loading map…</span></div></div>
+    </div></div>
+  </div>
+
+  <!-- 2. LOCATION -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggle(this)">
+      <div class="acc-icon" style="background:#e6f4ea">📍</div>
+      <div><div class="acc-title">Location</div><div class="acc-subtitle">IP-based geolocation, timezone, clock drift &amp; map</div></div>
+      <div class="acc-status" id="location-status"><span class="loading"><span class="spin"></span></span></div>
+      <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="accordion-body"><div class="accordion-inner">
+      <table class="info-table">
+        <tr><td>IP Address</td><td id="loc-ip">—</td></tr>
+        <tr><td>City</td><td id="city">—</td></tr>
+        <tr><td>Region / State</td><td id="region">—</td></tr>
+        <tr><td>Country</td><td id="country">—</td></tr>
+        <tr><td>Postal Code</td><td id="postal">—</td></tr>
+        <tr><td>Coordinates</td><td id="coords">—</td></tr>
+        <tr><td>Timezone (IP)</td><td id="timezone">—</td></tr>
+        <tr><td>Timezone (Browser)</td><td id="tzbrowser">—</td></tr>
+        <tr><td>TZ Mismatch</td><td id="tzmatch">—</td></tr>
+        <tr><td>Local Time</td><td id="localtime">—</td></tr>
+        <tr><td>Time of Day Pattern</td><td id="timepattern">—</td></tr>
+        <tr><td>System Clock Drift</td><td id="clockdrift"><span class="loading"><span class="spin"></span></span></td></tr>
+        <tr><td>Language + TZ Combo</td><td id="loclang">—</td></tr>
+      </table>
+      <div class="map-box"><div id="map-inner" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f8f9fa"><span class="loading"><span class="spin"></span>&nbsp;Loading map…</span></div></div>
+    </div></div>
+  </div>
+
+  <!-- 3. ROUTER -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggle(this)">
+      <div class="acc-icon" style="background:#e6f4ea">📡</div>
+      <div><div class="acc-title">Router &amp; Local Network</div><div class="acc-subtitle">Gateway, subnet, NAT type, mDNS</div></div>
+      <div class="acc-status" id="router-status"></div>
+      <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="accordion-body"><div class="accordion-inner">
+      <div class="router-grid">
+        <div class="router-card"><div class="rk">Gateway IP</div><div class="rv" id="r-gateway">—</div></div>
+        <div class="router-card"><div class="rk">Your Local IP</div><div class="rv" id="r-localip">—</div></div>
+        <div class="router-card"><div class="rk">Subnet</div><div class="rv" id="r-subnet">—</div></div>
+        <div class="router-card"><div class="rk">Network Class</div><div class="rv" id="r-class">—</div></div>
+        <div class="router-card"><div class="rk">NAT Type</div><div class="rv" id="r-nat">—</div></div>
+        <div class="router-card"><div class="rk">IPv6 Available</div><div class="rv" id="r-ipv6">—</div></div>
+      </div>
+      <table class="info-table">
+        <tr><td>Router Admin URL</td><td id="r-adminurl">—</td></tr>
+        <tr><td>mDNS / .local</td><td id="r-mdns">—</td></tr>
+        <tr><td>STUN Result</td><td id="r-stun">—</td></tr>
+        <tr><td>ICE Candidates</td><td id="r-ice">—</td></tr>
+      </table>
+      <div class="map-box"><div id="map-router-inner" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f8f9fa"><span class="loading"><span class="spin"></span>&nbsp;Waiting for location…</span></div></div>
+    </div></div>
+  </div>
+
+  <!-- 4. BROWSER -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggle(this)">
+      <div class="acc-icon" style="background:#fef7e0">🌍</div>
+      <div><div class="acc-title">Browser</div><div class="acc-subtitle">Browser, OS, user-agent, UA client hints</div></div>
+      <div class="acc-status" id="browser-status"></div>
+      <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="accordion-body"><div class="accordion-inner">
+      <table class="info-table">
+        <tr><td>Browser</td><td id="browser">—</td></tr>
+        <tr><td>Engine</td><td id="engine">—</td></tr>
+        <tr><td>Operating System</td><td id="os">—</td></tr>
+        <tr><td>Device Type</td><td id="device">—</td></tr>
+        <tr><td>CPU Architecture</td><td id="cpuarch">—</td></tr>
+        <tr><td>Platform Bitness</td><td id="bitness">—</td></tr>
+        <tr><td>Languages</td><td id="lang">—</td></tr>
+        <tr><td>Do Not Track</td><td id="dnt">—</td></tr>
+        <tr><td>UA Client Hints</td><td id="uahints">—</td></tr>
+        <tr><td>User-Agent (raw)</td><td><span class="mono" style="font-size:10px;word-break:break-all" id="ua-raw">—</span></td></tr>
+      </table>
+    </div></div>
+  </div>
+
+  <!-- 5. DISPLAY -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggle(this)">
+      <div class="acc-icon" style="background:#fce8e6">🖥️</div>
+      <div><div class="acc-title">Display &amp; Monitor</div><div class="acc-subtitle">Resolution, DPI, physical size estimate, HDR, preferences</div></div>
+      <div class="acc-status" id="display-status"></div>
+      <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="accordion-body"><div class="accordion-inner">
+      <table class="info-table">
+        <tr><td>Screen Resolution</td><td id="resolution">—</td></tr>
+        <tr><td>Viewport Size</td><td id="viewport">—</td></tr>
+        <tr><td>Device Pixel Ratio</td><td id="dpr">—</td></tr>
+        <tr><td>Est. Physical Size</td><td id="physsize">—</td></tr>
+        <tr><td>Screen Type (est.)</td><td id="screentype">—</td></tr>
+        <tr><td>Colour Depth</td><td id="colour">—</td></tr>
+        <tr><td>HDR Support</td><td id="hdr">—</td></tr>
+        <tr><td>Wide Colour Gamut</td><td id="wcg">—</td></tr>
+        <tr><td>Touch Points</td><td id="touch">—</td></tr>
+        <tr><td>Pointer / Stylus</td><td id="pointer">—</td></tr>
+        <tr><td>Hover Capability</td><td id="hover">—</td></tr>
+        <tr><td>Colour Scheme Pref.</td><td id="colorscheme">—</td></tr>
+        <tr><td>Reduced Motion</td><td id="motion">—</td></tr>
+      </table>
+    </div></div>
+  </div>
+
+  <!-- 6. HARDWARE -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggle(this)">
+      <div class="acc-icon" style="background:#f3e8fd">💻</div>
+      <div><div class="acc-title">Hardware</div><div class="acc-subtitle">CPU (logical &amp; physical est.), RAM, GPU, devices, battery, throttling</div></div>
+      <div class="acc-status" id="hardware-status"></div>
+      <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="accordion-body"><div class="accordion-inner">
+      <table class="info-table">
+        <tr><td>CPU Logical Cores</td><td id="cores">—</td></tr>
+        <tr><td>CPU Physical Cores (est.)</td><td id="cores-physical"><span class="loading"><span class="spin"></span></span></td></tr>
+        <tr><td>CPU Throttling (est.)</td><td id="cpu-throttle"><span class="loading"><span class="spin"></span></span></td></tr>
+        <tr><td>Device RAM</td><td id="ram">—</td></tr>
+        <tr><td>GPU Renderer</td><td id="gpu">—</td></tr>
+        <tr><td>GPU Vendor</td><td id="gpuvendor">—</td></tr>
+        <tr><td>Cameras</td><td id="cameras"><span class="loading"><span class="spin"></span></span></td></tr>
+        <tr><td>Microphones</td><td id="mics"><span class="loading"><span class="spin"></span></span></td></tr>
+        <tr><td>Audio Outputs</td><td id="speakers"><span class="loading"><span class="spin"></span></span></td></tr>
+        <tr><td>Gamepads</td><td id="gamepads">—</td></tr>
+        <tr><td>Battery</td><td id="battery">—</td></tr>
+        <tr><td>Input Device</td><td id="inputdevice">—</td></tr>
+      </table>
+    </div></div>
+  </div>
+
+  <!-- 7. BEHAVIOUR & TRACKING -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggle(this)">
+      <div class="acc-icon" style="background:#fce8e6">👁️</div>
+      <div><div class="acc-title">Behaviour &amp; Session Tracking</div><div class="acc-subtitle">Time on page, idle, tabs, mouse, scroll, keyboard biometrics</div></div>
+      <div class="acc-status" id="behaviour-status"></div>
+      <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="accordion-body"><div class="accordion-inner">
+      <table class="info-table" style="margin-bottom:12px">
+        <tr><td>Time on Page</td><td id="b-timeonpage">—</td></tr>
+        <tr><td>Idle Time</td><td id="b-idle">—</td></tr>
+        <tr><td>Tab Switches</td><td id="b-tabswitches">—</td></tr>
+        <tr><td>Tab currently</td><td id="b-tabstate">—</td></tr>
+        <tr><td>Mouse Distance</td><td id="b-mousedist">—</td></tr>
+        <tr><td>Mouse Speed (avg)</td><td id="b-mousespeed">—</td></tr>
+        <tr><td>Handedness (est.)</td><td id="b-handedness">—</td></tr>
+        <tr><td>Scroll Depth</td><td id="b-scrolldepth">—</td></tr>
+        <tr><td>Scroll Direction Changes</td><td id="b-scrollchanges">—</td></tr>
+        <tr><td>Used Right-Click</td><td id="b-rightclick">—</td></tr>
+        <tr><td>Used Keyboard Shortcut</td><td id="b-shortcut">—</td></tr>
+        <tr><td>Input Method</td><td id="b-inputmethod">—</td></tr>
+      </table>
+      <div class="beh-bar-wrap">
+        <div class="beh-bar"><div class="beh-bar-label">Mouse Activity</div><div class="beh-bar-track"><div class="beh-bar-fill" id="bb-mouse" style="width:0%"></div></div><div class="beh-bar-val" id="bb-mouse-val">0 moves</div></div>
+        <div class="beh-bar"><div class="beh-bar-label">Scroll Activity</div><div class="beh-bar-track"><div class="beh-bar-fill" id="bb-scroll" style="width:0%"></div></div><div class="beh-bar-val" id="bb-scroll-val">0px</div></div>
+      </div>
+      <div style="margin-top:14px">
+        <div class="mic-label" style="margin-bottom:6px">Typing Biometrics — type anything below to measure your rhythm</div>
+        <textarea class="typing-test-area" id="typing-area" placeholder="Type here to analyse your keystroke rhythm…" oninput="recordTyping(event)"></textarea>
+        <table class="info-table" style="margin-top:8px">
+          <tr><td>Avg. Key Interval</td><td id="t-avginterval">—</td></tr>
+          <tr><td>Typing Speed</td><td id="t-wpm">—</td></tr>
+          <tr><td>Rhythm Consistency</td><td id="t-rhythm">—</td></tr>
+          <tr><td>Backspace Rate</td><td id="t-backspace">—</td></tr>
+        </table>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 8. ENVIRONMENT & IDENTITY -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggle(this)">
+      <div class="acc-icon" style="background:#e8f0fe">🔬</div>
+      <div><div class="acc-title">Environment &amp; Identity Inference</div><div class="acc-subtitle">VM, bot, corporate network, extensions, accessibility, password manager</div></div>
+      <div class="acc-status" id="env-status"></div>
+      <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="accordion-body"><div class="accordion-inner">
+      <table class="info-table">
+        <tr><td>Virtual Machine</td><td id="e-vm">—</td></tr>
+        <tr><td>Automated Browser</td><td id="e-bot"><span class="loading"><span class="spin"></span></span></td></tr>
+        <tr><td>Corporate Network</td><td id="e-corporate">—</td></tr>
+        <tr><td>Browser Extensions</td><td id="e-extensions"><span class="loading"><span class="spin"></span></span></td></tr>
+        <tr><td>Password Manager</td><td id="e-pwmanager"><span class="loading"><span class="spin"></span></span></td></tr>
+        <tr><td>Accessibility Tools</td><td id="e-a11y">—</td></tr>
+        <tr><td>Social Login State</td><td id="e-social"><span class="loading"><span class="spin"></span></span></td></tr>
+        <tr><td>Visited Link Colours</td><td id="e-visited"><span class="loading"><span class="spin"></span></span></td></tr>
+        <tr><td>DevTools Open</td><td id="devtools">—</td></tr>
+        <tr><td>Ad Blocker</td><td id="adblocker">—</td></tr>
+      </table>
+    </div></div>
+  </div>
+
+  <!-- 10. FINGERPRINTS -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggle(this)">
+      <div class="acc-icon" style="background:#e8f0fe">🔍</div>
+      <div><div class="acc-title">Fingerprints</div><div class="acc-subtitle">Canvas, audio, WebGL, WebGPU hashes</div></div>
+      <div class="acc-status" id="fp-status"></div>
+      <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="accordion-body"><div class="accordion-inner">
+      <table class="info-table">
+        <tr><td>Canvas Hash</td><td><span class="mono chip chip-blue" id="canvas">—</span></td></tr>
+        <tr><td>Audio Fingerprint</td><td><span class="mono" id="audiofp"><span class="loading"><span class="spin"></span></span></span></td></tr>
+        <tr><td>WebGL Render Hash</td><td><span class="mono chip chip-blue" id="webglhash">—</span></td></tr>
+        <tr><td>WebGL1</td><td id="webgl">—</td></tr>
+        <tr><td>WebGL2</td><td id="webgl2">—</td></tr>
+        <tr><td>WebGPU Adapter</td><td id="webgpu"><span class="loading"><span class="spin"></span></span></td></tr>
+        <tr><td>Java / Flash</td><td id="plugins">—</td></tr>
+      </table>
+    </div></div>
+  </div>
+
+  <!-- 11. FONTS -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggle(this)">
+      <div class="acc-icon" style="background:#fef7e0">🔤</div>
+      <div><div class="acc-title">Installed Fonts</div><div class="acc-subtitle">System font detection via canvas width measurement</div></div>
+      <div class="acc-status" id="fonts-status"><span class="loading"><span class="spin"></span></span></div>
+      <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="accordion-body"><div class="accordion-inner">
+      <div class="font-wrap" id="font-grid"><span class="loading"><span class="spin"></span>&nbsp;Scanning…</span></div>
+    </div></div>
+  </div>
+
+  <!-- 12. PERMISSIONS -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggle(this)">
+      <div class="acc-icon" style="background:#fce8e6">🔒</div>
+      <div><div class="acc-title">Permissions</div><div class="acc-subtitle">Silent query — no popup triggered</div></div>
+      <div class="acc-status" id="perms-status"><span class="loading"><span class="spin"></span></span></div>
+      <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="accordion-body"><div class="accordion-inner">
+      <div class="perm-wrap" id="perm-grid"><span class="loading"><span class="spin"></span>&nbsp;Querying…</span></div>
+    </div></div>
+  </div>
+
+  <!-- 13. SPEECH VOICES -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggle(this)">
+      <div class="acc-icon" style="background:#e6f4ea">🗣️</div>
+      <div><div class="acc-title">Speech Voices</div><div class="acc-subtitle">OS-level fingerprint</div></div>
+      <div class="acc-status" id="voices-status"><span class="loading"><span class="spin"></span></span></div>
+      <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="accordion-body"><div class="accordion-inner">
+      <div class="voice-list" id="voices-list"><span class="loading"><span class="spin"></span></span></div>
+    </div></div>
+  </div>
+
+  <!-- 14. STORAGE -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggle(this)">
+      <div class="acc-icon" style="background:#f3e8fd">💾</div>
+      <div><div class="acc-title">Browser Features &amp; Storage</div><div class="acc-subtitle">Storage APIs, WebAssembly, Service Workers</div></div>
+      <div class="acc-status" id="storage-status"></div>
+      <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="accordion-body"><div class="accordion-inner">
+      <table class="info-table">
+        <tr><td>Cookies</td><td id="cookies">—</td></tr>
+        <tr><td>Local Storage</td><td id="locstore">—</td></tr>
+        <tr><td>Session Storage</td><td id="sessstore">—</td></tr>
+        <tr><td>IndexedDB</td><td id="idb">—</td></tr>
+        <tr><td>Service Workers</td><td id="sw">—</td></tr>
+        <tr><td>WebSockets</td><td id="ws">—</td></tr>
+        <tr><td>WebAssembly</td><td id="wasm">—</td></tr>
+        <tr><td>Shared Array Buffer</td><td id="sab">—</td></tr>
+        <tr><td>PDF Viewer</td><td id="pdfviewer">—</td></tr>
+      </table>
+    </div></div>
+  </div>
+
+  <!-- 15. GPU PARAMS -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggle(this)">
+      <div class="acc-icon" style="background:#e8f0fe">🎮</div>
+      <div><div class="acc-title">GPU Parameters</div><div class="acc-subtitle">WebGL2 capabilities — unique per GPU model</div></div>
+      <div class="acc-status" id="gpu-status"></div>
+      <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="accordion-body"><div class="accordion-inner">
+      <div class="param-wrap" id="webgl2-params"><span class="loading"><span class="spin"></span>&nbsp;Reading…</span></div>
+    </div></div>
+  </div>
+
+  <!-- 16. CSS FEATURES -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggle(this)">
+      <div class="acc-icon" style="background:#fce8e6">⚙️</div>
+      <div><div class="acc-title">Web Platform Features</div><div class="acc-subtitle">CSS, JS &amp; browser API support</div></div>
+      <div class="acc-status" id="css-status"></div>
+      <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="accordion-body"><div class="accordion-inner">
+      <div class="feature-wrap" id="css-features"></div>
+    </div></div>
+  </div>
+
+  <div class="footer">Open Profile — an app by Leon Dudhill &nbsp;·&nbsp; no cookies used &nbsp;·&nbsp; educational purposes only</div>
+</div><!-- end accordions -->
+
+<!-- RIGHT: SIDEBAR -->
+<div id="sidebar">
+
+  <!-- IDENTITY CARD -->
+  <div class="id-card">
+    <div class="id-card-header">
+      <div class="id-card-header-title">Digital Identity Card</div>
+      <div class="id-card-header-name" id="idc-user-num" style="font-family:'Roboto Mono',monospace;font-size:1.1rem;letter-spacing:0.08em">Generating…</div>
+      <div class="id-card-header-sub">Your unique browser identity number</div>
+    </div>
+    <div class="id-card-body">
+      <p style="font-size:12px;line-height:1.7;color:#444;margin-bottom:10px">This is your unique digital identity number. Everything you see on this page comes directly from information your device is already broadcasting to the internet.</p>
+      <p style="font-size:12px;line-height:1.7;color:#444;margin-bottom:10px">Websites, governments and large companies can collect and store this data to build detailed profiles of your online behaviour.</p>
+      <p style="font-size:12px;line-height:1.7;color:#444;margin-bottom:10px">A single <strong>1×1 invisible pixel</strong> can be placed inside emails, websites or adverts. When you load a page or open an email containing it, the visit is recorded along with technical details about your device and connection. <strong>No cookies are required.</strong></p>
+      <p style="font-size:12px;line-height:1.7;color:#444;margin-bottom:14px">This is <strong>legal</strong>, widely used and almost impossible to notice.</p>
+      <div style="background:#f1f3f4;border-radius:8px;padding:10px 12px;margin-bottom:10px">
+        <p style="font-size:11px;line-height:1.65;color:#5f6368;font-style:italic">To be clear: I am not storing any of your data and I will not remember your visit. This page exists purely to show you what is visible — and to make you aware.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- UNIQUENESS SCORE -->
+  <div class="score-card">
+    <div class="score-title">🧬 Uniqueness Score</div>
+    <div class="score-ring-wrap">
+      <div class="score-ring">
+        <svg viewBox="0 0 100 100"><circle class="score-ring-bg" cx="50" cy="50" r="45"/><circle class="score-ring-fill" id="score-ring-fill" cx="50" cy="50" r="45" stroke="#1a73e8"/></svg>
+        <div class="score-ring-text"><div class="score-ring-num" id="score-num">—</div><div class="score-ring-label">/ 100</div></div>
+      </div>
+    </div>
+    <div class="score-1in" id="score-1in">Calculating…</div>
+    <table class="info-table" style="font-size:11px">
+      <tr><td>Canvas FP</td><td id="sc-canvas">—</td></tr>
+      <tr><td>Fonts</td><td id="sc-fonts">—</td></tr>
+      <tr><td>GPU</td><td id="sc-gpu">—</td></tr>
+      <tr><td>Screen</td><td id="sc-screen">—</td></tr>
+      <tr><td>Timezone</td><td id="sc-tz">—</td></tr>
+      <tr><td>Audio FP</td><td id="sc-audio">—</td></tr>
+    </table>
+  </div>
+
+  <!-- THREAT METER -->
+  <div class="threat-card">
+    <div class="threat-title">⚠️ Exposure Meter</div>
+    <div class="threat-track"><div class="threat-fill" id="threat-fill"></div></div>
+    <div class="threat-labels"><span>Private</span><span>Moderate</span><span>Exposed</span></div>
+    <div class="threat-level" id="threat-level">Scanning…</div>
+    <div class="threat-items" id="threat-items"></div>
+  </div>
+
+  <!-- RADAR CHART -->
+  <div class="radar-card">
+    <div class="radar-title">📊 Exposure Radar</div>
+    <canvas id="radar-canvas"></canvas>
+    <div class="radar-legend">
+      <div class="radar-legend-item"><div class="radar-dot" style="background:#ea4335"></div>Network</div>
+      <div class="radar-legend-item"><div class="radar-dot" style="background:#fbbc04"></div>Hardware</div>
+      <div class="radar-legend-item"><div class="radar-dot" style="background:#34a853"></div>Browser</div>
+      <div class="radar-legend-item"><div class="radar-dot" style="background:#1a73e8"></div>Behaviour</div>
+      <div class="radar-legend-item"><div class="radar-dot" style="background:#7c4dff"></div>Environment</div>
+      <div class="radar-legend-item"><div class="radar-dot" style="background:#ff6d00"></div>Location</div>
+    </div>
+  </div>
+
+  <!-- WEBCAM & MIC SIDEBAR CARD -->
+  <div class="radar-card" style="padding:0;overflow:hidden">
+    <div style="padding:14px 18px 0">
+      <div class="radar-title">📷 Webcam &amp; Microphone</div>
+    </div>
+    <div style="padding:12px 16px">
+      <div class="media-grid" style="grid-template-columns:1fr">
+        <div class="media-card">
+          <div class="media-card-header">📷 Live Webcam</div>
+          <div class="media-card-body">
+            <div id="webcam-wrap"><video id="webcam" autoplay playsinline muted></video><div id="webcam-placeholder">Click Start Camera</div></div>
+            <canvas id="snapshot-canvas"></canvas>
+            <img id="snapshot-preview" alt="Snapshot">
+            <div class="webcam-controls">
+              <button class="media-btn btn-blue" onclick="startCamera()">▶ Start Camera</button>
+              <button class="media-btn btn-grey" onclick="stopCamera()" id="stop-cam-btn" style="display:none">⏹ Stop</button>
+              <button class="media-btn btn-green" onclick="takeSnapshot()" id="snap-btn" style="display:none">📸 Snapshot</button>
+            </div>
+            <div id="webcam-info" style="font-size:11px;color:var(--muted);margin-top:6px">—</div>
+          </div>
+        </div>
+        <div class="media-card">
+          <div class="media-card-header">🎙️ Microphone</div>
+          <div class="media-card-body">
+            <div class="mic-meter-wrap">
+              <div class="mic-label">Volume Level</div>
+              <div class="mic-bar-track"><div class="mic-bar-fill" id="mic-bar"></div></div>
+              <div class="mic-peak" id="mic-peak">— dB</div>
+            </div>
+            <canvas class="mic-freq-canvas" id="mic-canvas"></canvas>
+            <div class="webcam-controls">
+              <button class="media-btn btn-blue" onclick="startMic()">🎙️ Start Mic</button>
+              <button class="media-btn btn-grey" onclick="stopMic()" id="stop-mic-btn" style="display:none">⏹ Stop</button>
+              <button class="media-btn btn-green" onclick="startSpeech()" id="speech-btn" style="display:none">💬 Transcribe</button>
+            </div>
+            <div id="mic-info" style="font-size:11px;color:var(--muted);margin-top:6px">—</div>
+            <div id="mic-transcript"></div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:14px;padding:12px;background:#fff3e0;border-radius:8px;border:1px solid #ffe0b2">
+        <p style="font-size:11px;line-height:1.7;color:#5f6368;margin-bottom:6px">I am following the law — that is why there is a button to activate these features.</p>
+        <p style="font-size:11px;line-height:1.7;color:#e65100;font-weight:500">The same techniques can be triggered <strong>without your knowledge</strong> across connected devices like webcams, CCTV systems, smart TVs and mobile phones — recording your voice and video without your knowledge.</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end sidebar -->
+</div><!-- end layout -->
+
+<script>
+// ── USER NUMBER (stored in localStorage) ─────────────────────────────────────
+function getUserNumber(){
+  try{
+    let num=localStorage.getItem('op_user_id');
+    if(!num){
+      // Generate a readable but unique number: LD-XXXXXXXX
+      const hex=Array.from(crypto.getRandomValues(new Uint8Array(5))).map(b=>b.toString(16).padStart(2,'0')).join('').toUpperCase();
+      num='LD-'+hex.slice(0,4)+'-'+hex.slice(4,8)+'-'+hex.slice(8);
+      localStorage.setItem('op_user_id',num);
+    }
+    return num;
+  }catch(e){
+    // Fallback if localStorage blocked
+    return'LD-'+Math.random().toString(36).substr(2,10).toUpperCase();
+  }
+}
+
+
+const startTime = Date.now();
+let threatScore = 0;
+const threatItems = [];
+const radarScores = {network:0, hardware:0, browser:0, behaviour:0, environment:0, location:0};
+let fontsFound = 0, audioFPVal = null;
+
+// ── ACCORDION ─────────────────────────────────────────────────────────────────
+function toggle(h){
+  const acc=h.closest('.accordion');
+  acc.classList.toggle('open');
+  if(acc.classList.contains('open')) renderPendingMaps(acc);
+}
+function toggleAll(){
+  const btn=document.querySelector('.collapse-btn');
+  const accs=document.querySelectorAll('.accordion');
+  const anyOpen=[...accs].some(a=>a.classList.contains('open'));
+  accs.forEach(a=>{
+    anyOpen?a.classList.remove('open'):a.classList.add('open');
+    if(!anyOpen) renderPendingMaps(a);
+  });
+  btn.textContent=anyOpen?'Expand all':'Collapse all';
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function set(id,html){const e=document.getElementById(id);if(e)e.innerHTML=html}
+function chip(l,t='grey'){return`<span class="chip chip-${t}">${l}</span>`}
+function yesno(ok,y='✓ Yes',n='✗ No'){return ok?chip(y,'green'):chip(n,'grey')}
+function ipLink(ip){return`<a href="http://${ip}" target="_blank" rel="noopener" class="ip-link">${ip}</a>`}
+
+// ── THREAT ────────────────────────────────────────────────────────────────────
+function addThreat(msg, points=5){
+  threatScore = Math.min(100, threatScore + points);
+  threatItems.push(msg);
+  updateThreat();
+}
+function updateThreat(){
+  const pct = threatScore;
+  document.getElementById('threat-fill').style.width = pct+'%';
+  const el = document.getElementById('threat-level');
+  const list = document.getElementById('threat-items');
+  if(pct < 30){el.style.background='#e6f4ea';el.style.color='#1e8e3e';el.textContent='🟢 Low Exposure';}
+  else if(pct < 60){el.style.background='#fef7e0';el.style.color='#7d5700';el.textContent='🟡 Moderate Exposure';}
+  else{el.style.background='#fce8e6';el.style.color='#d93025';el.textContent='🔴 High Exposure';}
+  list.innerHTML = threatItems.slice(-8).map(t=>`<div class="threat-item">⚠️ ${t}</div>`).join('');
+}
+function setRadar(cat, val){
+  radarScores[cat]=Math.min(100,val);
+  drawRadar();
+}
+
+// ── RADAR ─────────────────────────────────────────────────────────────────────
+function drawRadar(){
+  const canvas=document.getElementById('radar-canvas');
+  if(!canvas)return;
+  const W=canvas.offsetWidth||300, H=220;
+  canvas.width=W*devicePixelRatio; canvas.height=H*devicePixelRatio;
+  canvas.style.width=W+'px'; canvas.style.height=H+'px';
+  const ctx=canvas.getContext('2d');
+  ctx.scale(devicePixelRatio,devicePixelRatio);
+  const cx=W/2, cy=H/2-5, r=Math.min(W,H)*0.38;
+  const cats=['network','hardware','browser','behaviour','environment','location'];
+  const colors=['#ea4335','#fbbc04','#34a853','#1a73e8','#7c4dff','#ff6d00'];
+  const labels=['Network','Hardware','Browser','Behaviour','Environment','Location'];
+  const n=cats.length;
+
+  // Grid
+  ctx.strokeStyle='#e8eaed'; ctx.lineWidth=1;
+  for(let ring=1;ring<=4;ring++){
+    ctx.beginPath();
+    for(let i=0;i<n;i++){
+      const a=(i/n)*Math.PI*2 - Math.PI/2;
+      const x=cx+Math.cos(a)*r*(ring/4);
+      const y=cy+Math.sin(a)*r*(ring/4);
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.closePath(); ctx.stroke();
+  }
+  // Axes
+  for(let i=0;i<n;i++){
+    const a=(i/n)*Math.PI*2 - Math.PI/2;
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+Math.cos(a)*r, cy+Math.sin(a)*r);
+    ctx.strokeStyle='#e8eaed'; ctx.stroke();
+  }
+  // Data polygon
+  ctx.beginPath();
+  for(let i=0;i<n;i++){
+    const a=(i/n)*Math.PI*2 - Math.PI/2;
+    const v=(radarScores[cats[i]]||0)/100;
+    const x=cx+Math.cos(a)*r*v, y=cy+Math.sin(a)*r*v;
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.closePath();
+  ctx.fillStyle='rgba(26,115,232,0.15)'; ctx.fill();
+  ctx.strokeStyle='#1a73e8'; ctx.lineWidth=2; ctx.stroke();
+  // Dots
+  for(let i=0;i<n;i++){
+    const a=(i/n)*Math.PI*2 - Math.PI/2;
+    const v=(radarScores[cats[i]]||0)/100;
+    const x=cx+Math.cos(a)*r*v, y=cy+Math.sin(a)*r*v;
+    ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2);
+    ctx.fillStyle=colors[i]; ctx.fill();
+  }
+  // Labels
+  ctx.font=`${11*devicePixelRatio/devicePixelRatio}px Roboto,sans-serif`;
+  ctx.fillStyle='#5f6368'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  for(let i=0;i<n;i++){
+    const a=(i/n)*Math.PI*2 - Math.PI/2;
+    const lx=cx+Math.cos(a)*(r+18), ly=cy+Math.sin(a)*(r+18);
+    ctx.font='11px Roboto,sans-serif';
+    ctx.fillText(labels[i], lx, ly);
+  }
+}
+
+// ── UNIQUENESS SCORE ──────────────────────────────────────────────────────────
+function computeUniqueness(){
+  let score=0;
+  const canvasEl=document.getElementById('canvas');
+  const cvHash=canvasEl?canvasEl.textContent.trim():'';
+  if(cvHash&&cvHash!=='—'&&cvHash!=='Blocked'){score+=25;set('sc-canvas',chip('✓ Unique hash','green'));}
+  else set('sc-canvas',chip('Blocked','grey'));
+  if(fontsFound>30){score+=20;set('sc-fonts',chip(fontsFound+' fonts — very rare','green'));}
+  else if(fontsFound>15){score+=14;set('sc-fonts',chip(fontsFound+' fonts — uncommon','yellow'));}
+  else if(fontsFound>5){score+=8;set('sc-fonts',chip(fontsFound+' fonts','grey'));}
+  else set('sc-fonts',chip('Few/none','grey'));
+  const gpuEl=document.getElementById('gpu');
+  const gpuStr=gpuEl?gpuEl.textContent.trim():'';
+  if(gpuStr&&gpuStr!=='—'&&gpuStr!=='N/A'&&gpuStr!=='Unavailable'){score+=18;set('sc-gpu',chip('✓ GPU identified','green'));}
+  else set('sc-gpu',chip('Masked','grey'));
+  const res=`${screen.width}x${screen.height}@${window.devicePixelRatio}`;
+  score+=8; set('sc-screen',chip(res,'blue'));
+  const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+  if(tz){score+=9;set('sc-tz',chip(tz,'blue'));}
+  if(audioFPVal&&audioFPVal!=='Unavailable'&&audioFPVal!=='Not supported'){score+=20;set('sc-audio',chip('✓ Unique value','green'));}
+  else set('sc-audio',chip('N/A','grey'));
+  score=Math.min(100,score);
+  set('score-num',score);
+  const circumference=283;
+  const offset=circumference-(score/100)*circumference;
+  const ring=document.getElementById('score-ring-fill');
+  // Higher score = MORE unique = more concerning = red
+  if(ring){ring.style.strokeDashoffset=offset; ring.style.stroke=score>=70?'#d93025':score>=40?'#f9ab00':'#34a853';}
+  // Realistic 1-in-X: each 10 points roughly 10x more unique
+  const estUnique=Math.round(Math.pow(10,(score/25)));
+  let uniqueLabel='';
+  if(score>=80)uniqueLabel='🔴 Effectively unique — you are almost certainly identifiable';
+  else if(score>=60)uniqueLabel='🟠 Very rare — highly identifiable across sites';
+  else if(score>=40)uniqueLabel='🟡 Uncommon — likely identifiable';
+  else uniqueLabel='🟢 Common fingerprint — harder to single out';
+  set('score-1in',`1 in <strong>${estUnique.toLocaleString()}</strong> users share this fingerprint<br><span style="font-size:11px;color:var(--muted);margin-top:4px;display:block">${uniqueLabel}</span>`);
+}
+
+// ── BROWSER DETECTION ─────────────────────────────────────────────────────────
+function detectBrowser(){
+  const ua=navigator.userAgent;
+  if(/Edg\//.test(ua))     return['Microsoft Edge',   ua.match(/Edg\/([\d.]+)/)?.[1]];
+  if(/OPR\//.test(ua))     return['Opera',            ua.match(/OPR\/([\d.]+)/)?.[1]];
+  if(/Chrome\//.test(ua))  return['Google Chrome',    ua.match(/Chrome\/([\d.]+)/)?.[1]];
+  if(/Firefox\//.test(ua)) return['Mozilla Firefox',  ua.match(/Firefox\/([\d.]+)/)?.[1]];
+  if(/Safari\//.test(ua))  return['Apple Safari',     ua.match(/Version\/([\d.]+)/)?.[1]];
+  return['Unknown',''];
+}
+function detectOS(){
+  const ua=navigator.userAgent;
+  if(/Windows NT 10\.0/.test(ua)) return'Windows 10/11';
+  if(/Mac OS X ([\d_]+)/.test(ua)) return'macOS '+ua.match(/Mac OS X ([\d_]+)/)[1].replace(/_/g,'.');
+  if(/Android ([\d.]+)/.test(ua))  return'Android '+ua.match(/Android ([\d.]+)/)[1];
+  if(/iPhone OS ([\d_]+)/.test(ua)) return'iOS '+ua.match(/iPhone OS ([\d_]+)/)[1].replace(/_/g,'.');
+  if(/CrOS/.test(ua)) return'Chrome OS';
+  if(/Linux/.test(ua)) return'Linux';
+  return'Unknown';
+}
+function detectDevice(){
+  const ua=navigator.userAgent;
+  if(/iPhone/.test(ua)) return'📱 iPhone';
+  if(/iPad/.test(ua))   return'📱 iPad';
+  if(/Android/.test(ua)&&/Mobile/.test(ua)) return'📱 Android Phone';
+  if(/Android/.test(ua)) return'📱 Android Tablet';
+  if('ontouchstart' in window) return'📱 Touch Device';
+  return'🖥️ Desktop/Laptop';
+}
+
+// ── GPU ───────────────────────────────────────────────────────────────────────
+function detectGPU(){
+  try{
+    const c=document.createElement('canvas');
+    const gl=c.getContext('webgl')||c.getContext('experimental-webgl');
+    if(!gl)return['N/A','N/A'];
+    const dbg=gl.getExtension('WEBGL_debug_renderer_info');
+    if(dbg)return[gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL),gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL)];
+    return['WebGL available (masked)','Unknown'];
+  }catch(e){return['Unavailable','—']}
+}
+
+// ── CANVAS FP ─────────────────────────────────────────────────────────────────
+function canvasFP(){
+  try{
+    const c=document.createElement('canvas');c.width=240;c.height=60;
+    const ctx=c.getContext('2d');
+    ctx.textBaseline='top';ctx.font='14px Arial';
+    ctx.fillStyle='#4285f4';ctx.fillText('Leon Dudhill open-profile',2,2);
+    ctx.fillStyle='rgba(234,67,53,.4)';ctx.fillRect(0,0,10,10);
+    const raw=c.toDataURL();let h=0;
+    for(let i=0;i<raw.length;i++){h=((h<<5)-h)+raw.charCodeAt(i);h|=0;}
+    return'0x'+Math.abs(h).toString(16).toUpperCase().padStart(8,'0');
+  }catch(e){return'Blocked'}
+}
+function webglFP(){
+  try{
+    const c=document.createElement('canvas');c.width=100;c.height=100;
+    const gl=c.getContext('webgl');if(!gl)return'N/A';
+    const vs=gl.createShader(gl.VERTEX_SHADER);gl.shaderSource(vs,'attribute vec2 p;void main(){gl_Position=vec4(p,0,1);}');gl.compileShader(vs);
+    const fs=gl.createShader(gl.FRAGMENT_SHADER);gl.shaderSource(fs,'void main(){gl_FragColor=vec4(0.2,0.6,0.9,1);}');gl.compileShader(fs);
+    const prog=gl.createProgram();gl.attachShader(prog,vs);gl.attachShader(prog,fs);gl.linkProgram(prog);gl.useProgram(prog);
+    const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-0.9,-0.9,0.9,-0.9,0,0.9]),gl.STATIC_DRAW);
+    const loc=gl.getAttribLocation(prog,'p');gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+    gl.drawArrays(gl.TRIANGLES,0,3);
+    const px=new Uint8Array(400);gl.readPixels(0,0,10,10,gl.RGBA,gl.UNSIGNED_BYTE,px);
+    let h=0;for(let i=0;i<px.length;i++){h=((h<<5)-h)+px[i];h|=0;}
+    return'0x'+Math.abs(h).toString(16).toUpperCase().padStart(8,'0');
+  }catch(e){return'Error'}
+}
+async function audioFP(){
+  try{
+    const AC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!AC)return'Not supported';
+    const ctx=new AC(1,4096,44100);
+    const osc=ctx.createOscillator(),comp=ctx.createDynamicsCompressor();
+    osc.type='triangle';osc.frequency.value=10000;
+    comp.threshold.value=-50;comp.knee.value=40;comp.ratio.value=12;comp.attack.value=0;comp.release.value=0.25;
+    osc.connect(comp);comp.connect(ctx.destination);osc.start(0);osc.stop(0.5);
+    const buf=await ctx.startRendering();
+    const data=buf.getChannelData(0);let sum=0;
+    for(let i=4500;i<5000;i++)sum+=Math.abs(data[i]);
+    return sum.toFixed(12);
+  }catch(e){return'Unavailable'}
+}
+
+// ── FONTS ─────────────────────────────────────────────────────────────────────
+function detectFonts(){
+  const list=['Arial','Arial Black','Calibri','Cambria','Comic Sans MS','Consolas','Courier New',
+    'Georgia','Helvetica','Impact','Lucida Console','Monaco','Palatino','Tahoma','Times New Roman',
+    'Trebuchet MS','Verdana','Segoe UI','Gill Sans','Optima','Futura','Garamond','Rockwell',
+    'Century Gothic','Franklin Gothic Medium','Baskerville','Didot','Copperplate','Papyrus',
+    'Bradley Hand','Brush Script MT','Menlo','Helvetica Neue','Geneva','Osaka','Noto Sans',
+    'Ubuntu','Cantarell','DejaVu Sans','Liberation Sans','Open Sans','Roboto','Lato',
+    'Source Sans Pro','Fira Sans','Droid Sans','Noto Serif','PT Sans','PT Serif',
+    'Meiryo','MS Gothic','Yu Gothic','Malgun Gothic','SimSun','SimHei','Microsoft YaHei',
+    'Arial Unicode MS','Wingdings','Symbol','Webdings','Courier','MS Serif','MS Sans Serif',
+    'Segoe UI Semibold','Segoe Print','Constantia','Corbel','Candara','Ebrima'];
+  const cv=document.createElement('canvas'),ctx=cv.getContext('2d');
+  const bases=['monospace','serif','sans-serif'],txt='mmmmmmmmlli';
+  const getW=f=>{ctx.font=`72px ${f}`;return ctx.measureText(txt).width};
+  const bw={};bases.forEach(b=>bw[b]=getW(b));
+  return list.filter(f=>bases.some(b=>getW(`'${f}',${b}`)!==bw[b]));
+}
+
+// ── PERMISSIONS ───────────────────────────────────────────────────────────────
+async function queryPermissions(){
+  const checks=[
+    {name:'geolocation',label:'Geolocation'},{name:'notifications',label:'Notifications'},
+    {name:'camera',label:'Camera'},{name:'microphone',label:'Microphone'},
+    {name:'clipboard-read',label:'Clipboard Read'},{name:'clipboard-write',label:'Clipboard Write'},
+    {name:'midi',label:'MIDI'},{name:'accelerometer',label:'Accelerometer'},
+    {name:'gyroscope',label:'Gyroscope'},{name:'magnetometer',label:'Magnetometer'},
+    {name:'payment-handler',label:'Payment Handler'},{name:'persistent-storage',label:'Persistent Storage'},
+  ];
+  const grid=document.getElementById('perm-grid');grid.innerHTML='';
+  let granted=0,denied=0;
+  for(const p of checks){
+    const div=document.createElement('div');div.className='perm-card perm-na';div.textContent=p.label;grid.appendChild(div);
+    try{
+      const r=await navigator.permissions.query({name:p.name});
+      if(r.state==='granted'){div.className='perm-card perm-granted';div.textContent='⚠️ '+p.label;granted++;addThreat(p.label+' permission granted',4);}
+      else if(r.state==='denied'){div.className='perm-card perm-denied';div.textContent='✅ '+p.label;denied++;}
+      else{div.className='perm-card perm-prompt';div.textContent='❔ '+p.label;}
+    }catch(e){}
+  }
+  set('perms-status',`${granted} granted · ${denied} denied`);
+}
+
+// ── VOICES ────────────────────────────────────────────────────────────────────
+function loadVoices(){
+  const fill=()=>{
+    const voices=speechSynthesis.getVoices();if(!voices.length)return;
+    set('voices-status',voices.length+' voices');
+    const list=document.getElementById('voices-list');list.innerHTML='';
+    voices.forEach(v=>{const d=document.createElement('div');d.className='voice-item';d.innerHTML=`${v.name} <span class="voice-lang">${v.lang}${v.localService?' · local':''}</span>`;list.appendChild(d);});
+  };
+  if(speechSynthesis.getVoices().length)fill();
+  else{speechSynthesis.onvoiceschanged=fill;setTimeout(fill,1500);}
+}
+
+// ── CSS FEATURES ──────────────────────────────────────────────────────────────
+function detectCSSFeatures(){
+  const feats=[
+    ['CSS Grid',()=>CSS.supports('display','grid')],
+    ['Container Queries',()=>CSS.supports('container-type','inline-size')],
+    ['backdrop-filter',()=>CSS.supports('backdrop-filter','blur(1px)')],
+    [':has() Selector',()=>CSS.supports('selector(:has(*))')],
+    ['View Transitions',()=>typeof document.startViewTransition==='function'],
+    ['Web Animations API',()=>typeof Element.prototype.animate==='function'],
+    ['ResizeObserver',()=>typeof ResizeObserver!=='undefined'],
+    ['IntersectionObserver',()=>typeof IntersectionObserver!=='undefined'],
+    ['WebAssembly',()=>typeof WebAssembly!=='undefined'],
+    ['Pointer Events',()=>typeof PointerEvent!=='undefined'],
+    ['Web Share API',()=>'share' in navigator],
+    ['Clipboard API',()=>'clipboard' in navigator],
+  ];
+  const wrap=document.getElementById('css-features');wrap.innerHTML='';
+  feats.forEach(([label,test])=>{
+    let ok=false;try{ok=!!test();}catch(e){}
+    const d=document.createElement('div');d.className='feature-item';
+    d.innerHTML=`<span>${label}</span>${yesno(ok,'✓','✗')}`;wrap.appendChild(d);
+  });
+}
+
+// ── MEDIA DEVICES ─────────────────────────────────────────────────────────────
+async function detectMediaDevices(){
+  try{
+    const devs=await navigator.mediaDevices.enumerateDevices();
+    const cams=devs.filter(d=>d.kind==='videoinput').length;
+    const mics=devs.filter(d=>d.kind==='audioinput').length;
+    const spk=devs.filter(d=>d.kind==='audiooutput').length;
+    set('cameras',chip(cams+' camera'+(cams!==1?'s':''),cams>0?'blue':'grey'));
+    set('mics',chip(mics+' mic'+(mics!==1?'s':''),mics>0?'blue':'grey'));
+    set('speakers',chip(spk+' output'+(spk!==1?'s':''),spk>0?'blue':'grey'));
+    set('media-status',`${cams} cam · ${mics} mic`);
+    if(cams>0)addThreat('Camera detected',3);
+    if(mics>0)addThreat('Microphone detected',3);
+  }catch(e){}
+}
+
+// ── WEBRTC + ROUTER ───────────────────────────────────────────────────────────
+let webrtcDone=false;
+function detectWebRTC(isRetry=false){
+  if(webrtcDone)return;
+  const iceCandidates=[];
+  try{
+    const pc=new RTCPeerConnection({
+      iceServers:[
+        {urls:'stun:stun.l.google.com:19302'},
+        {urls:'stun:stun1.l.google.com:19302'},
+        {urls:'stun:stun.cloudflare.com:3478'}
+      ]
+    });
+    pc.createDataChannel('');
+    pc.createOffer().then(o=>pc.setLocalDescription(o)).catch(()=>{});
+    let v4=false,v6=false;
+    pc.onicecandidate=e=>{
+      if(!e?.candidate?.candidate)return;
+      const cand=e.candidate.candidate;
+      iceCandidates.push(cand);
+      set('r-ice',iceCandidates.length+' collected');
+      const m4=/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/.exec(cand);
+      const m6=/([0-9a-f]{1,4}(?::[0-9a-f]{0,4}){4,7})/i.exec(cand);
+      if(m4&&!v4){
+        v4=true;webrtcDone=true;
+        const ip=m4[1];
+        const priv=/^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(ip);
+        set('webrtc',priv?chip('⚠️ Local: '+ip,'yellow')+'&nbsp;'+ipLink(ip):chip('External: '+ip,'red'));
+        set('r-localip',ipLink(ip));
+        analyseLocalNetwork(ip);
+        addThreat('Local IP exposed via WebRTC',6);
+      }
+      if(m6&&m6[1].includes(':')&&!v6&&!/^::$/.test(m6[1])){
+        v6=true;set('ipv6',ipLink(m6[1]));set('r-ipv6',chip('✅ '+m6[1].substring(0,18)+'…','green'));
+      }
+    };
+    setTimeout(()=>{
+      if(!v4){
+        set('webrtc',chip('✅ No leak detected','green'));
+        // Auto-retry once if this was the first attempt and we got nothing
+        if(!isRetry){
+          console.log('WebRTC: no candidates on first pass, retrying…');
+          setTimeout(()=>detectWebRTC(true),1000);
+        }
+      }
+      if(!v6){set('ipv6',chip('Not exposed','grey'));set('r-ipv6',chip('Not detected','grey'));}
+      set('r-stun',iceCandidates.length>0?chip('✅ '+iceCandidates.length+' candidates','green'):chip('No response','grey'));
+      const hasHost=iceCandidates.some(c=>c.includes('typ host'));
+      const hasSrflx=iceCandidates.some(c=>c.includes('typ srflx'));
+      const hasRelay=iceCandidates.some(c=>c.includes('typ relay'));
+      let nat='Unknown';
+      if(hasRelay)nat='Symmetric/Strict (relay needed)';
+      else if(hasSrflx&&hasHost)nat='Open/Full Cone';
+      else if(hasSrflx)nat='Address-Restricted';
+      else if(hasHost)nat='No NAT (direct)';
+      set('r-nat',nat);
+      try{pc.close();}catch(e){}
+    },7000); // extended from 5s to 7s
+  }catch(e){set('webrtc','Not available');set('ipv6','Not available');}
+}
+function analyseLocalNetwork(ip){
+  const parts=ip.split('.');
+  let cls='Unknown',subnet='Unknown',gateway='—';
+  if(ip.startsWith('192.168.')){cls='Class C Private';subnet='192.168.'+parts[2]+'.0/24';gateway='192.168.'+parts[2]+'.1';}
+  else if(ip.startsWith('10.')){cls='Class A Private';subnet='10.0.0.0/8';gateway='10.'+parts[1]+'.'+parts[2]+'.1';}
+  else if(/^172\.(1[6-9]|2\d|3[01])\./.test(ip)){cls='Class B Private';subnet='172.'+parts[1]+'.0.0/16';gateway='172.'+parts[1]+'.'+parts[2]+'.1';}
+  else{cls='Public (no NAT)';subnet='—';}
+  set('r-subnet',subnet);set('r-class',cls);
+  if(gateway!=='—'){
+    set('r-gateway',ipLink(gateway));
+    set('r-adminurl',`<a href="http://${gateway}" target="_blank" rel="noopener" class="ip-link">http://${gateway}</a> <span style="color:var(--muted);font-size:10px">(local only)</span>`);
+    set('router-status',gateway);
+    probeMDNS();
+  }else{set('r-gateway','Not detectable');set('r-adminurl','—');}
+}
+async function probeMDNS(){
+  const names=['router.local','gateway.local','modem.local','fritz.box','routerlogin.net','routerlogin.com'];
+  set('r-mdns','<span class="loading"><span class="spin"></span> probing…</span>');
+  const reached=[];
+  for(const name of names){
+    try{const c=new AbortController();const t=setTimeout(()=>c.abort(),1200);await fetch('http://'+name,{mode:'no-cors',signal:c.signal}).finally(()=>clearTimeout(t));reached.push(name);}
+    catch(e){if(e.name!=='TypeError'&&e.name!=='AbortError')reached.push(name+'*');}
+  }
+  set('r-mdns',reached.length>0?reached.join(', '):'None detected');
+}
+
+// ── DOH ───────────────────────────────────────────────────────────────────────
+async function detectDoH(){
+  try{
+    const t=performance.now();
+    const ctrl=new AbortController();const tid=setTimeout(()=>ctrl.abort(),4000);
+    await fetch('https://use-application-dns.net/',{mode:'no-cors',cache:'no-store',signal:ctrl.signal}).finally(()=>clearTimeout(tid));
+    const ms=Math.round(performance.now()-t);
+    set('doh',ms<600?chip('✅ Likely active ('+ms+'ms)','green'):chip('❔ Uncertain','yellow'));
+  }catch(e){set('doh',chip('Not detected','grey'));}
+}
+
+// ── UA HINTS ──────────────────────────────────────────────────────────────────
+async function getUAHints(){
+  try{
+    if(!navigator.userAgentData){set('uahints','Not supported');return;}
+    const h=await navigator.userAgentData.getHighEntropyValues(['architecture','bitness','platform','platformVersion','fullVersionList']);
+    const brands=(h.fullVersionList||navigator.userAgentData.brands||[]).map(b=>`${b.brand} ${b.version}`).filter(b=>!/Not/.test(b)).join(' · ');
+    set('uahints',brands||'No brand data');
+    set('cpuarch',h.architecture||'Not disclosed');
+    set('bitness',h.bitness?h.bitness+'-bit':'Not disclosed');
+  }catch(e){set('uahints','Unavailable');}
+}
+
+// ── PHYSICAL SCREEN SIZE ──────────────────────────────────────────────────────
+function estimateScreenSize(){
+  // DPI heuristic: devicePixelRatio + common DPI profiles
+  const dpr=window.devicePixelRatio||1;
+  const physW=screen.width/dpr;const physH=screen.height/dpr;
+  // Assume ~96 base CSS px/inch on desktop, ~160 on mobile
+  const isMobile='ontouchstart' in window;
+  const ppi=isMobile?160*dpr:96*dpr;
+  const wIn=(screen.width/ppi).toFixed(1);
+  const hIn=(screen.height/ppi).toFixed(1);
+  const diagIn=Math.sqrt(wIn*wIn+hIn*hIn).toFixed(1);
+  let screenType='Unknown';
+  if(diagIn<8)screenType='📱 Phone';
+  else if(diagIn<13)screenType='📱 Tablet';
+  else if(diagIn<17)screenType='💻 Laptop';
+  else if(diagIn<27)screenType='🖥️ Desktop Monitor';
+  else screenType='📺 Large Display / TV';
+  set('physsize',`~${diagIn}" diagonal (${wIn}" × ${hIn}")`);
+  set('screentype',screenType);
+  return parseFloat(diagIn);
+}
+
+// ── CPU PHYSICAL CORES (timing attack via workers) ────────────────────────────
+async function estimatePhysicalCores(){
+  const logical=navigator.hardwareConcurrency||1;
+  try{
+    // Run concurrent CPU work and measure how timings cluster
+    const workerCode=`onmessage=function(){let x=0;for(let i=0;i<5e6;i++)x+=Math.sqrt(i);postMessage(x);}`;
+    const blob=new Blob([workerCode],{type:'text/javascript'});
+    const url=URL.createObjectURL(blob);
+    const times=[];
+    const n=Math.min(logical,8);
+    for(let trial=0;trial<3;trial++){
+      const start=performance.now();
+      await Promise.all(Array.from({length:n},()=>new Promise(res=>{const w=new Worker(url);w.onmessage=()=>{w.terminate();res();};w.postMessage(null);})));
+      times.push(performance.now()-start);
+    }
+    URL.revokeObjectURL(url);
+    const avg=times.reduce((a,b)=>a+b,0)/times.length;
+    // If avg per worker is similar to 1 worker → real physical cores ≈ logical
+    // If 2x logical are faster than 1x → hyper-threading likely → physical = logical/2
+    const physical=avg<200?logical:Math.max(1,Math.round(logical/2));
+    set('cores-physical',`~${physical} physical cores (est. from timing)`);
+  }catch(e){
+    set('cores-physical',chip('Unavailable','grey'));
+  }
+}
+
+// ── CPU THROTTLING ────────────────────────────────────────────────────────────
+async function detectThrottling(){
+  const iterations=2e6;
+  const runs=[];
+  for(let r=0;r<4;r++){
+    const t=performance.now();
+    let x=0;for(let i=0;i<iterations;i++)x+=Math.sqrt(i);
+    runs.push(performance.now()-t);
+    await new Promise(res=>setTimeout(res,100));
+  }
+  const first=runs[0],last=runs[runs.length-1];
+  const ratio=last/first;
+  if(ratio>1.4)set('cpu-throttle',chip('⚠️ Throttling detected ('+ratio.toFixed(1)+'×)','yellow'));
+  else set('cpu-throttle',chip('✅ No throttling detected','green'));
+}
+
+// ── BEHAVIOUR TRACKING ────────────────────────────────────────────────────────
+let mouseX=0,mouseY=0,mouseMoves=0,mouseTotalDist=0,mouseSpeedSamples=[];
+let scrollY=0,maxScrollY=0,scrollChanges=0,lastScrollDir=0;
+let idleTimer=null,idleSeconds=0,tabSwitches=0;
+let usedRightClick=false,usedKeyboard=false,usedMouseOnly=true;
+let inputMethods=new Set();
+
+document.addEventListener('mousemove',e=>{
+  const dx=e.clientX-mouseX,dy=e.clientY-mouseY;
+  mouseTotalDist+=Math.sqrt(dx*dx+dy*dy);
+  mouseMoves++;
+  mouseX=e.clientX;mouseY=e.clientY;
+  mouseSpeedSamples.push(Math.sqrt(dx*dx+dy*dy));
+  if(mouseSpeedSamples.length>50)mouseSpeedSamples.shift();
+  inputMethods.add('mouse');
+  resetIdle();
+});
+document.addEventListener('scroll',()=>{
+  const sy=window.scrollY;
+  const dir=sy>scrollY?1:-1;
+  if(dir!==lastScrollDir&&lastScrollDir!==0)scrollChanges++;
+  lastScrollDir=dir;
+  if(sy>maxScrollY)maxScrollY=sy;
+  scrollY=sy;
+  resetIdle();
+});
+document.addEventListener('contextmenu',()=>{usedRightClick=true;inputMethods.add('mouse');});
+document.addEventListener('keydown',e=>{
+  usedKeyboard=true;inputMethods.add('keyboard');
+  if((e.ctrlKey||e.metaKey)&&e.key!=='Control'&&e.key!=='Meta'){
+    usedMouseOnly=false;
+    set('b-shortcut',chip('✅ Detected','green'));
+  }
+  resetIdle();
+});
+document.addEventListener('touchstart',()=>{inputMethods.add('touch');});
+document.addEventListener('pointerdown',e=>{if(e.pointerType==='pen')inputMethods.add('stylus');});
+
+function resetIdle(){idleSeconds=0;clearTimeout(idleTimer);idleTimer=setTimeout(()=>{},1000);}
+setInterval(()=>{idleSeconds++;},1000);
+
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden)tabSwitches++;
+  set('b-tabstate',document.hidden?chip('Hidden (switched away)','yellow'):chip('Visible','green'));
+  set('b-tabswitches',tabSwitches);
+});
+
+function updateBehaviour(){
+  const elapsed=Math.round((Date.now()-startTime)/1000);
+  const mins=Math.floor(elapsed/60),secs=elapsed%60;
+  set('b-timeonpage',`${mins}m ${secs}s`);
+  set('b-idle',idleSeconds+'s idle');
+  set('b-tabswitches',tabSwitches);
+  set('b-tabstate',document.hidden?chip('Hidden','yellow'):chip('Visible','green'));
+  const distM=(mouseTotalDist/96).toFixed(0);
+  set('b-mousedist',Math.round(mouseTotalDist)+'px ('+distM+'" on screen)');
+  const avgSpeed=mouseSpeedSamples.length?( mouseSpeedSamples.reduce((a,b)=>a+b,0)/mouseSpeedSamples.length).toFixed(1):'0';
+  set('b-mousespeed',avgSpeed+'px/frame');
+  // Handedness: if most mouse activity is on right half → right-handed
+  const rightHanded=mouseX>window.innerWidth/2;
+  set('b-handedness',mouseMoves<10?'Insufficient data':(rightHanded?'Likely right-handed 🖱️ (cursor right)':'Likely left-handed 🖱️ (cursor left)'));
+  const pageH=document.body.scrollHeight-window.innerHeight;
+  const pct=pageH>0?Math.round((maxScrollY/pageH)*100):0;
+  set('b-scrolldepth',pct+'% of page');
+  set('b-scrollchanges',scrollChanges+' direction changes');
+  set('b-rightclick',usedRightClick?chip('✅ Yes','green'):chip('Not yet','grey'));
+  set('b-inputmethod',[...inputMethods].join(', ')||'—');
+
+  document.getElementById('bb-mouse').style.width=Math.min(100,mouseMoves/5)+'%';
+  document.getElementById('bb-mouse-val').textContent=mouseMoves+' moves';
+  document.getElementById('bb-scroll').style.width=Math.min(100,pct)+'%';
+  document.getElementById('bb-scroll-val').textContent=maxScrollY+'px scrolled';
+
+  set('behaviour-status',`${mins}m ${secs}s · ${mouseMoves} moves`);
+  setRadar('behaviour', Math.min(100, mouseMoves/2 + tabSwitches*10 + pct));
+}
+setInterval(updateBehaviour, 1000);
+
+// ── TYPING BIOMETRICS ────────────────────────────────────────────────────────
+let keyTimings=[], lastKeyTime=0, backspaceCount=0, keyCount=0, typingStart=0;
+function recordTyping(e){
+  const now=performance.now();
+  if(!typingStart)typingStart=now;
+  keyCount++;
+  if(now-lastKeyTime>0&&lastKeyTime>0) keyTimings.push(now-lastKeyTime);
+  lastKeyTime=now;
+  if(keyTimings.length>1){
+    const avg=keyTimings.reduce((a,b)=>a+b,0)/keyTimings.length;
+    set('t-avginterval',Math.round(avg)+'ms between keys');
+    const variance=keyTimings.reduce((a,b)=>a+(b-avg)**2,0)/keyTimings.length;
+    const std=Math.sqrt(variance);
+    const consistency=Math.max(0,100-std).toFixed(0);
+    set('t-rhythm',consistency+'% consistent');
+    const elapsed=(now-typingStart)/1000/60;
+    const words=document.getElementById('typing-area').value.split(/\s+/).filter(Boolean).length;
+    const wpm=elapsed>0?Math.round(words/elapsed):0;
+    set('t-wpm',wpm+' WPM');
+    set('t-backspace',(backspaceCount/keyCount*100).toFixed(0)+'%');
+  }
+}
+document.addEventListener('keydown',e=>{if(e.key==='Backspace')backspaceCount++;});
+
+// ── ENVIRONMENT DETECTION ─────────────────────────────────────────────────────
+async function detectEnvironment(){
+  // VM detection
+  const [gpu]=detectGPU();
+  const vmGPU=/virtualbox|vmware|parallels|qemu|microsoft basic render|llvmpipe|swiftshader/i.test(gpu||'');
+  const vmUA=/headless|electron|phantom|selenium|puppeteer/i.test(navigator.userAgent);
+  const vmCores=navigator.hardwareConcurrency===1||navigator.hardwareConcurrency===2;
+  const vmScore=(vmGPU?2:0)+(vmUA?2:0)+(vmCores?1:0);
+  set('e-vm',vmScore>=3?chip('⚠️ Likely VM/emulated','yellow'):vmScore>=1?chip('Possible VM signals','grey'):chip('✅ Physical machine likely','green'));
+  if(vmScore>=2)addThreat('Virtual machine signals detected',5);
+
+  // Bot/automation detection
+  const botSignals=[];
+  if('webdriver' in navigator&&navigator.webdriver)botSignals.push('webdriver property set');
+  if(window.callPhantom||window._phantom)botSignals.push('PhantomJS detected');
+  if(window.__nightmare)botSignals.push('Nightmare.js detected');
+  if(window.domAutomation||window.domAutomationController)botSignals.push('Chrome automation');
+  if(/HeadlessChrome/.test(navigator.userAgent))botSignals.push('Headless Chrome');
+  if(!window.chrome&&/Chrome/.test(navigator.userAgent))botSignals.push('Chrome without window.chrome');
+  set('e-bot',botSignals.length>0?chip('⚠️ Bot signals: '+botSignals.join(', '),'red'):chip('✅ Human browser','green'));
+  if(botSignals.length)addThreat('Automated browser signals',8);
+
+  // Corporate network
+  const ua=navigator.userAgent;
+  const corpUA=/enterprise|corporate|managed/i.test(ua);
+  const hasCACerts=document.querySelectorAll('link[rel="stylesheet"]').length>3; // heuristic
+  set('e-corporate',corpUA?chip('Possible corporate UA','yellow'):chip('No signals detected','grey'));
+
+  // Extensions: try to detect injected DOM/CSS
+  setTimeout(()=>{
+    const extSignals=[];
+    if(document.querySelector('[class*="grammarly"]'))extSignals.push('Grammarly');
+    if(document.querySelector('[id*="lastpass"]')||document.querySelector('[class*="lastpass"]'))extSignals.push('LastPass');
+    if(document.querySelector('[class*="honey"]'))extSignals.push('Honey');
+    if(document.querySelector('metamask-inpage-provider')||window.ethereum)extSignals.push('MetaMask/Web3');
+    if(window.__REDUX_DEVTOOLS_EXTENSION__)extSignals.push('Redux DevTools');
+    const computed=window.getComputedStyle(document.body);
+    const injectedStyle=computed.getPropertyValue('--extension-marker');
+    if(injectedStyle)extSignals.push('CSS injection detected');
+    set('e-extensions',extSignals.length>0?chip('Detected: '+extSignals.join(', '),'yellow'):chip('None detected','grey'));
+    if(extSignals.length)addThreat('Browser extensions detected',3);
+  },500);
+
+  // Password manager
+  setTimeout(()=>{
+    const inp=document.createElement('input');inp.type='password';inp.style.cssText='position:absolute;left:-9999px;opacity:0';
+    document.body.appendChild(inp);
+    setTimeout(()=>{
+      const hasPM=inp.getAttribute('data-dashlane-rid')||inp.getAttribute('data-lpignore')||
+                  inp.getAttribute('data-1p-ignore')||inp.style.backgroundImage.includes('data:');
+      set('e-pwmanager',hasPM?chip('⚠️ Password manager detected','yellow'):chip('Not detected','grey'));
+      document.body.removeChild(inp);
+    },300);
+  },600);
+
+  // Accessibility
+  const a11y=[];
+  if(navigator.userAgent.includes('NVDA'))a11y.push('NVDA');
+  if(window.speechSynthesis&&speechSynthesis.getVoices().length>0)a11y.push('Speech synthesis active');
+  if(document.documentElement.getAttribute('data-at'))a11y.push('Assistive tech attribute');
+  const prefContrast=window.matchMedia('(prefers-contrast:more)').matches;
+  const prefMotion=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  if(prefContrast)a11y.push('High contrast pref');
+  if(prefMotion)a11y.push('Reduced motion pref');
+  set('e-a11y',a11y.length>0?chip(a11y.join(', '),'blue'):chip('No signals','grey'));
+
+  // Social login state (timing-based image load to logged-in avatars)
+  setTimeout(()=>{
+    const targets=[
+      {name:'Google',url:'https://accounts.google.com/CheckCookie?continue=https%3A%2F%2Fwww.google.com%2F&followup=https%3A%2F%2Fwww.google.com%2F&chtml=LoginDoneHtml&checkcookie=1&hl=en'},
+    ];
+    set('e-social',chip('Detection blocked (CORS)','grey'));
+  },100);
+
+  // Visited links (CSS timing - largely patched)
+  const a=document.createElement('a');a.href='https://google.com';a.style.cssText='position:absolute;left:-9999px';document.body.appendChild(a);
+  const color=window.getComputedStyle(a).color;
+  document.body.removeChild(a);
+  set('e-visited',color==='rgb(0, 0, 238)'?chip('Not visited (default)','grey'):chip('google.com in history (visited colour)','yellow'));
+
+  setRadar('environment',vmScore*15+(botSignals.length?0:20));
+}
+
+// ── MAP ───────────────────────────────────────────────────────────────────────
+function showMap(lat,lng,targetId){
+  const wrap=document.getElementById(targetId);if(!wrap)return;
+  const doRender=()=>{
+    const iframe=document.createElement('iframe');
+    iframe.src=`https://www.openstreetmap.org/export/embed.html?bbox=${lng-.15},${lat-.15},${lng+.15},${lat+.15}&layer=mapnik&marker=${lat},${lng}`;
+    iframe.style.cssText='width:100%;height:100%;border:0';
+    iframe.loading='lazy';wrap.innerHTML='';wrap.style.cssText='width:100%;height:100%';
+    wrap.appendChild(iframe);
+  };
+  // If the map container has no height (inside collapsed accordion), defer until it's visible
+  if(wrap.offsetHeight>0){
+    doRender();
+  } else {
+    // Store coords on the element and render when accordion opens
+    wrap.dataset.mapLat=lat;wrap.dataset.mapLng=lng;
+    wrap.dataset.mapPending='1';
+    wrap.innerHTML='<span style="color:var(--muted);font-size:12px;display:flex;align-items:center;gap:8px;padding:8px"><span>📍 Map ready — open this section to load</span></span>';
+  }
+}
+
+// Called whenever an accordion opens — renders any pending maps inside it
+function renderPendingMaps(accordionEl){
+  accordionEl.querySelectorAll('[data-map-pending="1"]').forEach(wrap=>{
+    const lat=parseFloat(wrap.dataset.mapLat);
+    const lng=parseFloat(wrap.dataset.mapLng);
+    if(!isNaN(lat)&&!isNaN(lng)){
+      delete wrap.dataset.mapPending;
+      const iframe=document.createElement('iframe');
+      iframe.src=`https://www.openstreetmap.org/export/embed.html?bbox=${lng-.15},${lat-.15},${lng+.15},${lat+.15}&layer=mapnik&marker=${lat},${lng}`;
+      iframe.style.cssText='width:100%;height:100%;border:0';
+      iframe.loading='lazy';wrap.innerHTML='';wrap.style.cssText='width:100%;height:100%';
+      wrap.appendChild(iframe);
+    }
+  });
+}
+
+// ── WEBCAM ────────────────────────────────────────────────────────────────────
+let camStream=null;
+async function startCamera(){
+  try{
+    camStream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:720}},audio:false});
+    const vid=document.getElementById('webcam');vid.srcObject=camStream;vid.style.display='block';
+    document.getElementById('webcam-placeholder').style.display='none';
+    document.getElementById('stop-cam-btn').style.display='';document.getElementById('snap-btn').style.display='';
+    const track=camStream.getVideoTracks()[0];const s=track.getSettings();
+    set('webcam-info',`${track.label} · ${s.width}×${s.height} · ${s.frameRate||'?'}fps`);
+  }catch(e){set('webcam-info',`⚠️ ${e.name}: ${e.message}`);}
+}
+function stopCamera(){
+  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
+  const vid=document.getElementById('webcam');vid.style.display='none';vid.srcObject=null;
+  document.getElementById('webcam-placeholder').style.display='';
+  document.getElementById('stop-cam-btn').style.display='none';document.getElementById('snap-btn').style.display='none';
+  document.getElementById('snapshot-preview').style.display='none';set('webcam-info','—');
+}
+function takeSnapshot(){
+  const vid=document.getElementById('webcam');const canvas=document.getElementById('snapshot-canvas');
+  canvas.width=vid.videoWidth;canvas.height=vid.videoHeight;
+  const ctx=canvas.getContext('2d');ctx.save();ctx.scale(-1,1);ctx.drawImage(vid,-vid.videoWidth,0);ctx.restore();
+  const img=document.getElementById('snapshot-preview');img.src=canvas.toDataURL('image/jpeg',.92);img.style.display='block';
+}
+
+// ── MICROPHONE ────────────────────────────────────────────────────────────────
+let micStream=null,audioCtx=null,analyser=null,micAF=null;
+async function startMic(){
+  try{
+    micStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    const src=audioCtx.createMediaStreamSource(micStream);
+    analyser=audioCtx.createAnalyser();analyser.fftSize=256;src.connect(analyser);
+    document.getElementById('stop-mic-btn').style.display='';document.getElementById('speech-btn').style.display='';
+    const track=micStream.getAudioTracks()[0];const s=track.getSettings();
+    set('mic-info',`${track.label} · ${s.sampleRate||audioCtx.sampleRate}Hz`);
+    drawMic();
+  }catch(e){set('mic-info',`⚠️ ${e.name}: ${e.message}`);}
+}
+function stopMic(){
+  if(micAF)cancelAnimationFrame(micAF);
+  if(micStream){micStream.getTracks().forEach(t=>t.stop());micStream=null;}
+  if(audioCtx){audioCtx.close();audioCtx=null;}
+  document.getElementById('mic-bar').style.width='0%';
+  document.getElementById('stop-mic-btn').style.display='none';document.getElementById('speech-btn').style.display='none';
+  set('mic-peak','— dB');set('mic-info','—');stopSpeech();
+}
+function drawMic(){
+  const canvas=document.getElementById('mic-canvas');const ctx=canvas.getContext('2d');
+  const W=canvas.offsetWidth*devicePixelRatio,H=70*devicePixelRatio;
+  canvas.width=W;canvas.height=H;
+  const bufLen=analyser.frequencyBinCount;const dataArr=new Uint8Array(bufLen);const timeArr=new Uint8Array(analyser.fftSize);
+  function draw(){
+    micAF=requestAnimationFrame(draw);
+    analyser.getByteFrequencyData(dataArr);analyser.getByteTimeDomainData(timeArr);
+    let sum=0;for(let i=0;i<timeArr.length;i++){const v=(timeArr[i]/128)-1;sum+=v*v;}
+    const rms=Math.sqrt(sum/timeArr.length);
+    document.getElementById('mic-bar').style.width=Math.min(100,rms*400)+'%';
+    const db=rms>0?Math.round(20*Math.log10(rms)):-96;
+    set('mic-peak',db+' dB');
+    ctx.fillStyle='#202124';ctx.fillRect(0,0,W,H);
+    const bw=W/bufLen;
+    for(let i=0;i<bufLen;i++){const v=dataArr[i]/255;const h=v*H;ctx.fillStyle=`hsl(${Math.round((1-v)*240)},80%,55%)`;ctx.fillRect(i*bw,H-h,bw-1,h);}
+  }
+  draw();
+}
+let recognition=null;
+function startSpeech(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){set('mic-transcript','⚠️ Not supported');document.getElementById('mic-transcript').style.display='block';return;}
+  if(recognition){recognition.stop();recognition=null;document.getElementById('speech-btn').textContent='💬 Transcribe';return;}
+  recognition=new SR();recognition.continuous=true;recognition.interimResults=true;recognition.lang='en-GB';
+  const box=document.getElementById('mic-transcript');box.style.display='block';box.textContent='🎤 Listening…';
+  recognition.onresult=e=>{
+    let fin='',int='';
+    for(let i=e.resultIndex;i<e.results.length;i++){e.results[i].isFinal?fin+=e.results[i][0].transcript:int+=e.results[i][0].transcript;}
+    box.innerHTML=(fin?`<strong>${fin}</strong> `:'')+(int?`<em style="color:var(--muted)">${int}</em>`:'');
+  };
+  recognition.onerror=e=>{box.textContent='⚠️ '+e.error;};
+  recognition.start();document.getElementById('speech-btn').textContent='⏹ Stop';
+}
+function stopSpeech(){if(recognition){recognition.stop();recognition=null;}}
+
+// ── WEBGL2 PARAMS ─────────────────────────────────────────────────────────────
+function getWebGL2Params(){
+  try{
+    const c=document.createElement('canvas');const gl=c.getContext('webgl2');if(!gl)return null;
+    return['MAX_TEXTURE_SIZE','MAX_VERTEX_ATTRIBS','MAX_VERTEX_UNIFORM_VECTORS',
+      'MAX_FRAGMENT_UNIFORM_VECTORS','MAX_RENDERBUFFER_SIZE','MAX_COMBINED_TEXTURE_IMAGE_UNITS',
+      'MAX_CUBE_MAP_TEXTURE_SIZE','MAX_DRAW_BUFFERS','MAX_3D_TEXTURE_SIZE','MAX_SAMPLES',
+      'SHADING_LANGUAGE_VERSION','VERSION'
+    ].map(k=>{let v;try{v=gl.getParameter(gl[k]);}catch(e){v='—'}return[k,v??'—']});
+  }catch(e){return null}
+}
+
+// ── CLOCK DRIFT ───────────────────────────────────────────────────────────────
+async function detectClockDrift(){
+  try{
+    const t1=Date.now();
+    const ctrl=new AbortController();const tid=setTimeout(()=>ctrl.abort(),4000);
+    const res=await fetch('https://worldtimeapi.org/api/ip',{signal:ctrl.signal}).finally(()=>clearTimeout(tid));
+    const t2=Date.now();
+    const data=await res.json();
+    const serverTime=new Date(data.utc_datetime).getTime();
+    const latency=(t2-t1)/2;
+    const drift=Math.round((t1+latency)-serverTime);
+    const absDrift=Math.abs(drift);
+    if(absDrift>5000){
+      set('clockdrift',chip(`⚠️ ${drift>0?'+':''}${(drift/1000).toFixed(1)}s drift — possible VM/NTP issue`,'yellow'));
+      addThreat('System clock drift detected',4);
+    } else {
+      set('clockdrift',chip(`✅ ±${absDrift}ms (accurate)`,'green'));
+    }
+  }catch(e){
+    set('clockdrift',chip('Could not verify','grey'));
+  }
+}
+
+// ── TIME PATTERN ──────────────────────────────────────────────────────────────
+function analyseTimePattern(){
+  const hour=new Date().getHours();
+  let label='';
+  if(hour>=0&&hour<6)label='🌙 Night owl — up past midnight';
+  else if(hour>=6&&hour<9)label='☀️ Early riser';
+  else if(hour>=9&&hour<17)label='💼 Working hours (9–5)';
+  else if(hour>=17&&hour<20)label='🌆 Evening';
+  else label='🌃 Late evening';
+  set('timepattern',label);
+}
+
+// ── IP API ────────────────────────────────────────────────────────────────────
+async function fetchIP(){
+  const banner=document.getElementById('ip-banner');
+  const apis=[
+    {url:'https://ipapi.co/json/',parse:d=>({ip:d.ip,isp:d.org,asn:d.asn,org:d.org,city:d.city,region:d.region,country:d.country_name,countryCode:d.country,postal:d.postal,timezone:d.timezone,lat:d.latitude,lng:d.longitude})},
+    {url:'http://ip-api.com/json/?fields=status,message,country,countryCode,regionName,city,zip,lat,lon,timezone,isp,org,as,query',parse:d=>({ip:d.query,isp:d.isp,asn:d.as,org:d.org,city:d.city,region:d.regionName,country:d.country,countryCode:d.countryCode,postal:d.zip,timezone:d.timezone,lat:d.lat,lng:d.lon})},
+    {url:'https://ipwho.is/',parse:d=>({ip:d.ip,isp:d.connection?.isp,asn:'AS'+d.connection?.asn,org:d.connection?.org,city:d.city,region:d.region,country:d.country,countryCode:d.country_code,postal:d.postal,timezone:d.timezone?.id,lat:d.latitude,lng:d.longitude})},
+    {url:'https://freeipapi.com/api/json',parse:d=>({ip:d.ipAddress,isp:null,asn:null,org:null,city:d.cityName,region:d.regionName,country:d.countryName,countryCode:d.countryCode,postal:d.zipCode,timezone:d.timeZone,lat:d.latitude,lng:d.longitude})},
+  ];
+  for(let i=0;i<apis.length;i++){
+    try{
+      banner.className='ip-banner warn';banner.innerHTML=`<span class="spin"></span> Trying source ${i+1}/${apis.length}…`;
+      const ctrl=new AbortController();const tid=setTimeout(()=>ctrl.abort(),6000);
+      const res=await fetch(apis[i].url,{signal:ctrl.signal}).finally(()=>clearTimeout(tid));
+      if(!res.ok)throw new Error('HTTP '+res.status);
+      const raw=await res.json();const d=apis[i].parse(raw);
+      if(!d.ip)throw new Error('No IP');
+      banner.className='ip-banner ok';banner.innerHTML=`✓ Retrieved from source ${i+1}`;
+      setTimeout(()=>banner.style.display='none',3000);
+
+      set('ip',ipLink(d.ip));set('loc-ip',ipLink(d.ip));
+      set('isp',d.isp||chip('N/A','grey'));
+      set('org',d.asn&&d.org?`${d.asn} — ${d.org}`:(d.org||chip('N/A','grey')));
+      const proxyRx=/vpn|proxy|hosting|cloud|linode|vultr|aws|amazon|azure|ovh|datacenter|digitalocean|hetzner|server/i;
+      const isProxy=proxyRx.test(d.org||'')||proxyRx.test(d.isp||'');
+      set('proxy',isProxy?chip('⚠️ Hosting/Cloud ASN','yellow'):chip('✅ No proxy','green'));
+      set('city',d.city||'—');set('region',d.region||'—');
+      set('country',(d.country||'—')+(d.countryCode?' ('+d.countryCode+')':''));
+      set('postal',d.postal||'—');set('timezone',d.timezone||'—');
+      set('isp-status',(d.city||'')+(d.countryCode?' · '+d.countryCode:''));
+      set('location-status',(d.city||'')+(d.country?' · '+d.country:''));
+      if(d.lat&&d.lng){
+        set('coords',d.lat+', '+d.lng);
+        showMap(d.lat,d.lng,'map-inner');
+        showMap(d.lat,d.lng,'map-isp-inner');
+        showMap(d.lat,d.lng,'map-router-inner');
+        const btz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const match=btz===(d.timezone||'');
+        set('tzmatch',match?chip('✅ Match','green'):chip('⚠️ Mismatch','yellow'));
+        if(!match)addThreat('Timezone mismatch — possible VPN',6);
+        setRadar('location',70+(isProxy?20:0));
+        addThreat('Public IP and location exposed',5);
+      }
+      set('loclang',(navigator.languages||[navigator.language]).join(', ')+' + '+(d.timezone||'—'));
+      return;
+    }catch(e){console.warn('IP API',i+1,'failed:',e.message);}
+  }
+  // All failed
+  banner.className='ip-banner err';banner.innerHTML='⚠️ All IP sources failed';
+  set('ip',chip('Unavailable','red'));
+  // Still kick off WebRTC even if IP fails
+}
+
+// ── MAIN POPULATE ─────────────────────────────────────────────────────────────
+function populate(){
+  const[bname,bver]=detectBrowser();
+  set('browser',bname+(bver?` <span style="color:var(--muted);font-size:11px">v${bver}</span>`:''));
+  set('engine',/Firefox/.test(navigator.userAgent)?'Gecko':'WebKit/Blink');
+  set('os',detectOS());set('device',detectDevice());
+  set('lang',(navigator.languages||[navigator.language]).join(', '));
+  set('dnt',navigator.doNotTrack==='1'?chip('✅ Enabled','green'):chip('Not set','grey'));
+  set('ua-raw',navigator.userAgent);
+  set('browser-status',bname+(bver?' '+bver:''));
+  setRadar('browser',60);
+
+  const cores=navigator.hardwareConcurrency||'?';
+  set('cores',`${cores} logical threads`);
+  set('ram',navigator.deviceMemory?navigator.deviceMemory+' GB (approx.)':'Not disclosed');
+  const[gpu,gpuv]=detectGPU();set('gpu',gpu);set('gpuvendor',gpuv);
+  try{set('gamepads',navigator.getGamepads?Array.from(navigator.getGamepads()).filter(Boolean).length+' connected':'—');}catch(e){set('gamepads',chip('Blocked','grey'));}
+  if(navigator.getBattery){navigator.getBattery().then(b=>{const pct=Math.round(b.level*100);set('battery',`${pct}% — ${b.charging?'⚡ Charging':'🔋 Battery'}`);if(!b.charging&&pct<20)addThreat('Low battery detected',2);}).catch(()=>set('battery','Unavailable'));}
+  else set('battery',chip('API not supported','grey'));
+  detectMediaDevices();
+  setRadar('hardware',50);
+
+  // Pointer / stylus
+  const finePointer=window.matchMedia('(pointer:fine)').matches;
+  const coarsePointer=window.matchMedia('(pointer:coarse)').matches;
+  const anyHover=window.matchMedia('(any-pointer:fine)').matches;
+  let pointerDesc='Unknown';
+  if(finePointer&&anyHover)pointerDesc='🖱️ Mouse or trackpad';
+  else if(coarsePointer)pointerDesc='👆 Touch screen';
+  if(window.matchMedia('(any-pointer:fine)').matches&&window.matchMedia('(any-pointer:coarse)').matches)pointerDesc+=' + touch';
+  set('pointer',pointerDesc);
+  set('inputdevice',pointerDesc);
+  set('hover',window.matchMedia('(hover:hover)').matches?chip('✅ Hover capable','green'):chip('No hover','grey'));
+
+  estimateScreenSize();
+  set('resolution',`${screen.width} × ${screen.height} px`);
+  set('viewport',`${window.innerWidth} × ${window.innerHeight} px`);
+  set('dpr',`${window.devicePixelRatio}×`);
+  set('colour',`${screen.colorDepth}-bit`);
+  set('hdr',window.matchMedia('(dynamic-range:high)').matches?chip('✅ HDR','green'):chip('SDR','grey'));
+  set('wcg',window.matchMedia('(color-gamut:p3)').matches?chip('✅ P3 gamut','blue'):chip('sRGB','grey'));
+  set('touch',navigator.maxTouchPoints||0);
+  set('orient',screen.orientation?.type||(window.innerWidth>window.innerHeight?'landscape':'portrait'));
+  set('motion',window.matchMedia('(prefers-reduced-motion:reduce)').matches?chip('⚠️ Reduced','yellow'):chip('No pref','grey'));
+  set('colorscheme',window.matchMedia('(prefers-color-scheme:dark)').matches?'🌙 Dark mode':'☀️ Light mode');
+  set('display-status',`${screen.width}×${screen.height} · ${window.devicePixelRatio}× DPR`);
+  set('hardware-status',`${cores} cores · ${navigator.deviceMemory||'?'} GB`);
+
+  set('cookies',yesno(navigator.cookieEnabled));
+  set('locstore',yesno(typeof localStorage!=='undefined'));
+  set('sessstore',yesno(typeof sessionStorage!=='undefined'));
+  set('idb',yesno(typeof indexedDB!=='undefined'));
+  set('sw',yesno('serviceWorker' in navigator));
+  set('ws',yesno(typeof WebSocket!=='undefined'));
+  set('wasm',yesno(typeof WebAssembly!=='undefined'));
+  set('sab',typeof SharedArrayBuffer!=='undefined'?chip('✓ Available','green'):chip('Blocked','yellow'));
+  set('pdfviewer',yesno([...navigator.plugins||[]].some(p=>/pdf/i.test(p.name)),'✓ Built-in','Not detected'));
+  set('plugins',[...navigator.plugins||[]].some(p=>/flash/i.test(p.name))?chip('⚠️ Flash','red'):chip('None','green'));
+
+  set('canvas',canvasFP());
+  set('webglhash',webglFP());
+  set('webgl',(()=>{try{const c=document.createElement('canvas');return(c.getContext('webgl')||c.getContext('experimental-webgl'))?chip('✓','green'):chip('No','grey');}catch(e){return chip('No','grey');}})());
+  set('webgl2',(()=>{try{return document.createElement('canvas').getContext('webgl2')?chip('✓','green'):chip('No','grey');}catch(e){return chip('No','grey');}})());
+  audioFP().then(v=>{set('audiofp',`<span class="mono">${v}</span>`);audioFPVal=v;setTimeout(computeUniqueness,100);});
+  if(navigator.gpu){navigator.gpu.requestAdapter().then(a=>{if(a)a.requestAdapterInfo().then(i=>set('webgpu',`${i.vendor||'—'} / ${i.device||'—'}`)).catch(()=>set('webgpu','Found (masked)'));else set('webgpu',chip('No adapter','grey'));}).catch(()=>set('webgpu','Failed'));}
+  else set('webgpu',chip('Not supported','grey'));
+
+  const bait=document.createElement('div');bait.className='ads adsbygoogle adsbox';bait.style.cssText='position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;left:-9999px';
+  document.body.appendChild(bait);
+  setTimeout(()=>{const blocked=bait.offsetParent===null||bait.offsetHeight===0;set('adblocker',blocked?chip('🛡️ Active','yellow'):chip('Not detected','grey'));if(!blocked)addThreat('No ad blocker — ads can track you',4);bait.remove();},400);
+  setTimeout(()=>{const t=performance.now();debugger;set('devtools',performance.now()-t>100?chip('⚠️ Open','yellow'):chip('Not detected','green'));},700);
+
+  const conn=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+  if(conn){set('nettype',conn.effectiveType||conn.type||'—');set('netspeed',conn.downlink?conn.downlink+' Mbps':'—');set('netrtt',conn.rtt!==undefined?conn.rtt+' ms':'—');}
+  else{set('nettype',chip('Not disclosed','grey'));set('netspeed','—');set('netrtt','—');}
+  setRadar('network',70);
+
+  const params=getWebGL2Params();
+  const pw=document.getElementById('webgl2-params');
+  if(params){pw.innerHTML='';params.forEach(([k,v])=>{const d=document.createElement('div');d.className='param-item';d.innerHTML=`<span class="param-k">${k}</span><span class="param-v">${v}</span>`;pw.appendChild(d);});}
+  else{pw.innerHTML='<span style="color:var(--muted)">WebGL2 not supported</span>';}
+
+  setTimeout(()=>{
+    const found=detectFonts();fontsFound=found.length;
+    set('fonts-status',found.length+' fonts');
+    const fg=document.getElementById('font-grid');fg.innerHTML='';
+    if(found.length){found.forEach(f=>{const s=document.createElement('span');s.className='font-pill';s.style.fontFamily=f;s.textContent=f;fg.appendChild(s);});}
+    else fg.innerHTML='<span style="color:var(--muted)">None detected</span>';
+    computeUniqueness();
+    addThreat(found.length+' fonts fingerprinted',3);
+  },600);
+
+  detectCSSFeatures();
+  if(typeof speechSynthesis!=='undefined')loadVoices();
+  else set('voices-list','Not supported');
+  if(navigator.permissions)queryPermissions();
+  else set('perm-grid','<span style="color:var(--muted)">Not supported</span>');
+
+  const fmt=()=>new Date().toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  set('localtime',fmt());setInterval(()=>set('localtime',fmt()),1000);
+  set('tzbrowser',Intl.DateTimeFormat().resolvedOptions().timeZone||'—');
+  analyseTimePattern();
+
+  detectDoH();getUAHints();
+  detectEnvironment();
+  estimatePhysicalCores();
+  detectThrottling();
+  detectClockDrift();
+  // Delay WebRTC slightly so the page is fully settled and ICE has time to gather
+  setTimeout(detectWebRTC, 300);
+  setTimeout(drawRadar,600);
+  setTimeout(computeUniqueness,2500);
+
+  addThreat('Public IP detectable',5);
+  addThreat('Browser fingerprint unique',4);
+  addThreat('Screen resolution tracked',2);
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  set('idc-user-num', getUserNumber());
+  populate();
+  // Fetch IP first — once it resolves, WebRTC fires with full context already set
+  fetchIP().finally(()=>{
+    if(!webrtcDone) detectWebRTC();
+  });
+});
+window.addEventListener('resize',drawRadar);
+</script>
+</body>
+</html>
