@@ -20,8 +20,10 @@
     z-index: 200;
     background: #000;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 48px;
     transition: opacity 0.6s ease;
   }
   #splash.hidden {
@@ -37,17 +39,65 @@
     text-align: center;
     padding: 0 32px;
     opacity: 0;
-    animation: splashAnim 2.4s ease forwards;
+    animation: splashTextAnim 2.4s ease forwards;
   }
-  #splash-text strong {
-    font-weight: 700;
-  }
-  @keyframes splashAnim {
+  #splash-text strong { font-weight: 700; }
+  @keyframes splashTextAnim {
     0%   { opacity: 0; }
     25%  { opacity: 1; }
     70%  { opacity: 1; }
     100% { opacity: 0; }
   }
+  #slider-block {
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+    width: min(320px, 80vw);
+    opacity: 0;
+    animation: fadeIn 0.6s ease 2.5s forwards;
+  }
+  @keyframes fadeIn { to { opacity: 1; } }
+  #slider-label {
+    font-family: 'DM Mono', monospace; font-size: clamp(9px,2.5vw,11px);
+    letter-spacing: 0.3em; text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    display: flex; justify-content: space-between; width: 100%;
+  }
+  #slider-label span {
+    font-size: clamp(11px,3vw,14px);
+    color: #fff; letter-spacing: 0.1em;
+  }
+  #obj-slider {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 1px;
+    background: rgba(255,255,255,0.15);
+    outline: none; border: none; cursor: pointer;
+  }
+  #obj-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%; background: #fff;
+    cursor: pointer; border: none;
+  }
+  #obj-slider::-moz-range-thumb {
+    width: 18px; height: 18px;
+    border-radius: 50%; background: #fff;
+    cursor: pointer; border: none;
+  }
+  #slider-range {
+    display: flex; justify-content: space-between; width: 100%;
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    letter-spacing: 0.2em; color: rgba(255,255,255,0.2);
+  }
+  #enter-btn {
+    font-family: 'DM Mono', monospace; font-weight: 300;
+    font-size: clamp(9px,2.5vw,11px); letter-spacing: 0.35em;
+    text-transform: uppercase; color: rgba(255,255,255,0.4);
+    background: none; border: 1px solid rgba(255,255,255,0.15);
+    padding: 14px 28px; cursor: pointer; min-height: 48px;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.2s, border-color 0.2s;
+    margin-top: 8px;
+  }
+  #enter-btn:hover, #enter-btn:active { color: #fff; border-color: rgba(255,255,255,0.5); }
 
   
 
@@ -125,20 +175,44 @@
     opacity:0; transition:opacity 0.12s;
   }
   #hold-ring.active { opacity:1; }
+  #btn-back {
+    position: fixed;
+    top: 16px;
+    left: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: clamp(8px, 2.5vw, 10px);
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 12px 20px;
+    cursor: pointer;
+    min-height: 48px;
+    min-width: 80px;
+    -webkit-tap-highlight-color: transparent;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.8s ease, color 0.2s, border-color 0.2s;
+    z-index: 10;
+  }
+  #btn-back.visible { opacity: 1; }
+  #btn-back:hover, #btn-back:active { color: #fff; border-color: rgba(255,255,255,0.5); }
 </style>
 </head>
 <body>
 
 <div id="splash">
   <span id="splash-text">An experiment by <strong>Leon Dudhill</strong></span>
-</div>
-
   <div id="slider-block">
     <div id="slider-label">
       Objects &nbsp;<span id="slider-val">50</span>
     </div>
     <input type="range" id="obj-slider" min="10" max="500" step="10" value="50">
     <div id="slider-range"><span>10</span><span>500</span></div>
+    <button id="enter-btn">Drop</button>
   </div>
 </div>
 
@@ -149,6 +223,7 @@
 <div id="hint-orbit">Hold & drag · Pick up<br>2 fingers · Orbit<br>Pinch · Zoom</div>
 <div id="count-display"></div>
 <button id="btn-reset">Reset</button>
+<a href="experiments.html" id="btn-back">← Back</a>
 <div id="item-label"></div>
 <div id="hold-ring"></div>
 
@@ -597,22 +672,25 @@
 
   // ── Enter ─────────────────────────────────────────────────────────────────
   function enter() {
+    TARGET_COUNT = parseInt(slider.value, 10);
     splashEl.classList.add('hidden');
     setTimeout(function() { splashEl.style.display = 'none'; }, 800);
     worldEl.classList.add('visible');
     labelTop.classList.add('visible');
     labelAuth.classList.add('visible');
+    document.getElementById('btn-back').classList.add('visible');
     hintOrbit.classList.add('visible');
     btnReset.classList.add('visible');
     countDisp.classList.add('visible');
     dropAll();
     animate();
   }
-btnReset.addEventListener('click', dropAll);
-  btnReset.addEventListener('touchend', function(e) { e.preventDefault(); dropAll(); });
 
-  // Auto-enter after splash
-  setTimeout(enter, 2500);
+  document.getElementById('enter-btn').addEventListener('click', enter);
+  document.getElementById('enter-btn').addEventListener('touchend', function(e) { e.preventDefault(); enter(); });
+
+  btnReset.addEventListener('click', dropAll);
+  btnReset.addEventListener('touchend', function(e) { e.preventDefault(); dropAll(); });
 
 })();
 </script>
