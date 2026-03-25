@@ -127,6 +127,31 @@
   }
   #btn-reset.visible { opacity: 1; }
   #btn-reset:active { color: #fff; border-color: rgba(255,255,255,0.5); }
+  #btn-back {
+    position: fixed;
+    top: 16px;
+    left: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: clamp(8px, 2.5vw, 10px);
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 12px 20px;
+    cursor: pointer;
+    min-height: 48px;
+    min-width: 80px;
+    -webkit-tap-highlight-color: transparent;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.8s ease, color 0.2s, border-color 0.2s;
+    z-index: 10;
+  }
+  #btn-back.visible { opacity: 1; }
+  #btn-back:hover, #btn-back:active { color: #fff; border-color: rgba(255,255,255,0.5); }
 </style>
 </head>
 <body>
@@ -146,6 +171,7 @@
 <div id="label-top">Gravity v.0.1</div>
 <div id="label-author">An experiment by Leon Dudhill</div>
 <button id="btn-reset">Reset</button>
+<a href="experiments.html" id="btn-back">← Back</a>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
 <script>
@@ -316,6 +342,7 @@
     worldEl.classList.add('visible');
     labelTop.classList.add('visible');
     labelAuth.classList.add('visible');
+    document.getElementById('btn-back').classList.add('visible');
     btnReset.classList.add('visible');
 
     initPhysics();
