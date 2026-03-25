@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Circuit Builder — GCSE Physics</title>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600&family=Roboto:wght@300;400;500&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8f9fa;--white:#fff;--border:#dadce0;--border-light:#e8eaed;
+  --text:#202124;--muted:#5f6368;
+  --blue:#1a73e8;--blue-light:#e8f0fe;
+  --green:#1e8e3e;--green-light:#e6f4ea;
+  --red:#d93025;--red-light:#fce8e6;
+  --yellow:#f9ab00;--yellow-light:#fef7e0;
+  --shadow-sm:0 1px 2px rgba(60,64,67,.10),0 1px 3px rgba(60,64,67,.15);
+  --shadow:0 1px 3px rgba(60,64,67,.12),0 2px 6px rgba(60,64,67,.15);
+  --r:12px;
+}
+body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* SPLASH */
+#splash{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#fff;animation:splashLife 2s ease forwards;pointer-events:none}
+@keyframes splashLife{0%{opacity:0}20%{opacity:1}75%{opacity:1}100%{opacity:0;visibility:hidden}}
+.splash-by{font-size:1.15rem;font-weight:400;color:#111;letter-spacing:0.01em}
+
+/* TOPBAR */
+#topbar{background:var(--white);border-bottom:1px solid var(--border-light);position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(60,64,67,.08)}
+.topbar-inner{max-width:1600px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:16px}
+.topbar-title{font-family:'Google Sans',sans-serif;font-size:18px;font-weight:500}
+.topbar-title span{color:var(--blue)}
+.topbar-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.topbar-badge{font-size:10px;padding:2px 8px;background:var(--blue-light);color:var(--blue);border-radius:10px;font-weight:500;margin-left:4px}
+
+/* MAIN LAYOUT */
+#app{display:grid;grid-template-columns:1fr 280px;height:calc(100vh - 57px - 38px);opacity:0;animation:fadeIn .4s 2.1s ease forwards}
+@keyframes fadeIn{to{opacity:1}}
+
+/* CANVAS AREA */
+#canvas-area{display:flex;flex-direction:column;padding:14px 14px 14px 16px;gap:10px;min-width:0;background:var(--bg)}
+
+/* TOOLBAR */
+#toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--white);border:1px solid var(--border);border-radius:10px;padding:8px 12px;box-shadow:var(--shadow-sm)}
+.ctrl-btn{padding:5px 14px;border:1px solid var(--border);border-radius:20px;background:var(--white);font-size:12px;font-family:'Roboto',sans-serif;cursor:pointer;color:var(--text);font-weight:500;transition:all .15s;white-space:nowrap}
+.ctrl-btn:hover{background:var(--bg);border-color:#bbb}
+.ctrl-btn.active{background:var(--blue-light);border-color:var(--blue);color:var(--blue)}
+.ctrl-btn.danger{color:var(--red);border-color:#f5c6c3}
+.ctrl-btn.danger:hover{background:var(--red-light)}
+.ctrl-btn.success{color:var(--green);border-color:#b7dfbf}
+.ctrl-sep{width:1px;height:24px;background:var(--border-light);flex-shrink:0}
+.mode-pill{font-size:11px;padding:3px 10px;border-radius:20px;background:#f1f3f4;color:var(--muted);margin-left:auto;font-family:'Roboto',sans-serif}
+
+/* CANVAS */
+#canvas-wrap{flex:1;position:relative;background:var(--white);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-sm);overflow:hidden;cursor:crosshair}
+#circuit-canvas{display:block;width:100%;height:100%}
+
+/* STATUS BAR */
+#status-bar{display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;border:1px solid var(--border-light);background:var(--white);font-size:12px;transition:background .3s,border-color .3s;box-shadow:var(--shadow-sm)}
+#status-bar.ok{background:var(--green-light);border-color:#b7dfbf}
+#status-bar.err{background:var(--red-light);border-color:#f5c6c3}
+.sdot{width:9px;height:9px;border-radius:50%;flex-shrink:0;transition:background .3s}
+.sdot-ok{background:var(--green)}
+.sdot-err{background:var(--red)}
+.sdot-idle{background:#bbb}
+#smsg{font-weight:500;color:var(--text);font-family:'Google Sans',sans-serif}
+#sdetail{color:var(--muted);font-size:11px;margin-left:auto}
+
+/* HINT */
+#hint{font-size:10.5px;color:var(--muted);padding:0 2px}
+
+/* COMPONENT PANEL (RIGHT) */
+#comp-panel{background:var(--white);border-left:1px solid var(--border-light);display:flex;flex-direction:column;overflow:hidden}
+.panel-header{padding:12px 14px 8px;border-bottom:1px solid var(--border-light);flex-shrink:0}
+.panel-title{font-family:'Google Sans',sans-serif;font-size:13px;font-weight:500;color:var(--text);margin-bottom:1px}
+.panel-sub{font-size:10px;color:var(--muted)}
+.panel-scroll{flex:1;overflow-y:auto;padding:8px 10px;display:flex;flex-direction:column;gap:3px}
+.panel-scroll::-webkit-scrollbar{width:4px}
+.panel-scroll::-webkit-scrollbar-track{background:transparent}
+.panel-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+/* SECTION HEADERS */
+.cat-label{font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:8px 6px 3px;font-weight:500}
+
+/* COMPONENT CARD */
+.comp-card{display:flex;align-items:center;gap:10px;padding:7px 10px;border:1px solid var(--border-light);border-radius:8px;background:#fafafa;cursor:grab;transition:all .15s;user-select:none}
+.comp-card:hover{background:var(--blue-light);border-color:#c5d8fb;box-shadow:var(--shadow-sm)}
+.comp-card:active{cursor:grabbing;transform:scale(0.97)}
+.comp-card svg{flex-shrink:0}
+.comp-info{min-width:0}
+.comp-name{font-size:11.5px;font-weight:500;color:var(--text);white-space:nowrap}
+.comp-desc{font-size:9.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* PANEL FOOTER */
+.panel-footer{border-top:1px solid var(--border-light);padding:8px 12px;font-size:10px;color:var(--muted);text-align:center;flex-shrink:0}
+
+@media(max-width:900px){
+  #app{grid-template-columns:1fr;grid-template-rows:1fr 220px;height:auto}
+  #comp-panel{border-left:none;border-top:1px solid var(--border-light);height:220px}
+  .panel-scroll{flex-direction:row;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;padding:8px}
+  .cat-label{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash"><div class="splash-by">A tool by <strong>Leon Dudhill</strong></div></div>
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="topbar-inner">
+    <div>
+      <div class="topbar-title">Circuit <span>Builder</span> <span class="topbar-badge">GCSE Physics</span></div>
+      <div class="topbar-sub">All UK exam board components · Drag, drop & wire</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+
+  <!-- LEFT: CANVAS AREA -->
+  <div id="canvas-area">
+    <div id="toolbar">
+      <button class="ctrl-btn active" id="wire-btn">✏ Wire</button>
+      <button class="ctrl-btn" id="select-btn">↖ Select</button>
+      <div class="ctrl-sep"></div>
+      <button class="ctrl-btn success" id="toggle-sw-btn">⚡ Toggle Switch</button>
+      <button class="ctrl-btn" id="undo-btn">↩ Undo</button>
+      <button class="ctrl-btn danger" id="clear-btn">🗑 Clear</button>
+      <span class="mode-pill" id="mode-pill">Wire mode — click a terminal then click another to connect</span>
+    </div>
+
+    <div id="canvas-wrap">
+      <canvas id="circuit-canvas"></canvas>
+    </div>
+
+    <div id="status-bar">
+      <div class="sdot sdot-idle" id="sdot"></div>
+      <span id="smsg">Build your circuit</span>
+      <span id="sdetail">Drag components from the panel on the right</span>
+    </div>
+    <div id="hint">Double-click a component or wire to delete · Blue dots = terminals · Snap-to-grid keeps things neat</div>
+  </div>
+
+  <!-- RIGHT: COMPONENT PANEL -->
+  <div id="comp-panel">
+    <div class="panel-header">
+      <div class="panel-title">Components</div>
+      <div class="panel-sub">Drag onto the circuit board</div>
+    </div>
+    <div class="panel-scroll" id="panel-scroll"></div>
+    <div class="panel-footer">A tool by Leon Dudhill · GCSE Physics</div>
+  </div>
+
+</div>
+
+<script>
+// ─── COMPONENT DEFINITIONS ────────────────────────────────────────────────────
+// All required by AQA, OCR, Edexcel, WJEC/Eduqas, CCEA
+const COMPONENTS = [
+  // POWER SOURCES
+  {cat:'Power Sources', type:'cell',      name:'Cell',           desc:'Single 1.5V cell',          w:70, h:40},
+  {cat:'Power Sources', type:'battery',   name:'Battery',        desc:'Multiple cells in series',   w:80, h:40},
+  {cat:'Power Sources', type:'ac_supply', name:'AC Supply',      desc:'Alternating current source', w:50, h:50},
+  {cat:'Power Sources', type:'dc_supply', name:'DC Supply',      desc:'Direct current source',      w:50, h:50},
+  // SWITCHES
+  {cat:'Switches',      type:'switch',    name:'Switch (SPST)',  desc:'Single pole, open/close',    w:64, h:36},
+  {cat:'Switches',      type:'push',      name:'Push Switch',    desc:'Normally open push button',  w:56, h:36},
+  // OUTPUT DEVICES
+  {cat:'Output Devices',type:'bulb',      name:'Lamp/Bulb',      desc:'Light output device',        w:44, h:44},
+  {cat:'Output Devices',type:'led',       name:'LED',            desc:'Light-emitting diode',       w:52, h:36},
+  {cat:'Output Devices',type:'motor',     name:'Motor',          desc:'Electrical motor (M)',       w:44, h:44},
+  {cat:'Output Devices',type:'buzzer',    name:'Buzzer',         desc:'Sound output device',        w:48, h:40},
+  {cat:'Output Devices',type:'heater',    name:'Heater',         desc:'Heating element',            w:64, h:36},
+  // RESISTORS
+  {cat:'Resistors',     type:'resistor',  name:'Resistor',       desc:'Fixed resistance (rect)',    w:64, h:36},
+  {cat:'Resistors',     type:'rheostat',  name:'Rheostat',       desc:'Variable resistor (2-term)', w:64, h:40},
+  {cat:'Resistors',     type:'pot',       name:'Potentiometer',  desc:'Variable resistor (3-term)', w:64, h:50},
+  {cat:'Resistors',     type:'ldr',       name:'LDR',            desc:'Light-dependent resistor',   w:64, h:44},
+  {cat:'Resistors',     type:'thermistor',name:'Thermistor',     desc:'Temperature-dependent R',    w:64, h:44},
+  // CAPACITORS
+  {cat:'Capacitors',    type:'capacitor', name:'Capacitor',      desc:'Stores electrical charge',   w:44, h:44},
+  // DIODES
+  {cat:'Diodes',        type:'diode',     name:'Diode',          desc:'Allows current one way',     w:52, h:36},
+  // MEASURING
+  {cat:'Measuring',     type:'ammeter',   name:'Ammeter',        desc:'Measures current (A)',       w:44, h:44},
+  {cat:'Measuring',     type:'voltmeter', name:'Voltmeter',      desc:'Measures voltage (V)',       w:44, h:44},
+  {cat:'Measuring',     type:'galvano',   name:'Galvanometer',   desc:'Detects small currents (G)', w:44, h:44},
+  // PROTECTION
+  {cat:'Protection',    type:'fuse',      name:'Fuse',           desc:'Overcurrent protection',     w:64, h:36},
+  // WIRES
+  {cat:'Wires',         type:'wire_h',    name:'Wire (Horiz.)',  desc:'Horizontal wire segment',    w:80, h:20},
+  {cat:'Wires',         type:'wire_v',    name:'Wire (Vert.)',   desc:'Vertical wire segment',      w:20, h:80},
+  {cat:'Wires',         type:'junction',  name:'Junction',       desc:'Wire join / node point',     w:20, h:20},
+];
+
+// ─── SVG DRAWING FUNCTIONS ────────────────────────────────────────────────────
+// Returns arrays of draw calls: {type, args}
+function getSymbol(type, x, y, w, h, lit, closed, fg) {
+  const cx = x+w/2, cy = y+h/2;
+  const ops = []; // each op: fn(ctx)
+
+  switch(type) {
+    case 'cell': {
+      ops.push(c=>{
+        c.beginPath();c.moveTo(x,cy);c.lineTo(x+18,cy);c.stroke();
+        c.lineWidth=3;c.beginPath();c.moveTo(x+18,cy-13);c.lineTo(x+18,cy+13);c.stroke();
+        c.lineWidth=1.5;c.beginPath();c.moveTo(x+24,cy-8);c.lineTo(x+24,cy+8);c.stroke();
+        c.lineWidth=3;c.beginPath();c.moveTo(x+30,cy-13);c.lineTo(x+30,cy+13);c.stroke();
+        c.lineWidth=1.8;c.beginPath();c.moveTo(x+30,cy);c.lineTo(x+w,cy);c.stroke();
+        c.font='9px Roboto,sans-serif';c.textAlign='center';
+        c.fillStyle=fg;c.fillText('+',x+w-3,cy-6);c.fillText('−',x+4,cy-6);
+      });
+      break;
+    }
+    case 'battery': {
+      ops.push(c=>{
+        c.beginPath();c.moveTo(x,cy);c.lineTo(x+10,cy);c.stroke();
+        const pairs=[[14,3],[19,1.5],[24,3],[29,1.5],[34,3]];
+        let xp=x+10;
+        for(let [offset,lw] of pairs){
+          c.lineWidth=lw*1.8;
+          const ht=lw===3?14:9;
+          c.beginPath();c.moveTo(xp,cy-ht);c.lineTo(xp,cy+ht);c.stroke();
+          xp+=5;
+        }
+        c.lineWidth=1.8;c.beginPath();c.moveTo(xp,cy);c.lineTo(x+w,cy);c.stroke();
+        c.font='9px Roboto,sans-serif';c.textAlign='center';c.fillStyle=fg;
+        c.fillText('+',x+w-3,cy-6);c.fillText('−',x+4,cy-6);
+      });
+      break;
+    }
+    case 'ac_supply': {
+      ops.push(c=>{
+        c.beginPath();c.arc(cx,cy,18,0,Math.PI*2);c.stroke();
+        c.beginPath();
+        c.moveTo(cx-10,cy);
+        for(let i=0;i<=40;i++){const px=cx-10+i*0.5;const py=cy-7*Math.sin(i*Math.PI/10);c.lineTo(px,py);}
+        c.stroke();
+        c.beginPath();c.moveTo(x,cy);c.lineTo(cx-18,cy);c.stroke();
+        c.beginPath();c.moveTo(cx+18,cy);c.lineTo(x+w,cy);c.stroke();
+      });
+      break;
+    }
+    case 'dc_supply': {
+      ops.push(c=>{
+        c.beginPath();c.arc(cx,cy,18,0,Math.PI*2);c.stroke();
+        c.font='bold 11px Roboto,sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle=fg;
+        c.fillText('DC',cx,cy);c.textBaseline='alphabetic';
+        c.beginPath();c.moveTo(x,cy);c.lineTo(cx-18,cy);c.stroke();
+        c.beginPath();c.moveTo(cx+18,cy);c.lineTo(x+w,cy);c.stroke();
+      });
+      break;
+    }
+    case 'switch': {
+      ops.push(c=>{
+        c.beginPath();c.moveTo(x,cy);c.lineTo(x+14,cy);c.stroke();
+        c.beginPath();c.arc(x+14,cy,3.5,0,Math.PI*2);c.fillStyle=fg;c.fill();
+        if(closed){c.beginPath();c.moveTo(x+14,cy);c.lineTo(x+w-14,cy);c.stroke();}
+        else{c.beginPath();c.moveTo(x+14,cy);c.lineTo(x+w-16,cy-15);c.stroke();}
+        c.beginPath();c.arc(x+w-14,cy,3.5,0,Math.PI*2);c.fillStyle=fg;c.fill();
+        c.beginPath();c.moveTo(x+w-14,cy);c.lineTo(x+w,cy);c.stroke();
+        c.font='9px Roboto,sans-serif';c.textAlign='center';c.fillStyle=closed?'#1e8e3e':'#d93025';
+        c.fillText(closed?'CLOSED':'OPEN',cx,y+h-1);
+      });
+      break;
+    }
+    case 'push': {
+      ops.push(c=>{
+        c.beginPath();c.moveTo(x,cy+4);c.lineTo(x+14,cy+4);c.stroke();
+        c.beginPath();c.moveTo(x+w-14,cy+4);c.lineTo(x+w,cy+4);c.stroke();
+        c.beginPath();c.moveTo(cx-10,cy+4);c.lineTo(cx+10,cy+4);c.stroke();
+        c.beginPath();c.moveTo(cx-10,cy-6);c.lineTo(cx+10,cy-6);c.stroke();
+        c.beginPath();c.moveTo(cx,cy-6);c.lineTo(cx,cy-13);c.stroke();
+        c.font='9px Roboto,sans-serif';c.textAlign='center';c.fillStyle=fg;c.fillText('push',cx,y+h-0);
+      });
+      break;
+    }
+    case 'bulb': {
+      const r=15;
+      ops.push(c=>{
+        if(lit){
+          c.save();
+          c.fillStyle='rgba(255,180,0,0.2)';c.beginPath();c.arc(cx,cy-2,r+12,0,Math.PI*2);c.fill();
+          c.fillStyle='rgba(255,200,50,0.35)';c.beginPath();c.arc(cx,cy-2,r+6,0,Math.PI*2);c.fill();
+          c.restore();
+        }
+        c.strokeStyle=lit?'#f9ab00':fg; c.lineWidth=lit?2.2:1.8;
+        c.beginPath();c.arc(cx,cy-2,r,0,Math.PI*2);c.stroke();
+        c.lineWidth=1.4;
+        c.beginPath();c.moveTo(cx-5,cy-7);c.lineTo(cx+5,cy+2);c.stroke();
+        c.beginPath();c.moveTo(cx+5,cy-7);c.lineTo(cx-5,cy+2);c.stroke();
+        c.lineWidth=1.8;
+        c.beginPath();c.moveTo(cx,cy-2+r);c.lineTo(cx,cy+h/2);c.stroke();
+        c.beginPath();c.moveTo(cx-6,cy-2+r);c.lineTo(cx+6,cy-2+r);c.stroke();
+        c.beginPath();c.moveTo(x,cy);c.lineTo(cx-r,cy-2);c.stroke();
+        c.beginPath();c.moveTo(cx+r,cy-2);c.lineTo(x+w,cy);c.stroke();
+      });
+      break;
+    }
+    case 'led': {
+      ops.push(c=>{
+        if(lit){c.save();c.fillStyle='rgba(50,220,80,0.22)';c.beginPath();c.arc(cx-2,cy,15,0,Math.PI*2);c.fill();c.restore();}
+        c.strokeStyle=lit?'#1e8e3e':fg;c.lineWidth=lit?2.2:1.8;
+        const t1=x+14,t2=x+w-14;
+        c.beginPath();c.moveTo(x,cy);c.lineTo(t1,cy);c.stroke();
+        c.beginPath();c.moveTo(t2,cy);c.lineTo(x+w,cy);c.stroke();
+        c.beginPath();c.moveTo(t1,cy-11);c.lineTo(t1,cy+11);c.lineTo(t2,cy);c.closePath();c.stroke();
+        c.lineWidth=1.8;c.beginPath();c.moveTo(t2,cy-11);c.lineTo(t2,cy+11);c.stroke();
+        c.lineWidth=1.3;
+        c.beginPath();c.moveTo(t2,cy-12);c.lineTo(t2+6,cy-17);c.stroke();
+        c.beginPath();c.moveTo(t2+3,cy-9);c.lineTo(t2+9,cy-14);c.stroke();
+        c.beginPath();c.moveTo(t2-3,cy-15);c.lineTo(t2+1,cy-20);c.stroke();
+      });
+      break;
+    }
+    case 'motor': {
+      ops.push(c=>{
+        c.beginPath();c.arc(cx,cy,18,0,Math.PI*2);c.stroke();
+        c.font='bold 14px Google Sans,sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle=fg;
+        c.fillText('M',cx,cy+1);c.textBaseline='alphabetic';
+        c.beginPath();c.moveTo(x,cy);c.lineTo(cx-18,cy);c.stroke();
+        c.beginPath();c.moveTo(cx+18,cy);c.lineTo(x+w,cy);c.stroke();
+      });
+      break;
+    }
+    case 'buzzer': {
+      ops.push(c=>{
+        c.beginPath();c.moveTo(x,cy);c.lineTo(x+14,cy);c.stroke();
+        c.beginPath();c.moveTo(x+14,cy-13);c.lineTo(x+14,cy+13);c.stroke();
+        c.beginPath();c.moveTo(x+14,cy-13);c.arc(x+14,cy,13,Math.PI*1.5,Math.PI*0.5,false);c.stroke();
+        // dome
+        c.beginPath();c.moveTo(x+14,cy-13);
+        c.bezierCurveTo(x+38,cy-13,x+38,cy+13,x+14,cy+13);c.stroke();
+        c.beginPath();c.moveTo(x+27,cy);c.lineTo(x+w,cy);c.stroke();
+        c.font='9px Roboto,sans-serif';c.textAlign='center';c.fillStyle=fg;c.fillText('bz',cx+6,y+2);
+      });
+      break;
+    }
+    case 'heater': {
+      ops.push(c=>{
+        c.beginPath();c.moveTo(x,cy);c.lineTo(x+10,cy);c.stroke();
+        c.strokeRect(x+10,cy-10,w-20,20);
+        // zigzag
+        const zx=x+14,zw=w-28,steps=5;
+        c.beginPath();c.moveTo(zx,cy+6);
+        for(let i=0;i<=steps;i++){c.lineTo(zx+i*zw/steps,i%2===0?cy-5:cy+5);}
+        c.stroke();
+        c.beginPath();c.moveTo(x+w-10,cy);c.lineTo(x+w,cy);c.stroke();
+      });
+      break;
+    }
+    case 'resistor': {
+      ops.push(c=>{
+        c.beginPath();c.moveTo(x,cy);c.lineTo(x+10,cy);c.stroke();
+        c.strokeRect(x+10,cy-9,w-20,18);
+        c.beginPath();c.moveTo(x+w-10,cy);c.lineTo(x+w,cy);c.stroke();
+      });
+      break;
+    }
+    case 'rheostat': {
+      ops.push(c=>{
+        c.beginPath();c.moveTo(x,cy);c.lineTo(x+10,cy);c.stroke();
+        c.strokeRect(x+10,cy-9,w-20,18);
+        c.beginPath();c.moveTo(x+w-10,cy);c.lineTo(x+w,cy);c.stroke();
+        // arrow
+        c.beginPath();c.moveTo(cx,cy-18);c.lineTo(cx,cy-9);c.stroke();
+        c.beginPath();c.moveTo(cx-5,cy-14);c.lineTo(cx,cy-9);c.lineTo(cx+5,cy-14);c.stroke();
+        c.font='8px Roboto,sans-serif';c.textAlign='center';c.fillStyle=fg;c.fillText('var',cx,y+h);
+      });
+      break;
+    }
+    case 'pot': {
+      ops.push(c=>{
+        c.beginPath();c.moveTo(x,cy+6);c.lineTo(x+10,cy+6);c.stroke();
+        c.strokeRect(x+10,cy-3,w-20,18);
+        c.beginPath();c.moveTo(x+w-10,cy+6);c.lineTo(x+w,cy+6);c.stroke();
+        c.beginPath();c.moveTo(cx,cy-3);c.lineTo(cx,cy-14);c.stroke();
+        c.beginPath();c.moveTo(cx-5,cy+3);c.lineTo(cx,cy-3);c.lineTo(cx+5,cy+3);c.stroke();
+        c.font='8px Roboto,sans-serif';c.textAlign='center';c.fillStyle=fg;c.fillText('pot',cx,y+h);
+      });
+      break;
+    }
+    case 'ldr': {
+      ops.push(c=>{
+        c.beginPath();c.moveTo(x,cy);c.lineTo(x+10,cy);c.stroke();
+        c.strokeRect(x+10,cy-9,w-20,18);
+        c.beginPath();c.moveTo(x+w-10,cy);c.lineTo(x+w,cy);c.stroke();
+        // light arrows
+        c.lineWidth=1.2;
+        for(let i=0;i<2;i++){
+          const ax=cx-6+i*10,ay=cy-17;
+          c.beginPath();c.moveTo(ax-4,ay-6);c.lineTo(ax,ay);c.stroke();
+          c.beginPath();c.moveTo(ax-2,ay-2);c.lineTo(ax,ay);c.lineTo(ax-4,ay+1);c.stroke();
+        }
+        c.lineWidth=1.8;
+        c.font='8px Roboto,sans-serif';c.textAlign='center';c.fillStyle=fg;c.fillText('LDR',cx,y+h);
+      });
+      break;
+    }
+    case 'thermistor': {
+      ops.push(c=>{
+        c.beginPath();c.moveTo(x,cy);c.lineTo(x+10,cy);c.stroke();
+        c.strokeRect(x+10,cy-9,w-20,18);
+        c.beginPath();c.moveTo(x+w-10,cy);c.lineTo(x+w,cy);c.stroke();
+        // diagonal line through box
+        c.lineWidth=1.2;
+        c.beginPath();c.moveTo(x+14,cy+6);c.lineTo(x+w-14,cy-6);c.stroke();
+        c.lineWidth=1.8;
+        c.font='8px Roboto,sans-serif';c.textAlign='center';c.fillStyle=fg;c.fillText('NTC',cx,y+h);
+      });
+      break;
+    }
+    case 'capacitor': {
+      ops.push(c=>{
+        c.beginPath();c.moveTo(x,cy);c.lineTo(cx-8,cy);c.stroke();
+        c.beginPath();c.moveTo(cx-8,cy-14);c.lineTo(cx-8,cy+14);c.stroke();
+        c.lineWidth=2.5;
+        c.beginPath();c.moveTo(cx+8,cy-14);c.lineTo(cx+8,cy+14);c.stroke();
+        c.lineWidth=1.8;
+        c.beginPath();c.moveTo(cx+8,cy);c.lineTo(x+w,cy);c.stroke();
+      });
+      break;
+    }
+    case 'diode': {
+      ops.push(c=>{
+        c.beginPath();c.moveTo(x,cy);c.lineTo(x+14,cy);c.stroke();
+        c.beginPath();c.moveTo(x+14,cy-11);c.lineTo(x+14,cy+11);c.lineTo(x+w-14,cy);c.closePath();c.stroke();
+        c.beginPath();c.moveTo(x+w-14,cy-11);c.lineTo(x+w-14,cy+11);c.stroke();
+        c.beginPath();c.moveTo(x+w-14,cy);c.lineTo(x+w,cy);c.stroke();
+      });
+      break;
+    }
+    case 'ammeter':
+    case 'voltmeter':
+    case 'galvano': {
+      const label = type==='ammeter'?'A':type==='voltmeter'?'V':'G';
+      ops.push(c=>{
+        c.beginPath();c.arc(cx,cy,18,0,Math.PI*2);c.stroke();
+        c.font='bold 14px Google Sans,sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle=fg;
+        c.fillText(label,cx,cy+1);c.textBaseline='alphabetic';
+        c.beginPath();c.moveTo(x,cy);c.lineTo(cx-18,cy);c.stroke();
+        c.beginPath();c.moveTo(cx+18,cy);c.lineTo(x+w,cy);c.stroke();
+      });
+      break;
+    }
+    case 'fuse': {
+      ops.push(c=>{
+        c.beginPath();c.moveTo(x,cy);c.lineTo(x+10,cy);c.stroke();
+        // oval fuse body
+        c.beginPath();c.ellipse(cx,cy,w/2-10,9,0,0,Math.PI*2);c.stroke();
+        c.lineWidth=1;c.setLineDash([3,3]);
+        c.beginPath();c.moveTo(cx,cy-8);c.lineTo(cx,cy+8);c.stroke();
+        c.setLineDash([]);c.lineWidth=1.8;
+        c.beginPath();c.moveTo(x+w-10,cy);c.lineTo(x+w,cy);c.stroke();
+      });
+      break;
+    }
+    case 'wire_h': {
+      ops.push(c=>{
+        c.beginPath();c.moveTo(x,cy);c.lineTo(x+w,cy);c.stroke();
+      });
+      break;
+    }
+    case 'wire_v': {
+      ops.push(c=>{
+        c.beginPath();c.moveTo(cx,y);c.lineTo(cx,y+h);c.stroke();
+      });
+      break;
+    }
+    case 'junction': {
+      ops.push(c=>{
+        c.beginPath();c.arc(cx,cy,5,0,Math.PI*2);c.fillStyle=fg;c.fill();
+      });
+      break;
+    }
+  }
+  return ops;
+}
+
+function getTerminals(comp) {
+  const {x,y,w,h,type} = comp;
+  const cx=x+w/2, cy=y+h/2;
+  switch(type){
+    case 'wire_h': return [{x:x,y:cy},{x:x+w,y:cy}];
+    case 'wire_v': return [{x:cx,y:y},{x:cx,y:y+h}];
+    case 'junction': return [{x:cx,y:cy}];
+    case 'pot': return [{x:x,y:cy+6},{x:x+w,y:cy+6},{x:cx,y:y}];
+    default: return [{x:x,y:cy},{x:x+w,y:cy}];
+  }
+}
+
+// ─── PANEL BUILDER ────────────────────────────────────────────────────────────
+function buildPanel() {
+  const scroll = document.getElementById('panel-scroll');
+  scroll.innerHTML = '';
+  const cats = [...new Set(COMPONENTS.map(c=>c.cat))];
+  cats.forEach(cat=>{
+    const lbl = document.createElement('div');
+    lbl.className='cat-label';lbl.textContent=cat;scroll.appendChild(lbl);
+
+    COMPONENTS.filter(c=>c.cat===cat).forEach(comp=>{
+      const card = document.createElement('div');
+      card.className='comp-card';card.draggable=true;card.dataset.type=comp.type;
+
+      // mini preview SVG
+      const svgNS='http://www.w3.org/2000/svg';
+      const svgEl=document.createElementNS(svgNS,'svg');
+      const pw=52, ph=32;
+      svgEl.setAttribute('width',pw);svgEl.setAttribute('height',ph);svgEl.setAttribute('viewBox',`0 0 ${pw} ${ph}`);
+      // Use canvas to draw then convert? — no, we just draw a little canvas mini
+      svgEl.style.flexShrink='0';
+
+      const info = document.createElement('div');
+      info.className='comp-info';
+      info.innerHTML=`<div class="comp-name">${comp.name}</div><div class="comp-desc">${comp.desc}</div>`;
+      card.appendChild(info);
+
+      // mini canvas preview
+      const mc = document.createElement('canvas');
+      mc.width=52;mc.height=32;mc.style.cssText='width:52px;height:32px;flex-shrink:0;order:-1';
+      card.appendChild(mc);
+      card.insertBefore(mc, info);
+
+      scroll.appendChild(card);
+
+      // draw mini preview
+      setTimeout(()=>{
+        const mctx=mc.getContext('2d');
+        const scale=window.devicePixelRatio||1;
+        mc.width=52*scale;mc.height=32*scale;
+        mc.style.width='52px';mc.style.height='32px';
+        mctx.scale(scale,scale);
+        mctx.strokeStyle='#202124';mctx.lineWidth=1.5;mctx.lineCap='round';mctx.lineJoin='round';
+        const sw=comp.w, sh=comp.h;
+        const mscale=Math.min(48/sw,28/sh);
+        const dw=sw*mscale,dh=sh*mscale;
+        const ox=(52-dw)/2, oy=(32-dh)/2;
+        const ops=getSymbol(comp.type,ox,oy,dw,dh,false,false,'#202124');
+        ops.forEach(fn=>fn(mctx));
+      },0);
+
+      card.addEventListener('dragstart',e=>{
+        e.dataTransfer.setData('text/plain',comp.type);
+        e.dataTransfer.setData('application/comp-w',comp.w);
+        e.dataTransfer.setData('application/comp-h',comp.h);
+      });
+    });
+  });
+}
+
+// ─── CANVAS ENGINE ────────────────────────────────────────────────────────────
+const canvasEl = document.getElementById('circuit-canvas');
+const ctx = canvasEl.getContext('2d');
+let W=0,H=0,DPR=1;
+const GRID=20;
+
+function resize(){
+  DPR=window.devicePixelRatio||1;
+  const wrap=document.getElementById('canvas-wrap');
+  W=wrap.clientWidth;H=wrap.clientHeight;
+  canvasEl.width=W*DPR;canvasEl.height=H*DPR;
+  canvasEl.style.width=W+'px';canvasEl.style.height=H+'px';
+  ctx.scale(DPR,DPR);
+  render();
+}
+
+let components=[], wires=[], mode='wire';
+let dragging=null,dragOff={x:0,y:0};
+let wireFrom=null,preview=null;
+let selected=null,nextId=1;
+let history=[];
+
+function snap(v){return Math.round(v/GRID)*GRID;}
+
+function saveHistory(){history.push({components:JSON.parse(JSON.stringify(components)),wires:JSON.parse(JSON.stringify(wires))});if(history.length>30)history.shift();}
+function undo(){if(!history.length)return;const s=history.pop();components=s.components;wires=s.wires;selected=null;render();}
+
+function drawGrid(){
+  ctx.save();ctx.strokeStyle='rgba(0,0,0,0.06)';ctx.lineWidth=0.5;
+  for(let x=0;x<=W;x+=GRID){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<=H;y+=GRID){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  ctx.restore();
+}
+
+function drawComp(c, lit){
+  const fg='#202124';
+  ctx.save();
+  ctx.strokeStyle=fg;ctx.fillStyle=fg;ctx.lineWidth=1.8;ctx.lineCap='round';ctx.lineJoin='round';
+  if(c===selected){
+    ctx.save();ctx.strokeStyle='#1a73e8';ctx.lineWidth=1;ctx.setLineDash([4,3]);
+    ctx.strokeRect(c.x-5,c.y-5,c.w+10,c.h+10);ctx.restore();
+  }
+  const ops=getSymbol(c.type,c.x,c.y,c.w,c.h,lit,c.closed,fg);
+  ops.forEach(fn=>{ctx.strokeStyle=fg;ctx.fillStyle=fg;ctx.lineWidth=1.8;fn(ctx);});
+  ctx.restore();
+  // terminals (skip wires/junction)
+  if(c.type!=='wire_h'&&c.type!=='wire_v'&&c.type!=='junction'){
+    for(let t of getTerminals(c)){
+      ctx.beginPath();ctx.arc(t.x,t.y,4,0,Math.PI*2);
+      ctx.fillStyle='#1a73e8';ctx.fill();
+    }
+  }
+}
+
+function drawWire(w,lit){
+  ctx.save();ctx.strokeStyle=lit?'#f9ab00':'#202124';ctx.lineWidth=lit?2.5:1.8;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(w.x1,w.y1);ctx.lineTo(w.x2,w.y2);ctx.stroke();
+  ctx.restore();
+}
+
+// ─── CIRCUIT ANALYSIS ────────────────────────────────────────────────────────
+function buildGraph(){
+  const eps=12,nodes=[],adj=[];
+  function gn(px,py){
+    for(let i=0;i<nodes.length;i++)if(Math.hypot(nodes[i].x-px,nodes[i].y-py)<eps)return i;
+    nodes.push({x:px,y:py});adj.push([]);return nodes.length-1;
+  }
+  for(let c of components){
+    const terms=getTerminals(c);
+    if(terms.length>=2){const a=gn(terms[0].x,terms[0].y),b=gn(terms[1].x,terms[1].y);adj[a].push(b);adj[b].push(a);}
+    if(terms.length===3){const a=gn(terms[0].x,terms[0].y),c2=gn(terms[2].x,terms[2].y);adj[a].push(c2);adj[c2].push(a);}
+  }
+  for(let w of wires){const a=gn(w.x1,w.y1),b=gn(w.x2,w.y2);adj[a].push(b);adj[b].push(a);}
+  return{nodes,adj,gn};
+}
+function findN(nodes,px,py){let best=null,bd=14;for(let i=0;i<nodes.length;i++){const d=Math.hypot(nodes[i].x-px,nodes[i].y-py);if(d<bd){bd=d;best=i;}}return best;}
+function bfs(adj,start){const vis=new Set([start]),q=[start];while(q.length){const u=q.shift();for(let v of adj[u])if(!vis.has(v)){vis.add(v);q.push(v);}}return vis;}
+
+function checkCircuit(){
+  const bat=components.find(c=>c.type==='cell'||c.type==='battery'||c.type==='dc_supply'||c.type==='ac_supply');
+  const output=components.find(c=>['bulb','led','motor','buzzer','heater'].includes(c.type));
+  const openSw=components.find(c=>c.type==='switch'&&!c.closed);
+
+  if(!bat) return{ok:false,lit:false,msg:'No power source',detail:'Add a cell, battery or power supply'};
+  if(!output) return{ok:false,lit:false,msg:'No output device',detail:'Add a bulb, LED, motor or buzzer'};
+  if(wires.length===0) return{ok:false,lit:false,msg:'No wires drawn',detail:'Switch to Wire mode and connect the components'};
+  if(openSw) return{ok:false,lit:false,msg:'Switch is open',detail:'Click "Toggle Switch" to close it'};
+
+  const {nodes,adj}=buildGraph();
+  const [bt0,bt1]=getTerminals(bat);
+  const sn=findN(nodes,bt1.x,bt1.y),en=findN(nodes,bt0.x,bt0.y);
+  if(sn===null||en===null) return{ok:false,lit:false,msg:'Power source not connected',detail:'Wire both terminals of the battery'};
+  const reached=bfs(adj,sn);
+  if(!reached.has(en)) return{ok:false,lit:false,msg:'Circuit incomplete',detail:'There is a gap — trace the path from + to −'};
+
+  const [ot0,ot1]=getTerminals(output);
+  const on0=findN(nodes,ot0.x,ot0.y),on1=findN(nodes,ot1.x,ot1.y);
+  if(on0!==null&&on1!==null&&reached.has(on0)&&reached.has(on1)){
+    const outName=output.type==='bulb'?'Bulb':output.type==='led'?'LED':output.type==='motor'?'Motor':output.type==='buzzer'?'Buzzer':'Heater';
+    return{ok:true,lit:true,msg:`✓ Complete circuit — ${outName} is active!`,detail:'Current is flowing around the closed loop'};
+  }
+  return{ok:false,lit:false,msg:'Output not in the loop',detail:'Make sure the '+output.type+' is wired into the circuit'};
+}
+
+function setStatus(r){
+  const bar=document.getElementById('status-bar');
+  const dot=document.getElementById('sdot');
+  document.getElementById('smsg').textContent=r.msg;
+  document.getElementById('sdetail').textContent=r.detail;
+  bar.className=r.ok?'ok':(components.length===0?'':'err');
+  dot.className='sdot '+(r.ok?'sdot-ok':(components.length===0?'sdot-idle':'sdot-err'));
+}
+
+function render(){
+  ctx.clearRect(0,0,W,H);
+  drawGrid();
+  const res=components.length?checkCircuit():{ok:false,lit:false,msg:'Build your circuit',detail:'Drag components from the panel on the right'};
+  for(let w of wires) drawWire(w,res.lit);
+  if(preview){
+    ctx.save();ctx.strokeStyle='#1a73e8';ctx.lineWidth=1.5;ctx.setLineDash([6,4]);ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(preview.x1,preview.y1);ctx.lineTo(preview.x2,preview.y2);ctx.stroke();
+    ctx.restore();
+  }
+  for(let c of components) drawComp(c,res.lit);
+  setStatus(res);
+}
+
+// ─── INPUT HANDLING ───────────────────────────────────────────────────────────
+function canvasXY(e){
+  const r=canvasEl.getBoundingClientRect();
+  return{x:(e.clientX-r.left),y:(e.clientY-r.top)};
+}
+function nearTerminal(px,py,c){
+  for(let t of getTerminals(c)) if(Math.hypot(px-t.x,py-t.y)<16) return t;
+  return null;
+}
+
+canvasEl.addEventListener('dragover',e=>e.preventDefault());
+canvasEl.addEventListener('drop',e=>{
+  e.preventDefault();
+  const type=e.dataTransfer.getData('text/plain');
+  if(!type) return;
+  const def=COMPONENTS.find(c=>c.type===type);
+  if(!def) return;
+  const {x,y}=canvasXY(e);
+  const px=Math.max(0,Math.min(W-def.w,snap(x-def.w/2)));
+  const py=Math.max(0,Math.min(H-def.h,snap(y-def.h/2)));
+  saveHistory();
+  components.push({id:nextId++,type,x:px,y:py,w:def.w,h:def.h,closed:type==='switch'?false:undefined});
+  render();
+});
+
+canvasEl.addEventListener('mousedown',e=>{
+  const {x,y}=canvasXY(e);
+  if(mode==='select'){
+    selected=null;
+    for(let i=components.length-1;i>=0;i--){
+      const c=components[i];
+      if(x>=c.x-4&&x<=c.x+c.w+4&&y>=c.y-4&&y<=c.y+c.h+4){
+        selected=c;dragging=c;dragOff={x:x-c.x,y:y-c.y};break;
+      }
+    }
+    render();
+  } else {
+    // wire mode — find nearest terminal
+    let ft=null;
+    for(let c of components){const t=nearTerminal(x,y,c);if(t){ft=t;break;}}
+    wireFrom=ft?{x:ft.x,y:ft.y}:{x:snap(x),y:snap(y)};
+  }
+});
+canvasEl.addEventListener('mousemove',e=>{
+  const {x,y}=canvasXY(e);
+  if(dragging&&mode==='select'){
+    const def=COMPONENTS.find(c=>c.type===dragging.type);
+    dragging.x=Math.max(0,Math.min(W-dragging.w,snap(x-dragOff.x)));
+    dragging.y=Math.max(0,Math.min(H-dragging.h,snap(y-dragOff.y)));
+    render();
+  } else if(wireFrom&&mode==='wire'){
+    let ex=snap(x),ey=snap(y);
+    for(let c of components){const t=nearTerminal(x,y,c);if(t){ex=t.x;ey=t.y;break;}}
+    preview={x1:wireFrom.x,y1:wireFrom.y,x2:ex,y2:ey};render();
+  }
+});
+canvasEl.addEventListener('mouseup',e=>{
+  const {x,y}=canvasXY(e);
+  if(dragging){dragging=null;render();return;}
+  if(wireFrom&&mode==='wire'){
+    let ex=snap(x),ey=snap(y);
+    for(let c of components){const t=nearTerminal(x,y,c);if(t){ex=t.x;ey=t.y;break;}}
+    if(Math.hypot(ex-wireFrom.x,ey-wireFrom.y)>10){
+      saveHistory();wires.push({x1:wireFrom.x,y1:wireFrom.y,x2:ex,y2:ey});
+    }
+    wireFrom=null;preview=null;render();
+  }
+});
+canvasEl.addEventListener('mouseleave',()=>{dragging=null;wireFrom=null;preview=null;render();});
+
+canvasEl.addEventListener('dblclick',e=>{
+  const {x,y}=canvasXY(e);
+  for(let i=components.length-1;i>=0;i--){
+    const c=components[i];
+    if(x>=c.x&&x<=c.x+c.w&&y>=c.y&&y<=c.y+c.h){
+      saveHistory();
+      const terms=getTerminals(c);
+      wires=wires.filter(w=>{
+        for(let t of terms) if(Math.hypot(w.x1-t.x,w.y1-t.y)<8||Math.hypot(w.x2-t.x,w.y2-t.y)<8) return false;
+        return true;
+      });
+      components.splice(i,1);selected=null;render();return;
+    }
+  }
+  const wi=wires.findIndex(w=>{
+    const dx=w.x2-w.x1,dy=w.y2-w.y1,len=Math.hypot(dx,dy);
+    if(len<5)return false;
+    const t=((x-w.x1)*dx+(y-w.y1)*dy)/(len*len);
+    if(t<0||t>1)return false;
+    return Math.hypot(x-(w.x1+t*dx),y-(w.y1+t*dy))<10;
+  });
+  if(wi>=0){saveHistory();wires.splice(wi,1);render();}
+});
+
+// ─── BUTTON CONTROLS ─────────────────────────────────────────────────────────
+function setMode(m){
+  mode=m;
+  document.getElementById('wire-btn').className='ctrl-btn'+(m==='wire'?' active':'');
+  document.getElementById('select-btn').className='ctrl-btn'+(m==='select'?' active':'');
+  canvasEl.style.cursor=m==='wire'?'crosshair':'default';
+  document.getElementById('mode-pill').textContent=m==='wire'?'Wire mode — click a terminal then click another to connect':'Select mode — drag to move, double-click to delete';
+}
+document.getElementById('wire-btn').addEventListener('click',()=>setMode('wire'));
+document.getElementById('select-btn').addEventListener('click',()=>setMode('select'));
+document.getElementById('toggle-sw-btn').addEventListener('click',()=>{
+  const sw=components.find(c=>c.type==='switch'||c.type==='push');
+  if(sw){saveHistory();sw.closed=!sw.closed;render();}
+  else alert('Add a switch to the board first!');
+});
+document.getElementById('undo-btn').addEventListener('click',undo);
+document.getElementById('clear-btn').addEventListener('click',()=>{
+  if(confirm('Clear the entire circuit board?')){saveHistory();components=[];wires=[];selected=null;render();}
+});
+
+setMode('wire');
+window.addEventListener('resize',resize);
+window.addEventListener('DOMContentLoaded',()=>{buildPanel();resize();setMode('wire');});
+</script>
+<div id="disclaimer" style="position:fixed;bottom:0;left:0;right:0;z-index:50;background:#fff;border-top:1px solid var(--border-light);padding:8px 20px;font-size:11px;color:var(--muted);text-align:center;line-height:1.6">
+  <strong style="color:var(--text)">Disclaimer:</strong> Circuit Builder is a tool to help me study for my GCSE Physics. You are welcome to use it but it may have errors and shouldn't be relied on without independently fact checking answers.
+</div>
+
+</body>
+</html>
