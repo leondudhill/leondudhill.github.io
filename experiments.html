@@ -6,6 +6,122 @@
   <title>Experiments – Leon Dudhill</title>
   <link rel="icon" href="favicon.png" type="image/png" />
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .experiments-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .exp-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .exp-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    }
+
+    .exp-preview {
+      height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ep-emoji {
+      font-size: 4rem;
+      opacity: 0.7;
+      transition: transform 0.2s ease, opacity 0.2s;
+    }
+
+    .exp-card:hover .ep-emoji {
+      transform: scale(1.1);
+      opacity: 0.95;
+    }
+
+    .exp-info {
+      padding: 1.4rem 1.6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      flex: 1;
+    }
+
+    .exp-meta {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .exp-tag {
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid rgba(232,255,71,0.3);
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+    }
+
+    .exp-info h2 {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      letter-spacing: 0.05em;
+    }
+
+    .exp-info p {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.6;
+      flex: 1;
+    }
+
+    .open-btn {
+      display: inline-block;
+      margin-top: 0.8rem;
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* Locked cards */
+    .exp-card.locked {
+      opacity: 0.4;
+      pointer-events: none;
+      cursor: default;
+    }
+
+    .exp-card.locked:hover {
+      transform: none;
+      border-color: var(--border);
+      box-shadow: none;
+    }
+
+    .exp-tag.locked-tag {
+      color: var(--muted);
+      border-color: rgba(102,102,102,0.3);
+    }
+
+    @media (max-width: 640px) {
+      .experiments-grid { grid-template-columns: 1fr; }
+      .exp-preview { height: 130px; }
+    }
+  </style>
 </head>
 <body>
 
@@ -33,126 +149,160 @@
   </div>
 
   <div class="page-content">
-    <div class="game-grid">
+    <div class="experiments-grid">
 
       <!-- Particle System -->
-      <a href="particle-system.html" class="game-card">
-        <div class="game-thumb experiment-thumb" style="background: #000;">
-          <canvas class="thumb-canvas" id="thumb-particles" width="280" height="160"></canvas>
+      <a href="particle-system.html" class="exp-card" target="_blank">
+        <div class="exp-preview" style="background: radial-gradient(ellipse at 50% 50%, rgba(120,80,255,0.2) 0%, rgba(255,80,160,0.08) 50%, #000 70%);">
+          <div class="ep-emoji">✦</div>
         </div>
-        <div class="game-info">
-          <h3>Particle System</h3>
-          <p>Swarm, repel, vortex &amp; explode — thousands of particles following your cursor.</p>
-          <span class="game-tag">Interactive</span>
+        <div class="exp-info">
+          <div class="exp-meta">
+            <span class="exp-tag">Interactive</span>
+            <span class="exp-tag">Particles</span>
+          </div>
+          <h2>Particle System</h2>
+          <p>Thousands of particles following your cursor. Switch between swarm, repel, vortex and explode modes.</p>
+          <span class="open-btn">Open experiment →</span>
         </div>
       </a>
 
       <!-- Gravity v0.1 -->
-      <a href="gravity-v01.html" class="game-card">
-        <div class="game-thumb experiment-thumb" style="background: #000; display:flex; align-items:center; justify-content:center;">
-          <div class="gravity-thumb-art" id="grav-01"></div>
+      <a href="gravity-v01.html" class="exp-card" target="_blank">
+        <div class="exp-preview" style="background: radial-gradient(ellipse at 50% 80%, rgba(255,255,255,0.06) 0%, #000 65%);">
+          <div class="ep-emoji">🟥</div>
         </div>
-        <div class="game-info">
-          <h3>Gravity v.0.1</h3>
-          <p>Physics blocks — rectangles and planks tumbling under gravity. Drag them around.</p>
-          <span class="game-tag">Physics</span>
+        <div class="exp-info">
+          <div class="exp-meta">
+            <span class="exp-tag">Physics</span>
+            <span class="exp-tag">v0.1</span>
+          </div>
+          <h2>Gravity 0.1</h2>
+          <p>Rectangles and planks tumbling under gravity. Drag them around, watch them stack and topple.</p>
+          <span class="open-btn">Open experiment →</span>
         </div>
       </a>
 
       <!-- Gravity v0.2 -->
-      <a href="gravity-v02.html" class="game-card">
-        <div class="game-thumb experiment-thumb" style="background: #000; display:flex; align-items:center; justify-content:center;">
-          <div class="gravity-thumb-art" id="grav-02"></div>
+      <a href="gravity-v02.html" class="exp-card" target="_blank">
+        <div class="exp-preview" style="background: radial-gradient(ellipse at 50% 80%, rgba(255,255,255,0.07) 0%, #000 65%);">
+          <div class="ep-emoji">🔷</div>
         </div>
-        <div class="game-info">
-          <h3>Gravity v.0.2</h3>
+        <div class="exp-info">
+          <div class="exp-meta">
+            <span class="exp-tag">Physics</span>
+            <span class="exp-tag">v0.2</span>
+          </div>
+          <h2>Gravity 0.2</h2>
           <p>More shape variety — circles, triangles, pentagons and hexagons join the pile.</p>
-          <span class="game-tag">Physics</span>
+          <span class="open-btn">Open experiment →</span>
         </div>
       </a>
 
       <!-- Gravity v0.3 -->
-      <a href="gravity-v03.html" class="game-card">
-        <div class="game-thumb experiment-thumb" style="background: #000; display:flex; align-items:center; justify-content:center;">
-          <div class="gravity-thumb-art" id="grav-03"></div>
+      <a href="gravity-v03.html" class="exp-card" target="_blank">
+        <div class="exp-preview" style="background: radial-gradient(ellipse at 50% 80%, rgba(255,255,255,0.08) 0%, #000 65%);">
+          <div class="ep-emoji">⬡</div>
         </div>
-        <div class="game-info">
-          <h3>Gravity v.0.3</h3>
-          <p>Third iteration of the gravity experiment with updated behaviour and feel.</p>
-          <span class="game-tag">Physics</span>
+        <div class="exp-info">
+          <div class="exp-meta">
+            <span class="exp-tag">Physics</span>
+            <span class="exp-tag">v0.3</span>
+          </div>
+          <h2>Gravity 0.3</h2>
+          <p>Third iteration — updated behaviour, new interactions and a more refined feel.</p>
+          <span class="open-btn">Open experiment →</span>
         </div>
       </a>
 
       <!-- Gravity v0.4 -->
-      <a href="gravity-v04.html" class="game-card">
-        <div class="game-thumb experiment-thumb" style="background: #000; display:flex; align-items:center; justify-content:center;">
-          <div class="gravity-thumb-art" id="grav-04"></div>
+      <a href="gravity-v04.html" class="exp-card" target="_blank">
+        <div class="exp-preview" style="background: radial-gradient(ellipse at 50% 80%, rgba(255,255,255,0.09) 0%, #000 65%);">
+          <div class="ep-emoji">◆</div>
         </div>
-        <div class="game-info">
-          <h3>Gravity v.0.4</h3>
-          <p>Fourth pass — refined physics, new interactions and improved stacking.</p>
-          <span class="game-tag">Physics</span>
+        <div class="exp-info">
+          <div class="exp-meta">
+            <span class="exp-tag">Physics</span>
+            <span class="exp-tag">v0.4</span>
+          </div>
+          <h2>Gravity 0.4</h2>
+          <p>Fourth pass — refined physics, improved stacking and new drop sequences.</p>
+          <span class="open-btn">Open experiment →</span>
         </div>
       </a>
 
       <!-- Gravity v0.5 -->
-      <a href="gravity-v05.html" class="game-card">
-        <div class="game-thumb experiment-thumb" style="background: #000; display:flex; align-items:center; justify-content:center;">
-          <div class="gravity-thumb-art" id="grav-05"></div>
+      <a href="gravity-v05.html" class="exp-card" target="_blank">
+        <div class="exp-preview" style="background: radial-gradient(ellipse at 50% 80%, rgba(255,255,255,0.1) 0%, #000 65%);">
+          <div class="ep-emoji">▲</div>
         </div>
-        <div class="game-info">
-          <h3>Gravity v.0.5</h3>
-          <p>Fifth iteration — more shapes, tighter collisions and smoother drop sequences.</p>
-          <span class="game-tag">Physics</span>
+        <div class="exp-info">
+          <div class="exp-meta">
+            <span class="exp-tag">Physics</span>
+            <span class="exp-tag">v0.5</span>
+          </div>
+          <h2>Gravity 0.5</h2>
+          <p>Fifth iteration — tighter collisions, smoother drops and more satisfying chaos.</p>
+          <span class="open-btn">Open experiment →</span>
         </div>
       </a>
 
       <!-- Gravity v0.6 -->
-      <a href="gravity-v06.html" class="game-card">
-        <div class="game-thumb experiment-thumb" style="background: #000; display:flex; align-items:center; justify-content:center;">
-          <div class="gravity-thumb-art" id="grav-06"></div>
+      <a href="gravity-v06.html" class="exp-card" target="_blank">
+        <div class="exp-preview" style="background: radial-gradient(ellipse at 50% 80%, rgba(232,255,71,0.07) 0%, #000 65%);">
+          <div class="ep-emoji">●</div>
         </div>
-        <div class="game-info">
-          <h3>Gravity v.0.6</h3>
-          <p>Latest gravity build — the most polished version yet.</p>
-          <span class="game-tag">Physics</span>
-          <span class="game-tag" style="background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.5);">Latest</span>
+        <div class="exp-info">
+          <div class="exp-meta">
+            <span class="exp-tag">Physics</span>
+            <span class="exp-tag">v0.6</span>
+            <span class="exp-tag">Latest</span>
+          </div>
+          <h2>Gravity 0.6</h2>
+          <p>The most polished build yet — latest gravity experiment.</p>
+          <span class="open-btn">Open experiment →</span>
         </div>
       </a>
 
       <!-- Smart TV Takeover — LOCKED -->
-      <div class="game-card locked-card">
-        <div class="game-thumb experiment-thumb locked-thumb">
-          <div class="lock-icon">🔒</div>
+      <div class="exp-card locked">
+        <div class="exp-preview" style="background: #080808;">
+          <div class="ep-emoji" style="opacity:0.3;">🔒</div>
         </div>
-        <div class="game-info">
-          <h3>Smart TV Takeover</h3>
+        <div class="exp-info">
+          <div class="exp-meta">
+            <span class="exp-tag locked-tag">Locked</span>
+          </div>
+          <h2>Smart TV Takeover</h2>
           <p>No public access.</p>
-          <span class="game-tag locked-tag">Locked</span>
         </div>
       </div>
 
       <!-- Roomba Takeover — LOCKED -->
-      <div class="game-card locked-card">
-        <div class="game-thumb experiment-thumb locked-thumb">
-          <div class="lock-icon">🔒</div>
+      <div class="exp-card locked">
+        <div class="exp-preview" style="background: #080808;">
+          <div class="ep-emoji" style="opacity:0.3;">🔒</div>
         </div>
-        <div class="game-info">
-          <h3>Roomba Takeover</h3>
+        <div class="exp-info">
+          <div class="exp-meta">
+            <span class="exp-tag locked-tag">Locked</span>
+          </div>
+          <h2>Roomba Takeover</h2>
           <p>No public access.</p>
-          <span class="game-tag locked-tag">Locked</span>
         </div>
       </div>
 
       <!-- Alexa Takeover — LOCKED -->
-      <div class="game-card locked-card">
-        <div class="game-thumb experiment-thumb locked-thumb">
-          <div class="lock-icon">🔒</div>
+      <div class="exp-card locked">
+        <div class="exp-preview" style="background: #080808;">
+          <div class="ep-emoji" style="opacity:0.3;">🔒</div>
         </div>
-        <div class="game-info">
-          <h3>Alexa Takeover</h3>
+        <div class="exp-info">
+          <div class="exp-meta">
+            <span class="exp-tag locked-tag">Locked</span>
+          </div>
+          <h2>Alexa Takeover</h2>
           <p>No public access.</p>
-          <span class="game-tag locked-tag">Locked</span>
         </div>
       </div>
 
@@ -163,199 +313,13 @@
     <p>© 2025 Leon Dudhill</p>
   </footer>
 
-  <style>
-    /* Experiment thumb base */
-    .experiment-thumb {
-      position: relative;
-      overflow: hidden;
-      border-radius: 4px;
-    }
-
-    /* Animated particle canvas thumbnail */
-    .thumb-canvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-
-    /* Gravity thumbnail — scattered blocks */
-    .gravity-thumb-art {
-      width: 100%;
-      height: 100%;
-      position: absolute;
-      inset: 0;
-    }
-
-    /* Locked cards */
-    .locked-card {
-      opacity: 0.45;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-
-    .locked-thumb {
-      background: #0a0a0a !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-    }
-
-    .lock-icon {
-      font-size: 36px;
-      filter: grayscale(1);
-      opacity: 0.4;
-    }
-
-    .locked-tag {
-      background: rgba(255,255,255,0.04) !important;
-      color: rgba(255,255,255,0.25) !important;
-      border: 1px solid rgba(255,255,255,0.08) !important;
-    }
-  </style>
-
   <script>
-    /* ── Nav toggle ── */
     const toggle = document.getElementById("navToggle");
     const menu = document.getElementById("navMenu");
     toggle.addEventListener("click", () => {
       toggle.classList.toggle("open");
       menu.classList.toggle("open");
     });
-
-    /* ── Particle thumbnail animation ── */
-    (function () {
-      const canvas = document.getElementById('thumb-particles');
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      const W = canvas.width, H = canvas.height;
-      const mouse = { x: W * 0.55, y: H * 0.45 };
-      let tick = 0;
-
-      const COLORS = [
-        [80, 140, 255], [120, 80, 255],
-        [255, 80, 160], [255, 200, 80], [80, 220, 200]
-      ];
-
-      class P {
-        constructor() {
-          this.x = Math.random() * W;
-          this.y = Math.random() * H;
-          this.vx = (Math.random() - 0.5) * 1.2;
-          this.vy = (Math.random() - 0.5) * 1.2;
-          this.size = 1 + Math.random() * 1.6;
-          this.ci = Math.floor(Math.random() * COLORS.length);
-        }
-        update() {
-          const dx = mouse.x - this.x, dy = mouse.y - this.y;
-          const d = Math.sqrt(dx * dx + dy * dy) || 1;
-          const f = Math.min(90 / (d * 0.8), 2);
-          this.vx += (dx / d) * f * 0.04;
-          this.vy += (dy / d) * f * 0.04;
-          this.vx *= 0.93; this.vy *= 0.93;
-          this.x += this.vx; this.y += this.vy;
-          if (this.x < 0) this.x = W; if (this.x > W) this.x = 0;
-          if (this.y < 0) this.y = H; if (this.y > H) this.y = 0;
-        }
-        draw() {
-          const [r, g, b] = COLORS[this.ci];
-          const spd = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-          ctx.beginPath();
-          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${r},${g},${b},${0.5 + Math.min(spd / 8, 0.45)})`;
-          ctx.fill();
-        }
-      }
-
-      const pts = Array.from({ length: 120 }, () => new P());
-
-      function frame() {
-        tick++;
-        // Gently move the "mouse" attractor in a slow figure-8
-        mouse.x = W * 0.5 + Math.cos(tick * 0.012) * W * 0.3;
-        mouse.y = H * 0.5 + Math.sin(tick * 0.02) * H * 0.28;
-
-        ctx.fillStyle = 'rgba(0,0,0,0.18)';
-        ctx.fillRect(0, 0, W, H);
-        pts.forEach(p => { p.update(); p.draw(); });
-        requestAnimationFrame(frame);
-      }
-      frame();
-    })();
-
-    /* ── Gravity thumbnail — static scattered block art ── */
-    (function () {
-      const configs = [
-        { id: 'grav-01', shapes: ['rect','rect','rect','rect'], palette: ['#fff','#bbb','#888','#555'] },
-        { id: 'grav-02', shapes: ['rect','circle','tri','rect','hex'], palette: ['#fff','#ddd','#aaa','#777','#444'] },
-        { id: 'grav-03', shapes: ['circle','rect','pent','rect','tri'], palette: ['#eee','#ccc','#999','#666','#333'] },
-        { id: 'grav-04', shapes: ['hex','rect','circle','rect','pent'], palette: ['#fff','#e0e0e0','#aaa','#777','#404040'] },
-        { id: 'grav-05', shapes: ['rect','tri','circle','hex','rect','pent'], palette: ['#fff','#ddd','#bbb','#888','#555','#2a2a2a'] },
-        { id: 'grav-06', shapes: ['rect','circle','hex','tri','rect','pent','circle'], palette: ['#fff','#e8e8e8','#ccc','#aaa','#777','#444','#222'] },
-      ];
-
-      configs.forEach(({ id, shapes, palette }) => {
-        const el = document.getElementById(id);
-        if (!el) return;
-
-        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('width', '100%');
-        svg.setAttribute('height', '100%');
-        svg.setAttribute('viewBox', '0 0 280 160');
-        svg.style.position = 'absolute';
-        svg.style.inset = '0';
-
-        const rng = mulberry32(id.charCodeAt(id.length - 1) * 997);
-
-        shapes.forEach((shape, i) => {
-          const x = 30 + rng() * 220;
-          const y = 20 + rng() * 110;
-          const angle = (rng() - 0.5) * 40;
-          const color = palette[i % palette.length];
-          const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-          g.setAttribute('transform', `translate(${x},${y}) rotate(${angle})`);
-
-          let el2;
-          if (shape === 'rect') {
-            el2 = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            const w = 30 + rng() * 50, h = 16 + rng() * 28;
-            el2.setAttribute('x', -w / 2); el2.setAttribute('y', -h / 2);
-            el2.setAttribute('width', w); el2.setAttribute('height', h);
-            el2.setAttribute('rx', 2);
-          } else if (shape === 'circle') {
-            el2 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            el2.setAttribute('r', 10 + rng() * 14);
-          } else {
-            // polygon: tri=3, pent=5, hex=6
-            const sides = shape === 'tri' ? 3 : shape === 'pent' ? 5 : 6;
-            const r = 12 + rng() * 14;
-            const pts2 = [];
-            for (let j = 0; j < sides; j++) {
-              const a = (j / sides) * Math.PI * 2 - Math.PI / 2;
-              pts2.push(`${Math.cos(a) * r},${Math.sin(a) * r}`);
-            }
-            el2 = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-            el2.setAttribute('points', pts2.join(' '));
-          }
-
-          el2.setAttribute('fill', color);
-          el2.setAttribute('opacity', '0.85');
-          g.appendChild(el2);
-          svg.appendChild(g);
-        });
-
-        el.appendChild(svg);
-      });
-
-      function mulberry32(seed) {
-        return function () {
-          seed |= 0; seed = seed + 0x6D2B79F5 | 0;
-          let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
-          t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-          return ((t ^ t >>> 14) >>> 0) / 4294967296;
-        };
-      }
-    })();
   </script>
-
 </body>
 </html>
