@@ -114,6 +114,65 @@
     z-index: 100;
     mix-blend-mode: difference;
   }
+  #btn-back {
+    position: fixed;
+    top: 16px;
+    left: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: clamp(8px, 2.5vw, 10px);
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 12px 20px;
+    cursor: pointer;
+    min-height: 48px;
+    min-width: 80px;
+    -webkit-tap-highlight-color: transparent;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.8s ease, color 0.2s, border-color 0.2s;
+    z-index: 10;
+  }
+  #btn-back.visible { opacity: 1; }
+  #btn-back:hover, #btn-back:active { color: #fff; border-color: rgba(255,255,255,0.5); }
+  #label-top {
+    position: fixed;
+    top: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Share Tech Mono', monospace;
+    font-weight: 200;
+    font-size: clamp(9px, 2.8vw, 12px);
+    letter-spacing: 0.32em;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    z-index: 10;
+  }
+  #label-top.visible { opacity: 1; }
+  #label-author {
+    position: fixed;
+    bottom: 22px;
+    left: 20px;
+    font-family: 'Share Tech Mono', monospace;
+    font-weight: 300;
+    font-style: italic;
+    font-size: clamp(8px, 2vw, 10px);
+    letter-spacing: 0.15em;
+    color: rgba(255,255,255,0.18);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    z-index: 10;
+  }
+  #label-author.visible { opacity: 1; }
 </style>
 </head>
 <body>
@@ -124,6 +183,9 @@
   <span id="splash-text">An experiment by <strong>Leon Dudhill</strong></span>
 </div>
 </div>
+<a href="experiments.html" id="btn-back">← Back</a>
+<div id="label-top">Particle v.0.1</div>
+<div id="label-author">An experiment by Leon Dudhill</div>
 
 <canvas id="c"></canvas>
 
@@ -304,6 +366,9 @@ setTimeout(() => {
     splash.style.display = 'none';
     ui.classList.add('visible');
     label.classList.add('visible');
+    document.getElementById('btn-back').classList.add('visible');
+    document.getElementById('label-author').classList.add('visible');
+    document.getElementById('label-top').classList.add('visible');
   }, 600);
 }, 2500);
 
