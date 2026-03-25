@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Gravity v.0.3 — Leon Dudhill</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Unbounded:wght@200;300&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    background: #000;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+    /* ── SPLASH ── */
+  #splash {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.6s ease;
+  }
+  #splash.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+  #splash-text {
+    font-family: sans-serif;
+    font-weight: 300;
+    font-size: clamp(13px, 4vw, 19px);
+    color: #fff;
+    letter-spacing: 0.12em;
+    text-align: center;
+    padding: 0 32px;
+    opacity: 0;
+    animation: splashAnim 2.4s ease forwards;
+  }
+  #splash-text strong {
+    font-weight: 700;
+  }
+  @keyframes splashAnim {
+    0%   { opacity: 0; }
+    25%  { opacity: 1; }
+    70%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  
+
+  /* ── WORLD ── */
+  #world {
+    position: fixed;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+  #world.visible { opacity: 1; }
+
+  canvas { display: block; }
+
+  /* ── HUD ── */
+  #label-top {
+    position: fixed;
+    top: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 200;
+    font-size: clamp(9px, 2.8vw, 12px);
+    letter-spacing: 0.32em;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    z-index: 10;
+  }
+  #label-top.visible { opacity: 1; }
+
+  #label-author {
+    position: fixed;
+    bottom: 22px;
+    left: 20px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 300;
+    font-style: italic;
+    font-size: clamp(8px, 2vw, 10px);
+    letter-spacing: 0.15em;
+    color: rgba(255,255,255,0.18);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    z-index: 10;
+  }
+  #label-author.visible { opacity: 1; }
+
+  #btn-reset {
+    position: fixed;
+    bottom: 16px;
+    right: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: clamp(8px, 2.5vw, 10px);
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 12px 20px;
+    cursor: pointer;
+    min-height: 48px;
+    min-width: 80px;
+    -webkit-tap-highlight-color: transparent;
+    opacity: 0;
+    transition: opacity 0.8s ease, color 0.2s, border-color 0.2s;
+    z-index: 10;
+  }
+  #btn-reset.visible { opacity: 1; }
+  #btn-reset:active { color: #fff; border-color: rgba(255,255,255,0.5); }
+
+  /* item name flash */
+  #item-label {
+    position: fixed;
+    bottom: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 200;
+    font-size: clamp(10px, 3vw, 14px);
+    letter-spacing: 0.25em;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <span id="splash-text">An experiment by <strong>Leon Dudhill</strong></span>
+</div>
+</div>
+
+<div id="world">
+  <canvas id="canvas"></canvas>
+</div>
+
+<div id="label-top">Gravity v.0.3</div>
+<div id="label-author">An experiment by Leon Dudhill</div>
+<button id="btn-reset">Reset</button>
+<div id="item-label"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+<script>
+(function () {
+  const { Engine, Render, Runner, Bodies, Body, World, Composite, Mouse, MouseConstraint, Events } = Matter;
+
+  const splash    = document.getElementById('splash');
+  const worldEl   = document.getElementById('world');
+  const canvas    = document.getElementById('canvas');
+  const labelTop  = document.getElementById('label-top');
+  const labelAuth = document.getElementById('label-author');
+  const btnReset  = document.getElementById('btn-reset');
+  const itemLabelEl = document.getElementById('item-label');
+
+  let engine, render, runner, mc;
+  let allJunk = [];
+
+  // ── Label flash ───────────────────────────────────────────────────────────
+  let labelTimer;
+  function showLabel(name) {
+    itemLabelEl.textContent = name;
+    itemLabelEl.style.opacity = 1;
+    clearTimeout(labelTimer);
+    labelTimer = setTimeout(() => itemLabelEl.style.opacity = 0, 1800);
+  }
+
+  // ── roundRect helper ──────────────────────────────────────────────────────
+  function roundRect(ctx, x, y, w, h, r) {
+    if (typeof r === 'number') r = [r, r, r, r];
+    if (!r) r = [0, 0, 0, 0];
+    ctx.beginPath();
+    ctx.moveTo(x + r[0], y);
+    ctx.lineTo(x + w - r[1], y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r[1]);
+    ctx.lineTo(x + w, y + h - r[2]);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r[2], y + h);
+    ctx.lineTo(x + r[3], y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r[3]);
+    ctx.lineTo(x, y + r[0]);
+    ctx.quadraticCurveTo(x, y, x + r[0], y);
+    ctx.closePath();
+  }
+
+  // ── Scale helper — keeps items sensible on small screens ─────────────────
+  function sc() { return Math.min(window.innerWidth, window.innerHeight) / 700; }
+
+  // ── Base physics options ──────────────────────────────────────────────────
+  const base = (extra = {}) => ({
+    restitution: 0.15,
+    friction: 0.65,
+    frictionAir: 0.008,
+    density: 0.004,
+    label: 'junk',
+    ...extra
+  });
+
+  // ────────────────────────────────────────────────────────────────────────
+  // ITEM BUILDERS
+  // ────────────────────────────────────────────────────────────────────────
+
+  function makeBeerCan(x, y) {
+    const s = sc();
+    const body = Bodies.rectangle(x, y, 22*s, 52*s, {
+      ...base({ density: 0.002 }),
+      chamfer: { radius: 8*s },
+      render: { fillStyle: '#c8a84b' }
+    });
+    body._draw = (ctx, b) => {
+      const p = b.position, a = b.angle, S = sc();
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(a);
+      const g = ctx.createLinearGradient(-11*S, -26*S, 11*S, 26*S);
+      g.addColorStop(0, '#e8c060'); g.addColorStop(0.5, '#c8a84b'); g.addColorStop(1, '#a07830');
+      roundRect(ctx, -11*S, -26*S, 22*S, 52*S, 8*S); ctx.fillStyle = g; ctx.fill();
+      ctx.fillStyle = '#a07830'; ctx.fillRect(-10*S, -8*S, 20*S, 16*S);
+      ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(-10*S, -8*S, 20*S, 4*S);
+      ctx.fillStyle = '#b89040';
+      roundRect(ctx, -9*S, -28*S, 18*S, 6*S, 3*S); ctx.fill();
+      ctx.restore();
+    };
+    body._name = 'Beer Can';
+    return body;
+  }
+
+  function makePaintCan(x, y) {
+    const s = sc();
+    const body = Bodies.rectangle(x, y, 36*s, 44*s, {
+      ...base({ density: 0.006 }),
+      chamfer: { radius: [4*s, 4*s, 2*s, 2*s] },
+      render: { fillStyle: '#b94a1a' }
+    });
+    body._draw = (ctx, b) => {
+      const p = b.position, a = b.angle, S = sc();
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(a);
+      const g = ctx.createLinearGradient(-18*S, 0, 18*S, 0);
+      g.addColorStop(0, '#d05020'); g.addColorStop(0.5, '#b94a1a'); g.addColorStop(1, '#7a2e0e');
+      roundRect(ctx, -18*S, -22*S, 36*S, 44*S, [4*S,4*S,2*S,2*S]); ctx.fillStyle = g; ctx.fill();
+      ctx.fillStyle = '#8a3010'; roundRect(ctx, -18*S, -24*S, 36*S, 5*S, 2*S); ctx.fill();
+      ctx.strokeStyle = '#7a2a08'; ctx.lineWidth = 2.5*S;
+      ctx.beginPath(); ctx.arc(0, -22*S, 12*S, Math.PI, 0); ctx.stroke();
+      ctx.fillStyle = 'rgba(180,60,20,0.5)';
+      ctx.beginPath(); ctx.ellipse(6*S, 18*S, 3*S, 6*S, 0.2, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    };
+    body._name = 'Paint Can';
+    return body;
+  }
+
+  function makeTV(x, y) {
+    const s = sc();
+    const main = Bodies.rectangle(x, y, 100*s, 76*s, {
+      ...base({ density: 0.008 }), chamfer: { radius: 4*s }, render: { fillStyle: '#2a2a2a' }
+    });
+    const legL = Bodies.rectangle(x - 28*s, y + 40*s, 14*s, 10*s, { ...base({ density: 0.002 }), render: { fillStyle: '#222' } });
+    const legR = Bodies.rectangle(x + 28*s, y + 40*s, 14*s, 10*s, { ...base({ density: 0.002 }), render: { fillStyle: '#222' } });
+    const compound = Body.create({ parts: [main, legL, legR], label: 'junk', ...base({ density: 0.006 }) });
+    compound._draw = (ctx, b) => {
+      const p = b.position, a = b.angle, S = sc();
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(a);
+      ctx.fillStyle = '#2a2a2a'; roundRect(ctx, -50*S, -38*S, 100*S, 76*S, 4*S); ctx.fill();
+      const sg = ctx.createRadialGradient(-8*S, -6*S, 2*S, 0, 0, 36*S);
+      sg.addColorStop(0, '#3a4a3a'); sg.addColorStop(1, '#0a0a0a');
+      ctx.fillStyle = sg; roundRect(ctx, -36*S, -28*S, 62*S, 48*S, 3*S); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.04)';
+      ctx.beginPath(); ctx.ellipse(-18*S, -16*S, 18*S, 10*S, -0.4, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#333';
+      ctx.beginPath(); ctx.arc(33*S, -10*S, 5*S, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(33*S, 8*S, 5*S, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#444'; ctx.lineWidth = 2.5*S;
+      ctx.beginPath(); ctx.moveTo(-10*S, -38*S); ctx.lineTo(-25*S, -70*S); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(5*S, -38*S); ctx.lineTo(22*S, -68*S); ctx.stroke();
+      ctx.fillStyle = '#222';
+      ctx.fillRect(-43*S, 36*S, 16*S, 10*S);
+      ctx.fillRect(22*S, 36*S, 16*S, 10*S);
+      ctx.restore();
+    };
+    compound._name = 'Old TV';
+    return compound;
+  }
+
+  function makeTire(x, y) {
+    const s = sc();
+    const body = Bodies.circle(x, y, 38*s, {
+      ...base({ density: 0.007, restitution: 0.4, friction: 0.9 }),
+      render: { fillStyle: '#1e1e1e' }
+    });
+    body._draw = (ctx, b) => {
+      const p = b.position, a = b.angle, S = sc();
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(a);
+      ctx.fillStyle = '#181818'; ctx.beginPath(); ctx.arc(0, 0, 38*S, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#2a2a2a'; ctx.lineWidth = 3*S;
+      for (let i = 0; i < 8; i++) {
+        const ang = (i/8)*Math.PI*2;
+        ctx.beginPath(); ctx.arc(0, 0, 35*S, ang, ang+0.25); ctx.stroke();
+      }
+      ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(0, 0, 28*S, 0, Math.PI*2); ctx.fill();
+      const rg = ctx.createRadialGradient(-4*S, -4*S, 2*S, 0, 0, 20*S);
+      rg.addColorStop(0, '#aaa'); rg.addColorStop(1, '#555');
+      ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(0, 0, 20*S, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#888'; ctx.lineWidth = 3*S;
+      for (let i = 0; i < 5; i++) {
+        const ang = (i/5)*Math.PI*2;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(ang)*6*S, Math.sin(ang)*6*S);
+        ctx.lineTo(Math.cos(ang)*18*S, Math.sin(ang)*18*S);
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#333'; ctx.beginPath(); ctx.arc(0, 0, 5*S, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    };
+    body._name = 'Wheel & Tire';
+    return body;
+  }
+
+  function makeBathtub(x, y) {
+    const s = sc();
+    const body = Bodies.trapezoid(x, y, 130*s, 52*s, 0.15, {
+      ...base({ density: 0.009 }), render: { fillStyle: '#c9c9c9' }
+    });
+    body._draw = (ctx, b) => {
+      const p = b.position, a = b.angle, S = sc();
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(a);
+      ctx.fillStyle = '#ccc';
+      ctx.beginPath();
+      ctx.moveTo(-65*S,-26*S); ctx.lineTo(65*S,-26*S);
+      ctx.lineTo(55*S,26*S); ctx.lineTo(-55*S,26*S); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#e8e8e8';
+      ctx.beginPath(); ctx.moveTo(-50*S,-18*S); ctx.lineTo(50*S,-18*S);
+      ctx.quadraticCurveTo(52*S,18*S,42*S,18*S);
+      ctx.lineTo(-42*S,18*S); ctx.quadraticCurveTo(-52*S,18*S,-50*S,-18*S); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = 'rgba(100,120,140,0.15)';
+      ctx.beginPath(); ctx.ellipse(0,4*S,30*S,10*S,0,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#aaa'; ctx.fillRect(38*S,-30*S,8*S,8*S); ctx.fillRect(40*S,-36*S,4*S,8*S);
+      [-46*S,46*S].forEach(fx => {
+        ctx.fillStyle = '#aaa'; ctx.beginPath(); ctx.arc(fx,26*S,6*S,0,Math.PI); ctx.fill();
+      });
+      ctx.restore();
+    };
+    body._name = 'Bathtub';
+    return body;
+  }
+
+  function makeShoppingCart(x, y) {
+    const s = sc();
+    const body = Bodies.rectangle(x, y, 76*s, 46*s, {
+      ...base({ density: 0.001 }), render: { fillStyle: '#7a8a6a' }
+    });
+    body._draw = (ctx, b) => {
+      const p = b.position, a = b.angle, S = sc();
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(a);
+      ctx.strokeStyle = '#7a8a6a'; ctx.lineWidth = 3.5*S;
+      ctx.strokeRect(-38*S,-23*S,76*S,46*S);
+      ctx.lineWidth = 1.5*S; ctx.strokeStyle = '#8a9a7a';
+      for (let i=-28; i<38; i+=14) { ctx.beginPath(); ctx.moveTo(i*S,-23*S); ctx.lineTo(i*S,23*S); ctx.stroke(); }
+      for (let j=-13; j<23; j+=12) { ctx.beginPath(); ctx.moveTo(-38*S,j*S); ctx.lineTo(38*S,j*S); ctx.stroke(); }
+      ctx.strokeStyle = '#5a6a4a'; ctx.lineWidth = 4*S;
+      ctx.beginPath(); ctx.moveTo(-32*S,-23*S); ctx.lineTo(-32*S,-34*S); ctx.lineTo(32*S,-34*S); ctx.lineTo(32*S,-23*S); ctx.stroke();
+      ctx.strokeStyle = '#7a8a6a'; ctx.lineWidth = 3*S;
+      ctx.beginPath(); ctx.moveTo(-38*S,23*S); ctx.lineTo(-44*S,36*S); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(38*S,23*S); ctx.lineTo(44*S,36*S); ctx.stroke();
+      ctx.fillStyle = '#333';
+      [[-44*S,36*S],[44*S,36*S]].forEach(([wx,wy])=>{ ctx.beginPath(); ctx.arc(wx,wy,5*S,0,Math.PI*2); ctx.fill(); });
+      ctx.restore();
+    };
+    body._name = 'Shopping Cart';
+    return body;
+  }
+
+  function makeCarDoor(x, y) {
+    const s = sc();
+    const body = Bodies.rectangle(x, y, 90*s, 110*s, {
+      ...base({ density: 0.005 }),
+      chamfer: { radius: [0,0,8*s,8*s] },
+      render: { fillStyle: '#4a6070' }
+    });
+    body._draw = (ctx, b) => {
+      const p = b.position, a = b.angle, S = sc();
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(a);
+      const dg = ctx.createLinearGradient(-45*S,0,45*S,0);
+      dg.addColorStop(0,'#3a5060'); dg.addColorStop(0.4,'#4a6070'); dg.addColorStop(1,'#2a4050');
+      roundRect(ctx,-45*S,-55*S,90*S,110*S,[0,0,8*S,8*S]); ctx.fillStyle=dg; ctx.fill();
+      ctx.fillStyle='rgba(100,160,180,0.25)'; roundRect(ctx,-34*S,-50*S,64*S,44*S,4*S); ctx.fill();
+      ctx.strokeStyle='#2a3a48'; ctx.lineWidth=3*S; roundRect(ctx,-34*S,-50*S,64*S,44*S,4*S); ctx.stroke();
+      ctx.fillStyle='#8a9aaa'; roundRect(ctx,20*S,-8*S,20*S,8*S,3*S); ctx.fill();
+      ctx.strokeStyle='rgba(0,0,0,0.2)'; ctx.lineWidth=1.5*S;
+      ctx.beginPath(); ctx.moveTo(-44*S,10*S); ctx.lineTo(44*S,10*S); ctx.stroke();
+      ctx.restore();
+    };
+    body._name = 'Car Door';
+    return body;
+  }
+
+  function makeCouch(x, y) {
+    const s = sc();
+    const body = Bodies.rectangle(x, y, 120*s, 60*s, {
+      ...base({ density: 0.003 }),
+      chamfer: { radius: [8*s,8*s,4*s,4*s] },
+      render: { fillStyle: '#7a5a3a' }
+    });
+    body._draw = (ctx, b) => {
+      const p = b.position, a = b.angle, S = sc();
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(a);
+      ctx.fillStyle='#7a5a3a'; roundRect(ctx,-60*S,-10*S,120*S,40*S,[0,0,6*S,6*S]); ctx.fill();
+      ctx.fillStyle='#6a4a2a'; roundRect(ctx,-60*S,-30*S,120*S,22*S,[8*S,8*S,0,0]); ctx.fill();
+      ctx.strokeStyle='#5a3a1a'; ctx.lineWidth=2*S;
+      ctx.beginPath(); ctx.moveTo(0,-10*S); ctx.lineTo(0,30*S); ctx.stroke();
+      ctx.fillStyle='rgba(0,0,0,0.08)';
+      [[-30*S,8*S],[30*S,8*S]].forEach(([cx,cy])=>{ctx.beginPath();ctx.ellipse(cx,cy,22*S,12*S,0,0,Math.PI*2);ctx.fill();});
+      ctx.fillStyle='#5a3a18';
+      roundRect(ctx,-66*S,-24*S,14*S,58*S,6*S); ctx.fill();
+      roundRect(ctx,52*S,-24*S,14*S,58*S,6*S); ctx.fill();
+      ctx.fillStyle='#3a2a10';
+      [[-46*S,30*S],[46*S,30*S]].forEach(([lx,ly])=>{ ctx.fillRect(lx-4*S,ly,8*S,14*S); });
+      ctx.restore();
+    };
+    body._name = 'Armchair';
+    return body;
+  }
+
+  function makeGasCylinder(x, y) {
+    const s = sc();
+    const body = Bodies.rectangle(x, y, 28*s, 80*s, {
+      ...base({ density: 0.008 }),
+      chamfer: { radius: [12*s,12*s,6*s,6*s] },
+      render: { fillStyle: '#e0e0b0' }
+    });
+    body._draw = (ctx, b) => {
+      const p = b.position, a = b.angle, S = sc();
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(a);
+      const g = ctx.createLinearGradient(-14*S,0,14*S,0);
+      g.addColorStop(0,'#c8c890'); g.addColorStop(0.4,'#f0f0c0'); g.addColorStop(1,'#a0a060');
+      roundRect(ctx,-14*S,-40*S,28*S,80*S,[12*S,12*S,6*S,6*S]); ctx.fillStyle=g; ctx.fill();
+      ctx.fillStyle='#e03020'; ctx.fillRect(-14*S,-12*S,28*S,10*S);
+      ctx.fillStyle='#888'; roundRect(ctx,-8*S,-46*S,16*S,10*S,4*S); ctx.fill();
+      ctx.fillStyle='#666'; ctx.fillRect(-3*S,-50*S,6*S,8*S);
+      ctx.fillStyle='#aaa'; roundRect(ctx,-14*S,36*S,28*S,8*S,[0,0,6*S,6*S]); ctx.fill();
+      ctx.restore();
+    };
+    body._name = 'Gas Cylinder';
+    return body;
+  }
+
+  function makeWashingMachine(x, y) {
+    const s = sc();
+    const body = Bodies.rectangle(x, y, 88*s, 88*s, {
+      ...base({ density: 0.012 }),
+      chamfer: { radius: 5*s },
+      render: { fillStyle: '#d0d8e0' }
+    });
+    body._draw = (ctx, b) => {
+      const p = b.position, a = b.angle, S = sc();
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(a);
+      ctx.fillStyle='#d0d8e0'; roundRect(ctx,-44*S,-44*S,88*S,88*S,5*S); ctx.fill();
+      ctx.fillStyle='#b8c0c8'; ctx.fillRect(-44*S,-44*S,88*S,16*S);
+      [[-20*S,-36*S],[-5*S,-36*S],[10*S,-36*S]].forEach(([kx,ky])=>{
+        ctx.fillStyle='#888'; ctx.beginPath(); ctx.arc(kx,ky,4*S,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#aaa'; ctx.beginPath(); ctx.arc(kx,ky,2*S,0,Math.PI*2); ctx.fill();
+      });
+      ctx.strokeStyle='#8a9aaa'; ctx.lineWidth=5*S;
+      ctx.beginPath(); ctx.arc(0,8*S,30*S,0,Math.PI*2); ctx.stroke();
+      const pg=ctx.createRadialGradient(-8*S,-2*S,2*S,0,8*S,28*S);
+      pg.addColorStop(0,'rgba(140,180,200,0.4)'); pg.addColorStop(1,'rgba(60,80,100,0.3)');
+      ctx.fillStyle=pg; ctx.beginPath(); ctx.arc(0,8*S,27*S,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='#6a7a8a'; ctx.lineWidth=3*S;
+      ctx.beginPath(); ctx.arc(0,8*S,30*S,0,Math.PI*2); ctx.stroke();
+      ctx.strokeStyle='rgba(100,130,150,0.4)'; ctx.lineWidth=1.5*S;
+      ctx.beginPath(); ctx.moveTo(0,-18*S); ctx.lineTo(0,34*S); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-26*S,8*S); ctx.lineTo(26*S,8*S); ctx.stroke();
+      ctx.restore();
+    };
+    body._name = 'Washing Machine';
+    return body;
+  }
+
+  const BUILDERS = [
+    makeBeerCan, makePaintCan, makeTV, makeTire, makeBathtub,
+    makeShoppingCart, makeCarDoor, makeCouch, makeGasCylinder, makeWashingMachine
+  ];
+
+  // ── Spawn ─────────────────────────────────────────────────────────────────
+  function spawnOne(x, y) {
+    const builder = BUILDERS[Math.floor(Math.random() * BUILDERS.length)];
+    const body = builder(
+      x !== undefined ? x : window.innerWidth * (0.15 + Math.random() * 0.7),
+      y !== undefined ? y : -100
+    );
+    Body.setAngle(body, (Math.random() - 0.5) * 0.4);
+    World.add(engine.world, body);
+    allJunk.push(body);
+    showLabel(body._name);
+    return body;
+  }
+
+  function dropAll() {
+    allJunk.forEach(b => World.remove(engine.world, b));
+    allJunk = [];
+    for (let i = 0; i < 20; i++) {
+      setTimeout(() => spawnOne(), i * 160);
+    }
+  }
+
+  // ── Init physics ──────────────────────────────────────────────────────────
+  function initPhysics() {
+    const W = window.innerWidth, H = window.innerHeight;
+
+    engine = Engine.create({ gravity: { y: 1.8 } });
+
+    render = Render.create({
+      canvas,
+      engine,
+      options: { width: W, height: H, wireframes: false, background: '#000000' }
+    });
+
+    const wallOpts = {
+      isStatic: true,
+      render: { fillStyle: '#000', strokeStyle: 'transparent' },
+      friction: 0.8
+    };
+    const ground = Bodies.rectangle(W/2, H+25, W*3, 50, wallOpts);
+    const wallL  = Bodies.rectangle(-25, H/2, 50, H*3, wallOpts);
+    const wallR  = Bodies.rectangle(W+25, H/2, 50, H*3, wallOpts);
+    World.add(engine.world, [ground, wallL, wallR]);
+
+    // Custom draw pass — render each item's illustration
+    Events.on(render, 'afterRender', () => {
+      const ctx = render.context;
+      Composite.allBodies(engine.world).forEach(b => {
+        if (b._draw) b._draw(ctx, b);
+      });
+    });
+
+    // Mouse
+    const mouse = Mouse.create(render.canvas);
+    mc = MouseConstraint.create(engine, {
+      mouse,
+      constraint: { stiffness: 0.18, damping: 0.25, render: { visible: false } }
+    });
+    World.add(engine.world, mc);
+    render.mouse = mouse;
+
+    Events.on(mc, 'startdrag', e => {
+      if (e.body && e.body._name) showLabel(e.body._name);
+    });
+
+    runner = Runner.create();
+    Runner.run(runner, engine);
+    Render.run(render);
+
+    window.addEventListener('resize', () => {
+      const W2 = window.innerWidth, H2 = window.innerHeight;
+      render.canvas.width = W2; render.canvas.height = H2;
+      render.options.width = W2; render.options.height = H2;
+      Body.setPosition(ground, { x: W2/2, y: H2+25 });
+      Body.setPosition(wallR,  { x: W2+25, y: H2/2 });
+    });
+
+    dropAll();
+  }
+
+  // ── Enter ─────────────────────────────────────────────────────────────────
+  function enter() {
+    splash.classList.add('hidden');
+    setTimeout(() => splash.style.display = 'none', 800);
+    worldEl.classList.add('visible');
+    labelTop.classList.add('visible');
+    labelAuth.classList.add('visible');
+    btnReset.classList.add('visible');
+    initPhysics();
+  }
+btnReset.addEventListener('click', dropAll);
+  btnReset.addEventListener('touchend', e => { e.preventDefault(); dropAll(); });
+
+  // Auto-enter after splash
+  setTimeout(enter, 2500);
+
+})();
+</script>
+</body>
+</html>

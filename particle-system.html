@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Particle System</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #000;
+    overflow: hidden;
+    font-family: 'Share Tech Mono', monospace;
+    cursor: none;
+  }
+
+  canvas { display: block; }
+
+    /* Splash */
+  #splash {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    transition: opacity 0.6s ease;
+  }
+  #splash.fade-out {
+    opacity: 0;
+    pointer-events: none;
+  }
+  #splash-text {
+    color: #fff;
+    font-family: 'Share Tech Mono', monospace;
+    font-weight: 300;
+    font-size: clamp(13px, 4vw, 19px);
+    letter-spacing: 0.12em;
+    text-align: center;
+    padding: 0 32px;
+    opacity: 0;
+    animation: splashAnim 2.4s ease forwards;
+  }
+  #splash-text strong {
+    font-weight: 700;
+  }
+  @keyframes splashAnim {
+    0%   { opacity: 0; }
+    25%  { opacity: 1; }
+    70%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  /* Main UI */
+  #ui {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.6s ease 0.3s;
+  }
+
+  #ui.visible { opacity: 1; }
+
+  .btn {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.5);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    padding: 7px 14px;
+    cursor: none;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .btn:hover, .btn.active {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.5);
+    color: #fff;
+  }
+
+  #label {
+    position: fixed;
+    top: 28px;
+    left: 32px;
+    color: rgba(255,255,255,0.18);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0;
+    transition: opacity 0.6s ease 0.3s;
+  }
+
+  #label.visible { opacity: 1; }
+
+  #cursor {
+    position: fixed;
+    width: 6px;
+    height: 6px;
+    background: #fff;
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+    mix-blend-mode: difference;
+  }
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+
+<div id="splash">
+  <span id="splash-text">An experiment by <strong>Leon Dudhill</strong></span>
+</div>
+</div>
+
+<canvas id="c"></canvas>
+
+<div id="label">PARTICLE SYSTEM — MOVE MOUSE</div>
+<div id="ui">
+  <button class="btn active" data-mode="swarm">SWARM</button>
+  <button class="btn" data-mode="repel">REPEL</button>
+  <button class="btn" data-mode="vortex">VORTEX</button>
+  <button class="btn" data-mode="explode">EXPLODE</button>
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const cursorEl = document.getElementById('cursor');
+const splash = document.getElementById('splash');
+const ui = document.getElementById('ui');
+const label = document.getElementById('label');
+
+let W = canvas.width = window.innerWidth;
+let H = canvas.height = window.innerHeight;
+let mouse = { x: W / 2, y: H / 2 };
+let mode = 'swarm';
+let started = false;
+
+window.addEventListener('resize', () => {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+});
+
+window.addEventListener('mousemove', e => {
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+  cursorEl.style.left = e.clientX + 'px';
+  cursorEl.style.top = e.clientY + 'px';
+});
+
+
+document.querySelectorAll('.btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    mode = btn.dataset.mode;
+    if (mode === 'explode') explodeAll();
+  });
+});
+
+const COLORS = [
+  [80, 140, 255],
+  [120, 80, 255],
+  [255, 80, 160],
+  [255, 200, 80],
+  [80, 220, 200],
+];
+
+class Particle {
+  constructor() { this.reset(); }
+
+  reset() {
+    this.x = Math.random() * W;
+    this.y = Math.random() * H;
+    this.vx = (Math.random() - 0.5) * 1.5;
+    this.vy = (Math.random() - 0.5) * 1.5;
+    this.baseSize = 1.2 + Math.random() * 2;
+    this.size = this.baseSize;
+    this.colorIndex = Math.floor(Math.random() * COLORS.length);
+    this.nextColorIndex = (this.colorIndex + 1) % COLORS.length;
+    this.colorT = Math.random();
+  }
+
+  lerpColor(t) {
+    const a = COLORS[this.colorIndex];
+    const b = COLORS[this.nextColorIndex];
+    return [
+      a[0] + (b[0] - a[0]) * t,
+      a[1] + (b[1] - a[1]) * t,
+      a[2] + (b[2] - a[2]) * t,
+    ];
+  }
+
+  update() {
+    const dx = mouse.x - this.x;
+    const dy = mouse.y - this.y;
+    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    const nx = dx / dist;
+    const ny = dy / dist;
+
+    if (mode === 'swarm') {
+      const force = Math.min(120 / (dist * 0.8), 2.5);
+      this.vx += nx * force * 0.04;
+      this.vy += ny * force * 0.04;
+      this.vx *= 0.94;
+      this.vy *= 0.94;
+    } else if (mode === 'repel') {
+      const force = Math.min(10000 / (dist * dist), 4);
+      this.vx -= nx * force * 0.12;
+      this.vy -= ny * force * 0.12;
+      this.vx *= 0.92;
+      this.vy *= 0.92;
+    } else if (mode === 'vortex') {
+      const perp = Math.min(5000 / (dist * dist + 100), 3);
+      this.vx += (-ny * perp + nx * 0.3) * 0.06;
+      this.vy += (nx * perp + ny * 0.3) * 0.06;
+      this.vx *= 0.95;
+      this.vy *= 0.95;
+    } else if (mode === 'explode') {
+      this.vx *= 0.97;
+      this.vy *= 0.97;
+      this.vx += (W / 2 - this.x) * 0.0002;
+      this.vy += (H / 2 - this.y) * 0.0002;
+    }
+
+    this.x += this.vx;
+    this.y += this.vy;
+
+    if (this.x < -20) this.x = W + 20;
+    if (this.x > W + 20) this.x = -20;
+    if (this.y < -20) this.y = H + 20;
+    if (this.y > H + 20) this.y = -20;
+
+    const spd = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+    this.colorT = Math.min(spd / 6, 1);
+    this.size = this.baseSize + spd * 0.4;
+  }
+
+  draw() {
+    const [r, g, b] = this.lerpColor(this.colorT);
+    const spd = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+    const alpha = 0.5 + Math.min(spd / 8, 0.5);
+
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${r|0},${g|0},${b|0},${alpha})`;
+    ctx.fill();
+
+    if (spd > 2) {
+      ctx.beginPath();
+      ctx.moveTo(this.x, this.y);
+      ctx.lineTo(this.x - this.vx * 4, this.y - this.vy * 4);
+      ctx.strokeStyle = `rgba(${r|0},${g|0},${b|0},${alpha * 0.3})`;
+      ctx.lineWidth = this.size * 0.6;
+      ctx.stroke();
+    }
+  }
+}
+
+function explodeAll() {
+  particles.forEach(p => {
+    const angle = Math.random() * Math.PI * 2;
+    const power = 4 + Math.random() * 12;
+    p.vx = Math.cos(angle) * power;
+    p.vy = Math.sin(angle) * power;
+  });
+}
+
+const COUNT = Math.min(Math.floor((W * H) / 4000), 600);
+const particles = Array.from({ length: COUNT }, () => new Particle());
+
+function draw() {
+  ctx.fillStyle = 'rgba(0,0,0,0.18)';
+  ctx.fillRect(0, 0, W, H);
+
+  const grd = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 180);
+  grd.addColorStop(0, 'rgba(100,80,255,0.04)');
+  grd.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, W, H);
+
+  particles.forEach(p => { p.update(); p.draw(); });
+
+  requestAnimationFrame(draw);
+}
+
+// Auto-dismiss splash after animation
+setTimeout(() => {
+  splash.classList.add('fade-out');
+  setTimeout(() => {
+    splash.style.display = 'none';
+    ui.classList.add('visible');
+    label.classList.add('visible');
+  }, 600);
+}, 2500);
+
+draw();
+</script>
+</body>
+</html>

@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Gravity v.0.5 — Leon Dudhill</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Unbounded:wght@200;300&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body {
+    background:#000; width:100%; height:100%;
+    overflow:hidden; touch-action:none;
+    -webkit-user-select:none; user-select:none;
+  }
+
+    #splash {
+    position:fixed; inset:0; z-index:200; background:#000;
+    display:flex; align-items:center; justify-content:center;
+    transition: opacity 0.6s ease;
+  }
+  #splash.hidden { opacity:0; pointer-events:none; }
+  #splash-text {
+    font-family:sans-serif; font-weight:300;
+    font-size:clamp(13px,4vw,19px); color:#fff;
+    letter-spacing:0.12em; text-align:center; padding:0 32px;
+    opacity:0; animation:splashAnim 2.4s ease forwards;
+  }
+  #splash-text strong { font-weight:700; }
+  @keyframes splashAnim { 0%{opacity:0} 25%{opacity:1} 70%{opacity:1} 100%{opacity:0} }
+
+  #world { position:fixed; inset:0; opacity:0; transition:opacity 0.8s ease; }
+  #world.visible { opacity:1; }
+  canvas { display:block; }
+
+  #label-top {
+    position:fixed; top:22px; left:50%; transform:translateX(-50%);
+    font-family:'Unbounded',sans-serif; font-weight:200;
+    font-size:clamp(9px,2.8vw,12px); letter-spacing:0.32em;
+    color:rgba(255,255,255,0.7); text-transform:uppercase;
+    white-space:nowrap; pointer-events:none;
+    opacity:0; transition:opacity 0.8s ease; z-index:10;
+  }
+  #label-top.visible { opacity:1; }
+
+  #label-author {
+    position:fixed; bottom:22px; left:20px;
+    font-family:'DM Mono',monospace; font-weight:300; font-style:italic;
+    font-size:clamp(8px,2vw,10px); letter-spacing:0.15em;
+    color:rgba(255,255,255,0.18); pointer-events:none;
+    opacity:0; transition:opacity 0.8s ease; z-index:10;
+  }
+  #label-author.visible { opacity:1; }
+
+  #btn-reset {
+    position:fixed; bottom:16px; right:20px;
+    font-family:'DM Mono',monospace; font-size:clamp(8px,2.5vw,10px);
+    letter-spacing:0.28em; text-transform:uppercase;
+    color:rgba(255,255,255,0.4); background:rgba(0,0,0,0.5);
+    border:1px solid rgba(255,255,255,0.15);
+    padding:12px 20px; cursor:pointer; min-height:48px; min-width:80px;
+    -webkit-tap-highlight-color:transparent;
+    opacity:0; transition:opacity 0.8s ease, color 0.2s, border-color 0.2s; z-index:10;
+  }
+  #btn-reset.visible { opacity:1; }
+  #btn-reset:active { color:#fff; border-color:rgba(255,255,255,0.5); }
+
+  #hint-orbit {
+    position:fixed; top:22px; right:20px;
+    font-family:'DM Mono',monospace; font-size:clamp(7px,2vw,9px);
+    letter-spacing:0.2em; color:rgba(255,255,255,0.2);
+    text-transform:uppercase; line-height:2.2; pointer-events:none;
+    opacity:0; transition:opacity 0.8s ease; z-index:10; text-align:right;
+  }
+  #hint-orbit.visible { opacity:1; }
+
+  #item-label {
+    position:fixed; bottom:70px; left:50%; transform:translateX(-50%);
+    font-family:'Unbounded',sans-serif; font-weight:200;
+    font-size:clamp(10px,3vw,13px); letter-spacing:0.25em;
+    color:rgba(255,255,255,0.5); text-transform:uppercase;
+    white-space:nowrap; pointer-events:none;
+    opacity:0; transition:opacity 0.3s; z-index:10;
+  }
+
+  /* highlight ring shown when an object is held */
+  #hold-ring {
+    position:fixed; pointer-events:none; z-index:10;
+    width:40px; height:40px;
+    border:1.5px solid rgba(255,255,255,0.5);
+    border-radius:50%;
+    transform:translate(-50%,-50%);
+    opacity:0; transition:opacity 0.15s;
+  }
+  #hold-ring.active { opacity:1; }
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <span id="splash-text">An experiment by <strong>Leon Dudhill</strong></span>
+</div>
+</div>
+
+<div id="world"><canvas id="canvas"></canvas></div>
+
+<div id="label-top">Gravity v.0.5</div>
+<div id="label-author">An experiment by Leon Dudhill</div>
+<div id="hint-orbit">1 finger · Pick up & move<br>2 fingers · Orbit camera<br>Pinch · Zoom</div>
+<button id="btn-reset">Reset</button>
+<div id="item-label"></div>
+<div id="hold-ring"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
+<script>
+(function () {
+
+  var worldEl     = document.getElementById('world');
+  var canvas      = document.getElementById('canvas');
+  var labelTop    = document.getElementById('label-top');
+  var labelAuth   = document.getElementById('label-author');
+  var hintOrbit   = document.getElementById('hint-orbit');
+  var btnReset    = document.getElementById('btn-reset');
+  var itemLabelEl = document.getElementById('item-label');
+  var splashEl    = document.getElementById('splash');
+  var holdRing    = document.getElementById('hold-ring');
+
+  var labelTimer;
+  function showLabel(name) {
+    itemLabelEl.textContent = name;
+    itemLabelEl.style.opacity = 1;
+    clearTimeout(labelTimer);
+    labelTimer = setTimeout(function() { itemLabelEl.style.opacity = 0; }, 2000);
+  }
+
+  // ── Three.js ──────────────────────────────────────────────────────────────
+  var scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x000000);
+  scene.fog = new THREE.FogExp2(0x000000, 0.018);
+
+  var camera = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight, 0.1, 300);
+  camera.position.set(0, 18, 38);
+  camera.lookAt(0, 2, 0);
+
+  var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  scene.add(new THREE.AmbientLight(0x888888, 0.9));
+
+  var sun = new THREE.DirectionalLight(0xffffff, 1.2);
+  sun.position.set(10, 24, 12);
+  sun.castShadow = true;
+  sun.shadow.mapSize.width  = 1024;
+  sun.shadow.mapSize.height = 1024;
+  sun.shadow.camera.near   = 0.5;
+  sun.shadow.camera.far    = 100;
+  sun.shadow.camera.left   = -25;
+  sun.shadow.camera.right  =  25;
+  sun.shadow.camera.top    =  25;
+  sun.shadow.camera.bottom = -25;
+  sun.shadow.bias = -0.001;
+  scene.add(sun);
+
+  var fill = new THREE.DirectionalLight(0x334466, 0.4);
+  fill.position.set(-8, 4, -6);
+  scene.add(fill);
+
+  // Ground
+  var groundMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(160, 160),
+    new THREE.MeshLambertMaterial({ color: 0x0a0a0a })
+  );
+  groundMesh.rotation.x = -Math.PI / 2;
+  groundMesh.receiveShadow = true;
+  scene.add(groundMesh);
+  scene.add(new THREE.GridHelper(60, 30, 0x1a1a1a, 0x111111));
+
+  // ── Cannon.js ─────────────────────────────────────────────────────────────
+  var phyWorld = new CANNON.World();
+  phyWorld.gravity.set(0, -18, 0);
+  phyWorld.broadphase = new CANNON.NaiveBroadphase();
+  phyWorld.solver.iterations = 12;
+
+  var groundBody = new CANNON.Body({ mass: 0 });
+  groundBody.addShape(new CANNON.Plane());
+  groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+  phyWorld.addBody(groundBody);
+
+  function addWall(x, y, z, sx, sy, sz) {
+    var b = new CANNON.Body({ mass: 0 });
+    b.addShape(new CANNON.Box(new CANNON.Vec3(sx, sy, sz)));
+    b.position.set(x, y, z);
+    phyWorld.addBody(b);
+  }
+  addWall( 19, 8,  0, 0.3, 8, 19);
+  addWall(-19, 8,  0, 0.3, 8, 19);
+  addWall(  0, 8, 19, 19, 8, 0.3);
+  addWall(  0, 8,-19, 19, 8, 0.3);
+
+  // ── Item registry ─────────────────────────────────────────────────────────
+  var items = [];
+
+  function register(mesh, body, name) {
+    mesh.traverse(function(c) { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
+    scene.add(mesh);
+    phyWorld.addBody(body);
+    items.push({ mesh: mesh, body: body, name: name });
+  }
+
+  function makeDynamic(x, z) {
+    var b = new CANNON.Body({ mass: 1 });
+    b.linearDamping  = 0.12;
+    b.angularDamping = 0.5;
+    b.position.set(x, 14 + Math.random() * 8, z);
+    b.quaternion.setFromEuler(
+      (Math.random() - 0.5) * 0.5,
+      Math.random() * Math.PI * 2,
+      (Math.random() - 0.5) * 0.5
+    );
+    return b;
+  }
+
+  function mat(col, rough, metal) {
+    rough = rough !== undefined ? rough : 0.85;
+    metal = metal !== undefined ? metal : 0.05;
+    return new THREE.MeshStandardMaterial({ color: col, roughness: rough, metalness: metal });
+  }
+  function tmat(col, op) {
+    return new THREE.MeshStandardMaterial({ color: col, transparent: true, opacity: op, roughness: 0.1 });
+  }
+
+  // ── ITEM BUILDERS ─────────────────────────────────────────────────────────
+
+  function spawnBeerCan(x, z) {
+    var g = new THREE.Group();
+    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.9, 16), mat(0xc8a030, 0.5, 0.4)));
+    var band = new THREE.Mesh(new THREE.CylinderGeometry(0.29, 0.29, 0.36, 16), mat(0x8a3010, 0.8));
+    g.add(band);
+    var cap = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.28, 0.12, 16), mat(0xa08020, 0.5, 0.6));
+    cap.position.y = 0.5; g.add(cap);
+    var body = makeDynamic(x, z);
+    body.addShape(new CANNON.Cylinder(0.28, 0.28, 0.9, 12));
+    register(g, body, 'Beer Can');
+  }
+
+  function spawnPaintCan(x, z) {
+    var g = new THREE.Group();
+    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.44, 0.38, 0.78, 16), mat(0xb94a1a, 0.75, 0.2)));
+    var lid = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.46, 0.08, 16), mat(0x7a2e0e, 0.7, 0.3));
+    lid.position.y = 0.43; g.add(lid);
+    var pts = [];
+    for (var i = 0; i <= 20; i++) {
+      var a = (i / 20) * Math.PI;
+      pts.push(new THREE.Vector3(Math.cos(a) * 0.5, 0.44 + Math.sin(a) * 0.4, 0));
+    }
+    g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 20, 0.03, 6, false), mat(0x5a2010, 0.9, 0.5)));
+    var body = makeDynamic(x, z);
+    body.addShape(new CANNON.Cylinder(0.44, 0.38, 0.78, 12));
+    register(g, body, 'Paint Can');
+  }
+
+  function spawnTV(x, z) {
+    var g = new THREE.Group();
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.7, 1.1), mat(0x1e1e1e, 0.9)));
+    var screen = new THREE.Mesh(new THREE.BoxGeometry(1.65, 1.2, 0.05), mat(0x0a1a0a, 0.2));
+    screen.position.set(0, 0.1, 0.58); g.add(screen);
+    var glow = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.15, 0.01),
+      new THREE.MeshStandardMaterial({ color: 0x1a3020, emissive: 0x0a1a10, emissiveIntensity: 0.5, roughness: 0.1 }));
+    glow.position.set(0, 0.1, 0.61); g.add(glow);
+    [0.15, -0.15].forEach(function(y) {
+      var k = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.08, 8), mat(0x444444, 0.9));
+      k.rotation.z = Math.PI / 2; k.position.set(0.9, y, 0.58); g.add(k);
+    });
+    [-0.55, 0.55].forEach(function(ax) {
+      var leg = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.28, 0.28), mat(0x111111, 0.9));
+      leg.position.set(ax, -1.0, 0); g.add(leg);
+    });
+    [[-0.3, 1.4], [0.3, 1.4]].forEach(function(pair) {
+      var ant = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 1.3, 6), mat(0x555555, 0.7, 0.5));
+      ant.position.set(pair[0], pair[1], 0);
+      ant.rotation.z = pair[0] < 0 ? -0.3 : 0.3;
+      g.add(ant);
+    });
+    var body = makeDynamic(x, z);
+    body.addShape(new CANNON.Box(new CANNON.Vec3(1.1, 0.85, 0.55)));
+    register(g, body, 'Old TV');
+  }
+
+  function spawnTire(x, z) {
+    var g = new THREE.Group();
+    g.add(new THREE.Mesh(new THREE.TorusGeometry(1.0, 0.42, 12, 32), mat(0x141414, 0.95)));
+    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.68, 0.68, 0.28, 24), mat(0x888888, 0.4, 0.8)));
+    for (var i = 0; i < 5; i++) {
+      var sp = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.07, 1.2), mat(0x777777, 0.5, 0.7));
+      sp.rotation.z = (i / 5) * Math.PI * 2; g.add(sp);
+    }
+    var body = makeDynamic(x, z);
+    var cyl = new CANNON.Cylinder(1.0, 1.0, 0.84, 16);
+    var cq = new CANNON.Quaternion();
+    cq.setFromEuler(Math.PI / 2, 0, 0);
+    body.addShape(cyl, new CANNON.Vec3(0, 0, 0), cq);
+    register(g, body, 'Wheel & Tire');
+  }
+
+  function spawnBathtub(x, z) {
+    var g = new THREE.Group();
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.85, 1.3), mat(0xcccccc, 0.7, 0.1)));
+    var inner = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.55, 0.95), mat(0xe8e8e8, 0.5, 0.05));
+    inner.position.y = 0.15; g.add(inner);
+    [[1.1,-0.5,-0.42],[-1.1,-0.5,-0.42],[1.1,-0.5,0.42],[-1.1,-0.5,0.42]].forEach(function(pos) {
+      var f = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), mat(0xaaaaaa, 0.4, 0.6));
+      f.position.set(pos[0], pos[1], pos[2]); g.add(f);
+    });
+    var tap = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.35, 8), mat(0xaaaaaa, 0.3, 0.8));
+    tap.rotation.x = Math.PI / 2; tap.position.set(1.1, 0.6, 0); g.add(tap);
+    var body = makeDynamic(x, z);
+    body.addShape(new CANNON.Box(new CANNON.Vec3(1.5, 0.42, 0.65)));
+    register(g, body, 'Bathtub');
+  }
+
+  function spawnShoppingCart(x, z) {
+    var g = new THREE.Group();
+    var edges = new THREE.EdgesGeometry(new THREE.BoxGeometry(1.5, 0.85, 0.85));
+    g.add(new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x7a8a6a })));
+    var bot = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.055, 0.8), mat(0x6a7a5a, 0.8, 0.3));
+    bot.position.y = -0.4; g.add(bot);
+    var hdl = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.07, 0.07), mat(0x5a6a4a, 0.9));
+    hdl.position.y = 0.46; g.add(hdl);
+    [[-0.6,-0.82],[0.6,-0.82]].forEach(function(pos) {
+      var l = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.65, 6), mat(0x6a7a5a, 0.8, 0.3));
+      l.position.set(pos[0], pos[1], 0); g.add(l);
+    });
+    [[-0.6,-1.18,-0.36],[0.6,-1.18,-0.36],[-0.6,-1.18,0.36],[0.6,-1.18,0.36]].forEach(function(pos) {
+      var w = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.07, 12), mat(0x222222, 0.9));
+      w.rotation.z = Math.PI / 2; w.position.set(pos[0], pos[1], pos[2]); g.add(w);
+    });
+    var body = makeDynamic(x, z);
+    body.addShape(new CANNON.Box(new CANNON.Vec3(0.75, 0.6, 0.42)));
+    register(g, body, 'Shopping Cart');
+  }
+
+  function spawnCarDoor(x, z) {
+    var g = new THREE.Group();
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(0.09, 2.1, 1.05), mat(0x3a5060, 0.7, 0.3)));
+    var win = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.88, 0.82), tmat(0x80b0c0, 0.35));
+    win.position.y = 0.52; g.add(win);
+    var hdl = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.09, 0.38), mat(0x8090a0, 0.4, 0.7));
+    hdl.position.set(0.1, -0.18, 0.28); g.add(hdl);
+    var body = makeDynamic(x, z);
+    body.addShape(new CANNON.Box(new CANNON.Vec3(0.055, 1.05, 0.52)));
+    register(g, body, 'Car Door');
+  }
+
+  function spawnCouch(x, z) {
+    var g = new THREE.Group();
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.48, 1.15), mat(0x6a4a2a, 0.95)));
+    var back = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.85, 0.24), mat(0x5a3a18, 0.95));
+    back.position.set(0, 0.66, -0.46); g.add(back);
+    [-1.38, 1.38].forEach(function(ax) {
+      var arm = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.66, 1.15), mat(0x5a3a18, 0.95));
+      arm.position.set(ax, 0.09, 0); g.add(arm);
+    });
+    [-0.62, 0.62].forEach(function(cx) {
+      var cush = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.2, 0.96), mat(0x7a5a32, 0.9));
+      cush.position.set(cx, 0.34, 0.05); g.add(cush);
+    });
+    [[-1.05,-0.42,-0.42],[1.05,-0.42,-0.42],[-1.05,-0.42,0.42],[1.05,-0.42,0.42]].forEach(function(pos) {
+      var leg = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.33, 0.11), mat(0x3a2010, 0.9));
+      leg.position.set(pos[0], pos[1], pos[2]); g.add(leg);
+    });
+    var body = makeDynamic(x, z);
+    body.addShape(new CANNON.Box(new CANNON.Vec3(1.25, 0.58, 0.57)));
+    register(g, body, 'Armchair');
+  }
+
+  function spawnGasCylinder(x, z) {
+    var g = new THREE.Group();
+    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.36, 1.9, 20), mat(0xd8d890, 0.5, 0.2)));
+    var band = new THREE.Mesh(new THREE.CylinderGeometry(0.39, 0.39, 0.32, 20), mat(0xcc2020, 0.7));
+    band.position.y = 0.28; g.add(band);
+    var dome = new THREE.Mesh(
+      new THREE.SphereGeometry(0.38, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2),
+      mat(0xc0c070, 0.5, 0.3));
+    dome.position.y = 0.95; g.add(dome);
+    var valve = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.11, 0.22, 10), mat(0x888888, 0.4, 0.7));
+    valve.position.y = 1.28; g.add(valve);
+    var base = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.11, 20), mat(0xaaaaaa, 0.5, 0.5));
+    base.position.y = -1.0; g.add(base);
+    var body = makeDynamic(x, z);
+    body.addShape(new CANNON.Cylinder(0.38, 0.36, 1.9, 12));
+    register(g, body, 'Gas Cylinder');
+  }
+
+  function spawnWashingMachine(x, z) {
+    var g = new THREE.Group();
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(1.75, 1.75, 1.75), mat(0xd0d8e0, 0.7, 0.1)));
+    var panel = new THREE.Mesh(new THREE.BoxGeometry(1.75, 0.26, 1.77), mat(0xb8c0c8, 0.8));
+    panel.position.y = 1.0; g.add(panel);
+    var ring = new THREE.Mesh(new THREE.TorusGeometry(0.52, 0.075, 10, 32), mat(0x8090a0, 0.4, 0.6));
+    ring.position.set(0, -0.08, 0.9); ring.rotation.y = Math.PI / 2; g.add(ring);
+    var port = new THREE.Mesh(new THREE.CircleGeometry(0.46, 32), tmat(0x405060, 0.6));
+    port.position.set(0, -0.08, 0.9); port.rotation.y = Math.PI / 2; g.add(port);
+    for (var i = 0; i < 4; i++) {
+      var sp = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.055, 0.86), mat(0x5060a0, 0.6, 0.2));
+      sp.position.set(0, -0.08, 0.9); sp.rotation.y = Math.PI / 2; sp.rotation.z = (i / 4) * Math.PI; g.add(sp);
+    }
+    [-0.32, 0, 0.32].forEach(function(kx) {
+      var k = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.055, 12), mat(0x778899, 0.5, 0.5));
+      k.rotation.x = Math.PI / 2; k.position.set(kx, 1.02, 0.9); g.add(k);
+    });
+    var body = makeDynamic(x, z);
+    body.addShape(new CANNON.Box(new CANNON.Vec3(0.875, 0.875, 0.875)));
+    register(g, body, 'Washing Machine');
+  }
+
+  var BUILDERS = [
+    spawnBeerCan, spawnPaintCan, spawnTV, spawnTire, spawnBathtub,
+    spawnShoppingCart, spawnCarDoor, spawnCouch, spawnGasCylinder, spawnWashingMachine
+  ];
+
+  function spawnOne() {
+    var x = (Math.random() - 0.5) * 12;
+    var z = (Math.random() - 0.5) * 12;
+    BUILDERS[Math.floor(Math.random() * BUILDERS.length)](x, z);
+    showLabel(items[items.length - 1].name);
+  }
+
+  function dropAll() {
+    releaseItem();
+    items.forEach(function(item) {
+      scene.remove(item.mesh);
+      phyWorld.remove(item.body);
+    });
+    items.length = 0;
+    for (var i = 0; i < 20; i++) {
+      (function(idx) { setTimeout(spawnOne, idx * 150); })(i);
+    }
+  }
+
+  // ── PICK & CARRY system ───────────────────────────────────────────────────
+  // When holding an item we:
+  //   1. Zero its gravity scale and damp it heavily
+  //   2. Each frame compute where on a horizontal plane at "carry height"
+  //      the pointer ray intersects, and spring the body toward that point
+  //   3. On release, restore gravity and give it the recent velocity
+
+  var heldItem      = null;    // { item, carryY }
+  var carryHeight   = 4;       // world Y to carry object at
+  var springK       = 28;      // spring stiffness
+  var springDamp    = 8;       // spring damping
+  var raycaster     = new THREE.Raycaster();
+  var mouse2d       = new THREE.Vector2();
+  var carryTarget   = new THREE.Vector3(); // where we want the held object to go
+  var pointerPlane  = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0); // horizontal at Y=0
+  var planeIntersect= new THREE.Vector3();
+
+  // velocity history for throw-on-release
+  var prevCarryPos  = new THREE.Vector3();
+  var carryVelocity = new THREE.Vector3();
+
+  function screenToWorld(cx, cy) {
+    mouse2d.x =  (cx / window.innerWidth)  * 2 - 1;
+    mouse2d.y = -(cy / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse2d, camera);
+    pointerPlane.constant = -carryHeight;
+    raycaster.ray.intersectPlane(pointerPlane, planeIntersect);
+    return planeIntersect.clone();
+  }
+
+  function findItem(cx, cy) {
+    mouse2d.x =  (cx / window.innerWidth)  * 2 - 1;
+    mouse2d.y = -(cy / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse2d, camera);
+    var meshes = items.map(function(i) { return i.mesh; });
+    var hits = raycaster.intersectObjects(meshes, true);
+    if (!hits.length) return null;
+    var obj = hits[0].object;
+    var found = null;
+    items.forEach(function(i) {
+      if (i.mesh === obj || i.mesh === obj.parent || i.mesh === obj.parent.parent) found = i;
+    });
+    return found;
+  }
+
+  function grabItem(item, cx, cy) {
+    heldItem = item;
+    // Disable gravity on held body, heavy damping so it moves smoothly
+    item.body.gravityScale = 0;
+    item.body.linearDamping  = 0.99;
+    item.body.angularDamping = 0.99;
+    item.body.velocity.set(0, 0, 0);
+    item.body.angularVelocity.set(0, 0, 0);
+    carryHeight = Math.max(item.body.position.y, 3);
+    prevCarryPos.copy(item.mesh.position);
+    showLabel(item.name);
+    holdRing.classList.add('active');
+    holdRing.style.left = cx + 'px';
+    holdRing.style.top  = cy + 'px';
+  }
+
+  function releaseItem() {
+    if (!heldItem) return;
+    // Restore physics
+    heldItem.body.gravityScale = 1;
+    heldItem.body.linearDamping  = 0.12;
+    heldItem.body.angularDamping = 0.5;
+    // Give it the carry velocity so it flies naturally
+    heldItem.body.velocity.set(
+      carryVelocity.x * 4,
+      carryVelocity.y * 2,
+      carryVelocity.z * 4
+    );
+    heldItem = null;
+    holdRing.classList.remove('active');
+  }
+
+  function updateCarry(cx, cy) {
+    if (!heldItem) return;
+    var target = screenToWorld(cx, cy);
+    if (!target) return;
+    carryTarget.copy(target);
+    holdRing.style.left = cx + 'px';
+    holdRing.style.top  = cy + 'px';
+  }
+
+  function applyCarryForce() {
+    if (!heldItem) return;
+    var b = heldItem.body;
+    var dx = carryTarget.x - b.position.x;
+    var dy = carryHeight   - b.position.y;
+    var dz = carryTarget.z - b.position.z;
+    // Spring force toward target
+    b.force.set(
+      dx * springK - b.velocity.x * springDamp,
+      dy * springK - b.velocity.y * springDamp,
+      dz * springK - b.velocity.z * springDamp
+    );
+    // Zero angular velocity gently so object stays upright-ish while held
+    b.angularVelocity.scale(0.85, b.angularVelocity);
+    // Track carry velocity for throw
+    carryVelocity.set(
+      carryTarget.x - prevCarryPos.x,
+      carryTarget.y - prevCarryPos.y,
+      carryTarget.z - prevCarryPos.z
+    );
+    prevCarryPos.copy(carryTarget);
+  }
+
+  // ── Input — pointer mode vs orbit mode ───────────────────────────────────
+  // One finger/mouse = try to grab item, then carry
+  // Two fingers      = orbit camera (never grab)
+
+  var isPointerDown  = false;
+  var pointerMoved   = false;
+  var pointerDownPos = { x: 0, y: 0 };
+
+  // ── Mouse ─────────────────────────────────────────────────────────────────
+  canvas.addEventListener('mousedown', function(e) {
+    if (e.button !== 0) return;
+    isPointerDown  = true;
+    pointerMoved   = false;
+    pointerDownPos = { x: e.clientX, y: e.clientY };
+    var item = findItem(e.clientX, e.clientY);
+    if (item) grabItem(item, e.clientX, e.clientY);
+  });
+
+  window.addEventListener('mousemove', function(e) {
+    if (!isPointerDown) return;
+    pointerMoved = true;
+    if (heldItem) {
+      updateCarry(e.clientX, e.clientY);
+    } else {
+      // orbit
+      orbitTheta -= (e.clientX - lastMouseX) * 0.007;
+      orbitPhi = Math.max(0.1, Math.min(Math.PI * 0.48, orbitPhi + (e.clientY - lastMouseY) * 0.007));
+      updateCamera();
+    }
+    lastMouseX = e.clientX;
+    lastMouseY = e.clientY;
+  });
+
+  window.addEventListener('mouseup', function() {
+    isPointerDown = false;
+    releaseItem();
+  });
+
+  canvas.addEventListener('wheel', function(e) {
+    orbitRadius = Math.max(6, Math.min(80, orbitRadius + e.deltaY * 0.05));
+    updateCamera(); e.preventDefault();
+  }, { passive: false });
+
+  canvas.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+
+  // ── Touch ─────────────────────────────────────────────────────────────────
+  var pinchDist  = null;
+  var orbitTouch = { x: 0, y: 0 };
+
+  canvas.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    if (e.touches.length === 1) {
+      var t = e.touches[0];
+      pointerDownPos = { x: t.clientX, y: t.clientY };
+      pointerMoved = false;
+      var item = findItem(t.clientX, t.clientY);
+      if (item) {
+        grabItem(item, t.clientX, t.clientY);
+      } else {
+        // start orbit
+        orbitTouch.x = t.clientX;
+        orbitTouch.y = t.clientY;
+      }
+    } else if (e.touches.length === 2) {
+      // two fingers: release any held item, switch to orbit+zoom
+      releaseItem();
+      pinchDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      orbitTouch.x = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      orbitTouch.y = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', function(e) {
+    e.preventDefault();
+    if (e.touches.length === 1) {
+      var t = e.touches[0];
+      pointerMoved = true;
+      if (heldItem) {
+        updateCarry(t.clientX, t.clientY);
+      } else {
+        var dx = t.clientX - orbitTouch.x;
+        var dy = t.clientY - orbitTouch.y;
+        orbitTheta -= dx * 0.007;
+        orbitPhi = Math.max(0.1, Math.min(Math.PI * 0.48, orbitPhi + dy * 0.007));
+        orbitTouch.x = t.clientX;
+        orbitTouch.y = t.clientY;
+        updateCamera();
+      }
+    } else if (e.touches.length === 2) {
+      var d = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      if (pinchDist !== null) {
+        orbitRadius = Math.max(6, Math.min(80, orbitRadius * (pinchDist / d)));
+        updateCamera();
+      }
+      pinchDist = d;
+      // two-finger orbit
+      var mx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      var my = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+      orbitTheta -= (mx - orbitTouch.x) * 0.005;
+      orbitPhi = Math.max(0.1, Math.min(Math.PI * 0.48, orbitPhi + (my - orbitTouch.y) * 0.005));
+      orbitTouch.x = mx; orbitTouch.y = my;
+      updateCamera();
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    if (e.touches.length < 2) pinchDist = null;
+    if (e.touches.length === 0) releaseItem();
+  }, { passive: false });
+
+  // ── Camera orbit state ────────────────────────────────────────────────────
+  var orbitTheta  = 0;
+  var orbitPhi    = Math.PI / 4;
+  var orbitRadius = 38;
+  var orbitTarget = new THREE.Vector3(0, 3, 0);
+  var lastMouseX  = 0;
+  var lastMouseY  = 0;
+
+  function updateCamera() {
+    var x = orbitTarget.x + orbitRadius * Math.sin(orbitPhi) * Math.sin(orbitTheta);
+    var y = orbitTarget.y + orbitRadius * Math.cos(orbitPhi);
+    var z = orbitTarget.z + orbitRadius * Math.sin(orbitPhi) * Math.cos(orbitTheta);
+    camera.position.set(x, y, z);
+    camera.lookAt(orbitTarget);
+  }
+  updateCamera();
+
+  // ── Physics sync ──────────────────────────────────────────────────────────
+  var fixedStep = 1 / 60;
+  var threeQuat = new THREE.Quaternion();
+
+  function syncPhysics() {
+    applyCarryForce();
+    phyWorld.step(fixedStep);
+    items.forEach(function(item) {
+      var p = item.body.position;
+      var q = item.body.quaternion;
+      item.mesh.position.set(p.x, p.y, p.z);
+      threeQuat.set(q.x, q.y, q.z, q.w);
+      item.mesh.setRotationFromQuaternion(threeQuat);
+    });
+  }
+
+  // ── Resize ────────────────────────────────────────────────────────────────
+  window.addEventListener('resize', function() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  // ── Animate ───────────────────────────────────────────────────────────────
+  function animate() {
+    requestAnimationFrame(animate);
+    syncPhysics();
+    renderer.render(scene, camera);
+  }
+
+  // ── Enter ─────────────────────────────────────────────────────────────────
+  function enter() {
+    splashEl.classList.add('hidden');
+    setTimeout(function() { splashEl.style.display = 'none'; }, 800);
+    worldEl.classList.add('visible');
+    labelTop.classList.add('visible');
+    labelAuth.classList.add('visible');
+    hintOrbit.classList.add('visible');
+    btnReset.classList.add('visible');
+    dropAll();
+    animate();
+  }
+btnReset.addEventListener('click', dropAll);
+  btnReset.addEventListener('touchend', function(e) { e.preventDefault(); dropAll(); });
+
+  // Auto-enter after splash
+  setTimeout(enter, 2500);
+
+})();
+</script>
+</body>
+</html>

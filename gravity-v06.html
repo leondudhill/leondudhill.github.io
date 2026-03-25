@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Gravity v.0.6 — Leon Dudhill</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Unbounded:wght@200;300&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body {
+    background:#000; width:100%; height:100%;
+    overflow:hidden; touch-action:none;
+    -webkit-user-select:none; user-select:none;
+  }
+
+    /* ── SPLASH ── */
+  #splash {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.6s ease;
+  }
+  #splash.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+  #splash-text {
+    font-family: sans-serif;
+    font-weight: 300;
+    font-size: clamp(13px, 4vw, 19px);
+    color: #fff;
+    letter-spacing: 0.12em;
+    text-align: center;
+    padding: 0 32px;
+    opacity: 0;
+    animation: splashAnim 2.4s ease forwards;
+  }
+  #splash-text strong {
+    font-weight: 700;
+  }
+  @keyframes splashAnim {
+    0%   { opacity: 0; }
+    25%  { opacity: 1; }
+    70%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  
+
+  /* ── WORLD ── */
+  #world { position:fixed; inset:0; opacity:0; transition:opacity 0.8s ease; }
+  #world.visible { opacity:1; }
+  canvas { display:block; }
+
+  /* ── HUD ── */
+  #label-top {
+    position:fixed; top:22px; left:50%; transform:translateX(-50%);
+    font-family:'Unbounded',sans-serif; font-weight:200;
+    font-size:clamp(9px,2.8vw,12px); letter-spacing:0.32em;
+    color:rgba(255,255,255,0.7); text-transform:uppercase;
+    white-space:nowrap; pointer-events:none;
+    opacity:0; transition:opacity 0.8s ease; z-index:10;
+  }
+  #label-top.visible { opacity:1; }
+
+  #label-author {
+    position:fixed; bottom:22px; left:20px;
+    font-family:'DM Mono',monospace; font-weight:300; font-style:italic;
+    font-size:clamp(8px,2vw,10px); letter-spacing:0.15em;
+    color:rgba(255,255,255,0.18); pointer-events:none;
+    opacity:0; transition:opacity 0.8s ease; z-index:10;
+  }
+  #label-author.visible { opacity:1; }
+
+  #btn-reset {
+    position:fixed; bottom:16px; right:20px;
+    font-family:'DM Mono',monospace; font-size:clamp(8px,2.5vw,10px);
+    letter-spacing:0.28em; text-transform:uppercase;
+    color:rgba(255,255,255,0.4); background:rgba(0,0,0,0.5);
+    border:1px solid rgba(255,255,255,0.15);
+    padding:12px 20px; cursor:pointer; min-height:48px; min-width:80px;
+    -webkit-tap-highlight-color:transparent;
+    opacity:0; transition:opacity 0.8s ease, color 0.2s, border-color 0.2s; z-index:10;
+  }
+  #btn-reset.visible { opacity:1; }
+  #btn-reset:active { color:#fff; border-color:rgba(255,255,255,0.5); }
+
+  #hint-orbit {
+    position:fixed; top:22px; right:20px;
+    font-family:'DM Mono',monospace; font-size:clamp(7px,2vw,9px);
+    letter-spacing:0.2em; color:rgba(255,255,255,0.2);
+    text-transform:uppercase; line-height:2.2; pointer-events:none;
+    opacity:0; transition:opacity 0.8s ease; z-index:10; text-align:right;
+  }
+  #hint-orbit.visible { opacity:1; }
+
+  #item-label {
+    position:fixed; bottom:70px; left:50%; transform:translateX(-50%);
+    font-family:'Unbounded',sans-serif; font-weight:200;
+    font-size:clamp(10px,3vw,13px); letter-spacing:0.25em;
+    color:rgba(255,255,255,0.5); text-transform:uppercase;
+    white-space:nowrap; pointer-events:none;
+    opacity:0; transition:opacity 0.3s; z-index:10;
+  }
+
+  #count-display {
+    position:fixed; top:22px; left:20px;
+    font-family:'DM Mono',monospace; font-size:clamp(7px,2vw,9px);
+    letter-spacing:0.22em; color:rgba(255,255,255,0.18);
+    text-transform:uppercase; pointer-events:none;
+    opacity:0; transition:opacity 0.8s ease; z-index:10;
+  }
+  #count-display.visible { opacity:1; }
+
+  #hold-ring {
+    position:fixed; pointer-events:none; z-index:10;
+    width:44px; height:44px;
+    border:1.5px solid rgba(255,255,255,0.6);
+    border-radius:50%;
+    transform:translate(-50%,-50%);
+    opacity:0; transition:opacity 0.12s;
+  }
+  #hold-ring.active { opacity:1; }
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <span id="splash-text">An experiment by <strong>Leon Dudhill</strong></span>
+</div>
+
+  <div id="slider-block">
+    <div id="slider-label">
+      Objects &nbsp;<span id="slider-val">50</span>
+    </div>
+    <input type="range" id="obj-slider" min="10" max="500" step="10" value="50">
+    <div id="slider-range"><span>10</span><span>500</span></div>
+  </div>
+</div>
+
+<div id="world"><canvas id="canvas"></canvas></div>
+
+<div id="label-top">Gravity v.0.6</div>
+<div id="label-author">An experiment by Leon Dudhill</div>
+<div id="hint-orbit">Hold & drag · Pick up<br>2 fingers · Orbit<br>Pinch · Zoom</div>
+<div id="count-display"></div>
+<button id="btn-reset">Reset</button>
+<div id="item-label"></div>
+<div id="hold-ring"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
+<script>
+(function () {
+
+  var slider     = document.getElementById('obj-slider');
+  var sliderVal  = document.getElementById('slider-val');
+  var worldEl    = document.getElementById('world');
+  var canvas     = document.getElementById('canvas');
+  var labelTop   = document.getElementById('label-top');
+  var labelAuth  = document.getElementById('label-author');
+  var hintOrbit  = document.getElementById('hint-orbit');
+  var btnReset   = document.getElementById('btn-reset');
+  var itemLabelEl= document.getElementById('item-label');
+  var splashEl   = document.getElementById('splash');
+  var holdRing   = document.getElementById('hold-ring');
+  var countDisp  = document.getElementById('count-display');
+
+  // Live slider label
+  slider.addEventListener('input', function() {
+    sliderVal.textContent = slider.value;
+  });
+
+  var TARGET_COUNT = 50;
+
+  var labelTimer;
+  function showLabel(name) {
+    itemLabelEl.textContent = name;
+    itemLabelEl.style.opacity = 1;
+    clearTimeout(labelTimer);
+    labelTimer = setTimeout(function() { itemLabelEl.style.opacity = 0; }, 1800);
+  }
+
+  // ── Three.js ──────────────────────────────────────────────────────────────
+  var scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x000000);
+  scene.fog = new THREE.FogExp2(0x000000, 0.012);
+
+  var camera = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight, 0.1, 400);
+  camera.position.set(0, 24, 55);
+  camera.lookAt(0, 5, 0);
+
+  var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+
+  var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: !isMobile });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = !isMobile;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  scene.add(new THREE.AmbientLight(0x999999, 1.1));
+
+  var sun = new THREE.DirectionalLight(0xffffff, 1.1);
+  sun.position.set(14, 30, 16);
+  if (!isMobile) {
+    sun.castShadow = true;
+    sun.shadow.mapSize.width  = 1024;
+    sun.shadow.mapSize.height = 1024;
+    sun.shadow.camera.left   = -40;
+    sun.shadow.camera.right  =  40;
+    sun.shadow.camera.top    =  40;
+    sun.shadow.camera.bottom = -40;
+    sun.shadow.camera.far    =  140;
+    sun.shadow.bias = -0.001;
+  }
+  scene.add(sun);
+
+  var fill = new THREE.DirectionalLight(0x334466, 0.35);
+  fill.position.set(-10, 5, -8);
+  scene.add(fill);
+
+  var groundMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(300, 300),
+    new THREE.MeshLambertMaterial({ color: 0x080808 })
+  );
+  groundMesh.rotation.x = -Math.PI / 2;
+  if (!isMobile) groundMesh.receiveShadow = true;
+  scene.add(groundMesh);
+  scene.add(new THREE.GridHelper(100, 50, 0x111111, 0x0c0c0c));
+
+  // ── Cannon.js ─────────────────────────────────────────────────────────────
+  var phyWorld = new CANNON.World();
+  phyWorld.gravity.set(0, -22, 0);
+  phyWorld.broadphase = new CANNON.SAPBroadphase(phyWorld);
+  phyWorld.solver.iterations = 10;
+  phyWorld.allowSleep = true;
+
+  var groundBody = new CANNON.Body({ mass: 0 });
+  groundBody.addShape(new CANNON.Plane());
+  groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+  phyWorld.addBody(groundBody);
+
+  function addWall(x, y, z, sx, sy, sz) {
+    var b = new CANNON.Body({ mass: 0 });
+    b.addShape(new CANNON.Box(new CANNON.Vec3(sx, sy, sz)));
+    b.position.set(x, y, z);
+    phyWorld.addBody(b);
+  }
+  addWall( 40, 20,  0, 0.5, 20, 40);
+  addWall(-40, 20,  0, 0.5, 20, 40);
+  addWall(  0, 20, 40, 40, 20, 0.5);
+  addWall(  0, 20,-40, 40, 20, 0.5);
+
+  // ── Shared geometry & materials ───────────────────────────────────────────
+  var GEO = {
+    cylThin:  new THREE.CylinderGeometry(0.28, 0.28, 0.9,  10),
+    cylMed:   new THREE.CylinderGeometry(0.44, 0.38, 0.78, 10),
+    cylGas:   new THREE.CylinderGeometry(0.38, 0.36, 1.9,  12),
+    boxTV:    new THREE.BoxGeometry(2.2,  1.7,  1.1),
+    torus:    new THREE.TorusGeometry(1.0, 0.42, 8, 24),
+    boxFlat:  new THREE.BoxGeometry(3.0,  0.85, 1.3),
+    boxCart:  new THREE.BoxGeometry(1.5,  0.85, 0.85),
+    boxDoor:  new THREE.BoxGeometry(0.12, 2.1,  1.05),
+    boxCouch: new THREE.BoxGeometry(2.5,  0.9,  1.15),
+    boxWash:  new THREE.BoxGeometry(1.75, 1.75, 1.75)
+  };
+
+  var MATS = [
+    new THREE.MeshStandardMaterial({ color: 0xd4a820, roughness: 0.5, metalness: 0.5 }),
+    new THREE.MeshStandardMaterial({ color: 0xb94a1a, roughness: 0.75, metalness: 0.2 }),
+    new THREE.MeshStandardMaterial({ color: 0x282828, roughness: 0.9,  metalness: 0.1 }),
+    new THREE.MeshStandardMaterial({ color: 0x181818, roughness: 0.95, metalness: 0.0 }),
+    new THREE.MeshStandardMaterial({ color: 0xd0d0d0, roughness: 0.6,  metalness: 0.1 }),
+    new THREE.MeshStandardMaterial({ color: 0x6a7a5a, roughness: 0.8,  metalness: 0.3 }),
+    new THREE.MeshStandardMaterial({ color: 0x3a5060, roughness: 0.7,  metalness: 0.3 }),
+    new THREE.MeshStandardMaterial({ color: 0x7a5a32, roughness: 0.95, metalness: 0.0 }),
+    new THREE.MeshStandardMaterial({ color: 0xd8d880, roughness: 0.5,  metalness: 0.2 }),
+    new THREE.MeshStandardMaterial({ color: 0xc8d0d8, roughness: 0.6,  metalness: 0.1 })
+  ];
+
+  // ── Item definitions ──────────────────────────────────────────────────────
+  var DEFS = [
+    { name:'Beer Can',        geo:GEO.cylThin,  mat:MATS[0], phy:function(b){ b.addShape(new CANNON.Cylinder(0.28,0.28,0.9,8)); } },
+    { name:'Paint Can',       geo:GEO.cylMed,   mat:MATS[1], phy:function(b){ b.addShape(new CANNON.Cylinder(0.44,0.38,0.78,8)); } },
+    { name:'Old TV',          geo:GEO.boxTV,    mat:MATS[2], phy:function(b){ b.addShape(new CANNON.Box(new CANNON.Vec3(1.1,0.85,0.55))); } },
+    { name:'Wheel & Tire',    geo:GEO.torus,    mat:MATS[3], phy:function(b){
+      var cq = new CANNON.Quaternion(); cq.setFromEuler(Math.PI/2,0,0);
+      b.addShape(new CANNON.Cylinder(1.0,1.0,0.84,10), new CANNON.Vec3(0,0,0), cq);
+    }},
+    { name:'Bathtub',         geo:GEO.boxFlat,  mat:MATS[4], phy:function(b){ b.addShape(new CANNON.Box(new CANNON.Vec3(1.5,0.42,0.65))); } },
+    { name:'Shopping Cart',   geo:GEO.boxCart,  mat:MATS[5], phy:function(b){ b.addShape(new CANNON.Box(new CANNON.Vec3(0.75,0.42,0.42))); } },
+    { name:'Car Door',        geo:GEO.boxDoor,  mat:MATS[6], phy:function(b){ b.addShape(new CANNON.Box(new CANNON.Vec3(0.06,1.05,0.52))); } },
+    { name:'Armchair',        geo:GEO.boxCouch, mat:MATS[7], phy:function(b){ b.addShape(new CANNON.Box(new CANNON.Vec3(1.25,0.45,0.57))); } },
+    { name:'Gas Cylinder',    geo:GEO.cylGas,   mat:MATS[8], phy:function(b){ b.addShape(new CANNON.Cylinder(0.38,0.36,1.9,8)); } },
+    { name:'Washing Machine', geo:GEO.boxWash,  mat:MATS[9], phy:function(b){ b.addShape(new CANNON.Box(new CANNON.Vec3(0.875,0.875,0.875))); } }
+  ];
+
+  // ── Item registry ─────────────────────────────────────────────────────────
+  var items = [];
+
+  function spawnOne(idx) {
+    var def  = DEFS[Math.floor(Math.random() * DEFS.length)];
+    var mesh = new THREE.Mesh(def.geo, def.mat);
+    mesh.castShadow    = !isMobile;
+    mesh.receiveShadow = !isMobile;
+
+    // Every object spawns from exactly the same point high above centre.
+    // Zero x/z spread — the pile forms naturally as they stack on landing.
+    var x = 0;
+    var z = 0;
+    var startY = 40; // fixed height, one object at a time so no mid-air collision
+
+    var body = new CANNON.Body({
+      mass: 1,
+      sleepSpeedLimit: 0.3,
+      sleepTimeLimit:  0.5
+    });
+    body.linearDamping  = 0.08;
+    body.angularDamping = 0.35;
+    body.position.set(x, startY, z);
+    body.quaternion.setFromEuler(
+      (Math.random() - 0.5) * Math.PI,
+      Math.random() * Math.PI * 2,
+      (Math.random() - 0.5) * Math.PI
+    );
+    def.phy(body);
+
+    scene.add(mesh);
+    phyWorld.addBody(body);
+    items.push({ mesh: mesh, body: body, name: def.name });
+    countDisp.textContent = items.length + ' / ' + TARGET_COUNT;
+  }
+
+  function dropAll() {
+    releaseItem();
+    for (var i = 0; i < items.length; i++) {
+      scene.remove(items[i].mesh);
+      phyWorld.remove(items[i].body);
+    }
+    items.length = 0;
+    countDisp.textContent = '0 / ' + TARGET_COUNT;
+
+    // Each object spawns only after the previous one has had time to fall
+    // and land — roughly 1 second each (40 units at gravity 22).
+    // For large counts we speed up but never below 400ms.
+    var delay = Math.max(400, Math.min(1200, 60000 / TARGET_COUNT));
+    for (var j = 0; j < TARGET_COUNT; j++) {
+      (function(idx) {
+        setTimeout(function() { spawnOne(idx); }, idx * delay);
+      })(j);
+    }
+  }
+
+    // ── PICK & CARRY ──────────────────────────────────────────────────────────
+  var heldItem      = null;
+  var carryHeight   = 6;
+  var springK       = 32;
+  var springDamp    = 10;
+  var raycaster     = new THREE.Raycaster();
+  var mouse2d       = new THREE.Vector2();
+  var carryTarget   = new THREE.Vector3();
+  var pointerPlane  = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+  var planeHit      = new THREE.Vector3();
+  var prevCarry     = new THREE.Vector3();
+  var carryVel      = new THREE.Vector3();
+
+  function getWorldPos(cx, cy) {
+    mouse2d.x =  (cx / window.innerWidth)  * 2 - 1;
+    mouse2d.y = -(cy / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse2d, camera);
+    pointerPlane.constant = -carryHeight;
+    if (raycaster.ray.intersectPlane(pointerPlane, planeHit)) {
+      return planeHit.clone();
+    }
+    return null;
+  }
+
+  function pickItem(cx, cy) {
+    mouse2d.x =  (cx / window.innerWidth)  * 2 - 1;
+    mouse2d.y = -(cy / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse2d, camera);
+    // Build mesh list fresh each time
+    var meshes = [];
+    for (var i = 0; i < items.length; i++) meshes.push(items[i].mesh);
+    var hits = raycaster.intersectObjects(meshes, false);
+    if (!hits.length) return null;
+    var hitMesh = hits[0].object;
+    for (var j = 0; j < items.length; j++) {
+      if (items[j].mesh === hitMesh) return items[j];
+    }
+    return null;
+  }
+
+  function grabItem(item, cx, cy) {
+    heldItem = item;
+    item.body.wakeUp();
+    item.body.gravityScale   = 0;
+    item.body.linearDamping  = 0.99;
+    item.body.angularDamping = 0.99;
+    item.body.velocity.set(0, 0, 0);
+    item.body.angularVelocity.set(0, 0, 0);
+    carryHeight = Math.max(item.body.position.y + 1.5, 5);
+    prevCarry.set(item.body.position.x, carryHeight, item.body.position.z);
+    carryTarget.copy(prevCarry);
+    showLabel(item.name);
+    holdRing.classList.add('active');
+    holdRing.style.left = cx + 'px';
+    holdRing.style.top  = cy + 'px';
+  }
+
+  function releaseItem() {
+    if (!heldItem) return;
+    heldItem.body.gravityScale   = 1;
+    heldItem.body.linearDamping  = 0.08;
+    heldItem.body.angularDamping = 0.35;
+    heldItem.body.velocity.set(carryVel.x * 5, carryVel.y * 3, carryVel.z * 5);
+    heldItem = null;
+    holdRing.classList.remove('active');
+  }
+
+  function updateCarryPos(cx, cy) {
+    if (!heldItem) return;
+    var pos = getWorldPos(cx, cy);
+    if (pos) carryTarget.copy(pos);
+    holdRing.style.left = cx + 'px';
+    holdRing.style.top  = cy + 'px';
+  }
+
+  function applyCarryForce() {
+    if (!heldItem) return;
+    var b  = heldItem.body;
+    var dx = carryTarget.x - b.position.x;
+    var dy = carryHeight   - b.position.y;
+    var dz = carryTarget.z - b.position.z;
+    b.force.set(
+      dx * springK - b.velocity.x * springDamp,
+      dy * springK - b.velocity.y * springDamp,
+      dz * springK - b.velocity.z * springDamp
+    );
+    b.angularVelocity.scale(0.8, b.angularVelocity);
+    carryVel.set(carryTarget.x - prevCarry.x, 0, carryTarget.z - prevCarry.z);
+    prevCarry.copy(carryTarget);
+  }
+
+  // ── Input ─────────────────────────────────────────────────────────────────
+  var orbitTheta  = 0;
+  var orbitPhi    = Math.PI / 3.5;
+  var orbitRadius = 55;
+  var orbitTarget = new THREE.Vector3(0, 5, 0);
+  var lastMX = 0, lastMY = 0;
+  var orbitT = { x:0, y:0 };
+  var pinchDist   = null;
+  var isDown      = false;
+  var downPos     = { x:0, y:0 };
+  var didMove     = false;
+
+  function updateCamera() {
+    var x = orbitTarget.x + orbitRadius * Math.sin(orbitPhi) * Math.sin(orbitTheta);
+    var y = orbitTarget.y + orbitRadius * Math.cos(orbitPhi);
+    var z = orbitTarget.z + orbitRadius * Math.sin(orbitPhi) * Math.cos(orbitTheta);
+    camera.position.set(x, y, z);
+    camera.lookAt(orbitTarget);
+  }
+  updateCamera();
+
+  // Mouse
+  canvas.addEventListener('mousedown', function(e) {
+    if (e.button !== 0) return;
+    isDown = true; didMove = false;
+    downPos.x = e.clientX; downPos.y = e.clientY;
+    lastMX = e.clientX; lastMY = e.clientY;
+    var item = pickItem(e.clientX, e.clientY);
+    if (item) grabItem(item, e.clientX, e.clientY);
+  });
+
+  window.addEventListener('mousemove', function(e) {
+    if (!isDown) return;
+    var dx = e.clientX - lastMX;
+    var dy = e.clientY - lastMY;
+    if (Math.abs(e.clientX - downPos.x) > 3 || Math.abs(e.clientY - downPos.y) > 3) didMove = true;
+    if (heldItem) {
+      updateCarryPos(e.clientX, e.clientY);
+    } else {
+      orbitTheta -= dx * 0.007;
+      orbitPhi = Math.max(0.08, Math.min(Math.PI * 0.48, orbitPhi + dy * 0.007));
+      updateCamera();
+    }
+    lastMX = e.clientX; lastMY = e.clientY;
+  });
+
+  window.addEventListener('mouseup', function() {
+    isDown = false;
+    releaseItem();
+  });
+
+  canvas.addEventListener('wheel', function(e) {
+    orbitRadius = Math.max(8, Math.min(120, orbitRadius + e.deltaY * 0.07));
+    updateCamera(); e.preventDefault();
+  }, { passive: false });
+  canvas.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+
+  // Touch
+  canvas.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    if (e.touches.length === 1) {
+      var t = e.touches[0];
+      downPos.x = t.clientX; downPos.y = t.clientY;
+      lastMX = t.clientX; lastMY = t.clientY;
+      orbitT.x = t.clientX; orbitT.y = t.clientY;
+      didMove = false;
+      var item = pickItem(t.clientX, t.clientY);
+      if (item) {
+        grabItem(item, t.clientX, t.clientY);
+      }
+    } else if (e.touches.length === 2) {
+      releaseItem();
+      pinchDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      orbitT.x = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      orbitT.y = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', function(e) {
+    e.preventDefault();
+    if (e.touches.length === 1) {
+      var t = e.touches[0];
+      didMove = true;
+      if (heldItem) {
+        updateCarryPos(t.clientX, t.clientY);
+      } else {
+        orbitTheta -= (t.clientX - orbitT.x) * 0.007;
+        orbitPhi = Math.max(0.08, Math.min(Math.PI * 0.48, orbitPhi + (t.clientY - orbitT.y) * 0.007));
+        updateCamera();
+        orbitT.x = t.clientX; orbitT.y = t.clientY;
+      }
+    } else if (e.touches.length === 2) {
+      var d = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      if (pinchDist !== null) {
+        orbitRadius = Math.max(8, Math.min(120, orbitRadius * (pinchDist / d)));
+        updateCamera();
+      }
+      pinchDist = d;
+      var mx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      var my = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+      orbitTheta -= (mx - orbitT.x) * 0.005;
+      orbitPhi = Math.max(0.08, Math.min(Math.PI * 0.48, orbitPhi + (my - orbitT.y) * 0.005));
+      orbitT.x = mx; orbitT.y = my;
+      updateCamera();
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    if (e.touches.length < 2) pinchDist = null;
+    if (e.touches.length === 0) releaseItem();
+  }, { passive: false });
+
+  // ── Sync & animate ────────────────────────────────────────────────────────
+  var fixedStep = 1 / 60;
+  var threeQ    = new THREE.Quaternion();
+
+  function syncPhysics() {
+    applyCarryForce();
+    phyWorld.step(fixedStep);
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i];
+      if (it.body.sleepState === CANNON.Body.SLEEPING && it !== heldItem) continue;
+      var p = it.body.position;
+      var q = it.body.quaternion;
+      it.mesh.position.set(p.x, p.y, p.z);
+      threeQ.set(q.x, q.y, q.z, q.w);
+      it.mesh.setRotationFromQuaternion(threeQ);
+    }
+  }
+
+  window.addEventListener('resize', function() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  function animate() {
+    requestAnimationFrame(animate);
+    syncPhysics();
+    renderer.render(scene, camera);
+  }
+
+  // ── Enter ─────────────────────────────────────────────────────────────────
+  function enter() {
+    splashEl.classList.add('hidden');
+    setTimeout(function() { splashEl.style.display = 'none'; }, 800);
+    worldEl.classList.add('visible');
+    labelTop.classList.add('visible');
+    labelAuth.classList.add('visible');
+    hintOrbit.classList.add('visible');
+    btnReset.classList.add('visible');
+    countDisp.classList.add('visible');
+    dropAll();
+    animate();
+  }
+btnReset.addEventListener('click', dropAll);
+  btnReset.addEventListener('touchend', function(e) { e.preventDefault(); dropAll(); });
+
+  // Auto-enter after splash
+  setTimeout(enter, 2500);
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Gravity v.0.2 — Leon Dudhill</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Unbounded:wght@200;300&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    background: #000;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+    /* ── SPLASH ── */
+  #splash {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.6s ease;
+  }
+  #splash.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+  #splash-text {
+    font-family: sans-serif;
+    font-weight: 300;
+    font-size: clamp(13px, 4vw, 19px);
+    color: #fff;
+    letter-spacing: 0.12em;
+    text-align: center;
+    padding: 0 32px;
+    opacity: 0;
+    animation: splashAnim 2.4s ease forwards;
+  }
+  #splash-text strong {
+    font-weight: 700;
+  }
+  @keyframes splashAnim {
+    0%   { opacity: 0; }
+    25%  { opacity: 1; }
+    70%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  
+
+  /* ── WORLD ── */
+  #world {
+    position: fixed;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+  #world.visible { opacity: 1; }
+
+  canvas { display: block; }
+
+  /* ── HUD ── */
+  #label-top {
+    position: fixed;
+    top: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 200;
+    font-size: clamp(9px, 2.8vw, 12px);
+    letter-spacing: 0.32em;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    z-index: 10;
+  }
+  #label-top.visible { opacity: 1; }
+
+  #label-author {
+    position: fixed;
+    bottom: 22px;
+    left: 20px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 300;
+    font-style: italic;
+    font-size: clamp(8px, 2vw, 10px);
+    letter-spacing: 0.15em;
+    color: rgba(255,255,255,0.18);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    z-index: 10;
+  }
+  #label-author.visible { opacity: 1; }
+
+  #btn-reset {
+    position: fixed;
+    bottom: 16px;
+    right: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: clamp(8px, 2.5vw, 10px);
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 12px 20px;
+    cursor: pointer;
+    min-height: 48px;
+    min-width: 80px;
+    -webkit-tap-highlight-color: transparent;
+    opacity: 0;
+    transition: opacity 0.8s ease, color 0.2s, border-color 0.2s;
+    z-index: 10;
+  }
+  #btn-reset.visible { opacity: 1; }
+  #btn-reset:active { color: #fff; border-color: rgba(255,255,255,0.5); }
+</style>
+</head>
+<body>
+
+<!-- Splash — identical pattern to working original, tap to begin -->
+<div id="splash">
+  <span id="splash-text">An experiment by <strong>Leon Dudhill</strong></span>
+</div>
+</div>
+
+<!-- Physics world -->
+<div id="world">
+  <canvas id="canvas"></canvas>
+</div>
+
+<!-- HUD elements (outside world div so they layer on top) -->
+<div id="label-top">Gravity v.0.2</div>
+<div id="label-author">An experiment by Leon Dudhill</div>
+<button id="btn-reset">Reset</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+<script>
+(function () {
+  const { Engine, Render, Runner, Bodies, Body, World, Composite, Mouse, MouseConstraint, Events } = Matter;
+
+  const splash   = document.getElementById('splash');
+  const worldEl  = document.getElementById('world');
+  const canvas   = document.getElementById('canvas');
+  const labelTop = document.getElementById('label-top');
+  const labelAuth= document.getElementById('label-author');
+  const btnReset = document.getElementById('btn-reset');
+
+  let engine, render, runner, mc;
+
+  const SHADES = [
+    '#ffffff', '#e0e0e0', '#c8c8c8', '#aaaaaa',
+    '#888888', '#606060', '#404040', '#282828'
+  ];
+  let shadeIdx = 0;
+  let activeBlocks = [];
+  let blockSeq = 0;
+
+  function nextShade() { return SHADES[(shadeIdx++) % SHADES.length]; }
+
+  function makeBlock(x, y) {
+    const type  = Math.floor(Math.random() * 8);
+    const shade = nextShade();
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    // Scale shapes relative to screen — same fixed sizes as original
+    const scale = Math.min(W, H) / 700;
+
+    const opts = {
+      restitution: 0.1,
+      friction: 0.6,
+      frictionAir: 0.01,
+      density: 0.003,
+      render: {
+        fillStyle: shade,
+        strokeStyle: 'rgba(255,255,255,0.05)',
+        lineWidth: 1
+      },
+      label: 'block',
+      chamfer: { radius: 2 }
+    };
+
+    let body;
+    if (type === 0) {
+      // Wide rectangle
+      body = Bodies.rectangle(x, y, (60 + Math.random() * 120) * scale, (35 + Math.random() * 70) * scale, opts);
+    } else if (type === 1) {
+      // Square
+      const s = (45 + Math.random() * 70) * scale;
+      body = Bodies.rectangle(x, y, s, s, opts);
+    } else if (type === 2) {
+      // Tall rectangle
+      body = Bodies.rectangle(x, y, (30 + Math.random() * 50) * scale, (70 + Math.random() * 90) * scale, opts);
+    } else if (type === 3) {
+      // Thin plank
+      body = Bodies.rectangle(x, y, (90 + Math.random() * 120) * scale, (10 + Math.random() * 18) * scale, opts);
+    } else if (type === 4) {
+      // Circle
+      body = Bodies.circle(x, y, (22 + Math.random() * 38) * scale, opts);
+    } else if (type === 5) {
+      // Triangle
+      body = Bodies.polygon(x, y, 3, (30 + Math.random() * 44) * scale, opts);
+    } else if (type === 6) {
+      // Pentagon
+      body = Bodies.polygon(x, y, 5, (28 + Math.random() * 40) * scale, opts);
+    } else {
+      // Hexagon
+      body = Bodies.polygon(x, y, 6, (26 + Math.random() * 38) * scale, opts);
+    }
+
+    body._label = String(++blockSeq).padStart(2, '0');
+    Body.setAngle(body, (Math.random() - 0.5) * 0.5);
+    return body;
+  }
+
+  function dropBlocks() {
+    // Clear old
+    activeBlocks.forEach(b => World.remove(engine.world, b));
+    activeBlocks = [];
+    shadeIdx = 0;
+    blockSeq = 0;
+
+    const W = window.innerWidth;
+    // Drop 10 with stagger — same pattern as original
+    for (let i = 0; i < 20; i++) {
+      setTimeout(() => {
+        const x = W * 0.1 + Math.random() * W * 0.8;
+        const b = makeBlock(x, -80 - Math.random() * 100);
+        World.add(engine.world, b);
+        activeBlocks.push(b);
+      }, i * 130);
+    }
+  }
+
+  function initPhysics() {
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+
+    engine = Engine.create({ gravity: { y: 1.8 } });
+
+    render = Render.create({
+      canvas,
+      engine,
+      options: {
+        width: W,
+        height: H,
+        wireframes: false,
+        background: '#000000'
+      }
+    });
+
+    // Walls + ground — exactly as in original
+    const wallOpts = {
+      isStatic: true,
+      render: { fillStyle: '#000', strokeStyle: 'transparent' },
+      friction: 0.8
+    };
+    const ground  = Bodies.rectangle(W/2, H + 25, W * 3, 50, wallOpts);
+    const wallL   = Bodies.rectangle(-25, H/2, 50, H * 3, wallOpts);
+    const wallR   = Bodies.rectangle(W + 25, H/2, 50, H * 3, wallOpts);
+    World.add(engine.world, [ground, wallL, wallR]);
+
+    // Mouse constraint
+    const mouse = Mouse.create(render.canvas);
+    mc = MouseConstraint.create(engine, {
+      mouse,
+      constraint: { stiffness: 0.2, damping: 0.2, render: { visible: false } }
+    });
+    World.add(engine.world, mc);
+    render.mouse = mouse;
+
+    // Draw labels
+    Events.on(render, 'afterRender', () => {
+      const ctx = render.context;
+      activeBlocks.forEach(body => {
+        if (!body) return;
+        ctx.save();
+        ctx.translate(body.position.x, body.position.y);
+        ctx.rotate(body.angle);
+        const b = body.bounds;
+        const dim = Math.min(b.max.x - b.min.x, b.max.y - b.min.y);
+        const bright = parseInt((body.render.fillStyle||'#888').replace('#',''), 16) > 0x808080;
+        ctx.fillStyle = bright ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.15)';
+        ctx.font = `${Math.max(9, dim * 0.13)}px monospace`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(body._label || '', 0, 0);
+        ctx.restore();
+      });
+    });
+
+    runner = Runner.create();
+    Runner.run(runner, engine);
+    Render.run(render);
+
+    // Resize
+    window.addEventListener('resize', () => {
+      const W2 = window.innerWidth, H2 = window.innerHeight;
+      render.canvas.width  = W2;
+      render.canvas.height = H2;
+      render.options.width  = W2;
+      render.options.height = H2;
+      Body.setPosition(ground, { x: W2/2, y: H2 + 25 });
+      Body.setPosition(wallR,  { x: W2 + 25, y: H2/2 });
+    });
+
+    dropBlocks();
+  }
+
+  // ── Enter — triggered by button tap/click, exactly like original ──────────
+  function enter() {
+    splash.classList.add('hidden');
+    setTimeout(() => splash.style.display = 'none', 800);
+
+    worldEl.classList.add('visible');
+    labelTop.classList.add('visible');
+    labelAuth.classList.add('visible');
+    btnReset.classList.add('visible');
+
+    initPhysics();
+  }
+btnReset.addEventListener('click', dropBlocks);
+  btnReset.addEventListener('touchend', e => { e.preventDefault(); dropBlocks(); });
+
+  // Auto-enter after splash
+  setTimeout(enter, 2500);
+
+})();
+</script>
+</body>
+</html>
