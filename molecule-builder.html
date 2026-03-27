@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Molecule Builder — GCSE Chemistry</title>
+<title>Molecule Builder — GCSE / A-Level Chemistry</title>
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600&family=Roboto:wght@300;400;500&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -13,736 +13,1059 @@
   --blue:#1a73e8;--blue-light:#e8f0fe;
   --green:#1e8e3e;--green-light:#e6f4ea;
   --red:#d93025;--red-light:#fce8e6;
-  --yellow:#f9ab00;--yellow-light:#fef7e0;
   --shadow-sm:0 1px 2px rgba(60,64,67,.10),0 1px 3px rgba(60,64,67,.15);
   --shadow:0 1px 3px rgba(60,64,67,.12),0 2px 6px rgba(60,64,67,.15);
-  --r:12px;
+  --ts:13px;
 }
-body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-height:100vh;overflow:hidden}
-
-/* SPLASH */
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;display:flex;flex-direction:column}
 #splash{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#fff;animation:splashLife 2s ease forwards;pointer-events:none}
 @keyframes splashLife{0%{opacity:0}20%{opacity:1}75%{opacity:1}100%{opacity:0;visibility:hidden}}
-.splash-by{font-size:1.15rem;font-weight:400;color:#111;letter-spacing:0.01em}
-
-/* TOPBAR */
-#topbar{background:var(--white);border-bottom:1px solid var(--border-light);position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(60,64,67,.08);flex-shrink:0}
-.topbar-inner{max-width:100%;padding:11px 20px;display:flex;align-items:center;gap:16px}
-.topbar-title{font-family:'Google Sans',sans-serif;font-size:18px;font-weight:500}
+.splash-by{font-size:1.15rem;font-weight:400;color:#111}
+#topbar{background:var(--white);border-bottom:1px solid var(--border-light);flex-shrink:0;box-shadow:0 1px 3px rgba(60,64,67,.08);z-index:10}
+.topbar-inner{padding:9px 16px;display:flex;align-items:center;gap:12px}
+.topbar-title{font-family:'Google Sans',sans-serif;font-size:17px;font-weight:500}
 .topbar-title span{color:var(--blue)}
-.topbar-sub{font-size:11px;color:var(--muted);margin-top:1px}
-.topbar-badge{font-size:10px;padding:2px 8px;background:var(--blue-light);color:var(--blue);border-radius:10px;font-weight:500;margin-left:4px}
-
-/* PAGE SHELL */
-#shell{display:flex;flex-direction:column;height:calc(100vh - 49px - 38px)}
-#main{display:flex;flex:1;min-height:0;gap:0}
-
-/* PERIODIC TABLE AREA */
-#pt-area{flex:1;overflow:auto;padding:12px 14px;background:var(--bg);min-width:0}
-#pt-area::-webkit-scrollbar{height:5px;width:5px}
-#pt-area::-webkit-scrollbar-track{background:transparent}
-#pt-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
-
-/* PERIODIC TABLE GRID */
-#pt-grid{display:grid;grid-template-columns:repeat(18,minmax(46px,1fr));gap:3px;min-width:860px}
-
-/* ELEMENT TILE */
-.el{border-radius:6px;padding:3px 2px 2px;cursor:pointer;transition:transform .12s,box-shadow .12s;user-select:none;display:flex;flex-direction:column;align-items:center;justify-content:center;aspect-ratio:1;position:relative;min-width:0}
-.el:hover{transform:scale(1.22);box-shadow:0 4px 16px rgba(0,0,0,.22);z-index:10}
-.el.dragging-src{opacity:.5}
-.el-num{font-size:7.5px;color:rgba(255,255,255,.75);align-self:flex-start;padding-left:2px;line-height:1}
-.el-sym{font-family:'Google Sans',sans-serif;font-size:15px;font-weight:600;color:#fff;line-height:1.1}
-.el-name{font-size:6px;color:rgba(255,255,255,.8);text-align:center;line-height:1.2;overflow:hidden;width:100%}
-.el-mass{font-size:6px;color:rgba(255,255,255,.65);line-height:1}
-
-/* CATEGORY COLOURS */
-.cat-alkali{background:#e53935}.cat-alkaline{background:#fb8c00}.cat-transition{background:#f9a825}
-.cat-post{background:#7cb342}.cat-metalloid{background:#00897b}.cat-nonmetal{background:#1e88e5}
-.cat-halogen{background:#8e24aa}.cat-noble{background:#5e35b1}.cat-lanthanide{background:#c62828}
-.cat-actinide{background:#6d4c41}.cat-unknown{background:#757575}
-
-/* TOOLTIP */
-#el-tooltip{position:fixed;z-index:500;background:var(--white);border:1px solid var(--border);border-radius:10px;padding:10px 14px;box-shadow:var(--shadow);pointer-events:none;opacity:0;transition:opacity .15s;min-width:180px}
-.tt-sym{font-family:'Google Sans',sans-serif;font-size:26px;font-weight:600;line-height:1}
-.tt-name{font-size:14px;font-weight:500;margin-bottom:6px}
-.tt-row{display:flex;justify-content:space-between;font-size:11px;border-bottom:1px solid var(--border-light);padding:3px 0}
-.tt-row:last-child{border-bottom:none}
-.tt-key{color:var(--muted)}
-.tt-val{font-weight:500;color:var(--text)}
-
-/* BUILDER PANEL (BOTTOM) */
-#builder{flex-shrink:0;background:var(--white);border-top:1px solid var(--border);display:flex;gap:0;min-height:0}
-#builder-left{flex:1;display:flex;flex-direction:column;padding:10px 14px;gap:8px;min-width:0;border-right:1px solid var(--border-light)}
-#builder-top{display:flex;align-items:center;gap:10px}
-#builder-label{font-family:'Google Sans',sans-serif;font-size:12px;font-weight:500;color:var(--muted)}
-#compound-name{font-family:'Google Sans',sans-serif;font-size:15px;font-weight:600;color:var(--blue);min-width:160px}
-#formula-display{font-family:'Roboto Mono',monospace;font-size:13px;color:var(--text);background:var(--bg);padding:3px 10px;border-radius:20px;border:1px solid var(--border-light)}
-#builder-atoms{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:48px}
-.atom-chip{display:flex;align-items:center;gap:5px;padding:5px 10px 5px 8px;border-radius:20px;font-size:12px;font-weight:500;color:#fff;cursor:pointer;transition:transform .1s,opacity .1s;user-select:none}
-.atom-chip:hover{transform:scale(1.06)}
-.atom-chip .chip-sym{font-family:'Google Sans',sans-serif;font-size:14px;font-weight:600}
-.atom-chip .chip-count{font-size:11px;opacity:.85}
-.atom-chip .chip-x{font-size:11px;opacity:.65;margin-left:2px}
-.atom-chip:hover .chip-x{opacity:1}
-.builder-hint{font-size:11px;color:var(--muted);font-style:italic}
-
-/* 3D MODEL PANEL */
-#model-panel{width:260px;flex-shrink:0;display:flex;flex-direction:column;background:var(--white)}
-#model-header{padding:8px 12px 4px;font-family:'Google Sans',sans-serif;font-size:11px;font-weight:500;color:var(--muted);flex-shrink:0}
-#model-canvas-wrap{flex:1;position:relative;overflow:hidden}
-#model-canvas{display:block;width:100%;height:100%}
-
-/* LEGEND */
-#legend{display:flex;flex-wrap:wrap;gap:5px;padding:6px 14px;border-top:1px solid var(--border-light);flex-shrink:0}
-.leg-item{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--muted)}
-.leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
-
-/* CONTROLS BAR */
-#controls-bar{display:flex;gap:6px;align-items:center;padding:6px 14px 0}
-.ctrl-btn{padding:4px 12px;border:1px solid var(--border);border-radius:20px;background:var(--white);font-size:11px;font-family:'Roboto',sans-serif;cursor:pointer;color:var(--text);font-weight:500;transition:all .15s}
-.ctrl-btn:hover{background:var(--bg);border-color:#bbb}
+.topbar-sub{font-size:10px;color:var(--muted);margin-top:1px}
+.topbar-badge{font-size:9px;padding:2px 7px;background:var(--blue-light);color:var(--blue);border-radius:10px;font-weight:500;margin-left:4px}
+.ctrl-btn{padding:4px 11px;border:1px solid var(--border);border-radius:20px;background:var(--white);font-size:11px;font-family:'Roboto',sans-serif;cursor:pointer;color:var(--text);font-weight:500;transition:all .15s}
+.ctrl-btn:hover{background:var(--bg)}
 .ctrl-btn.danger{color:var(--red);border-color:#f5c6c3}
 .ctrl-btn.danger:hover{background:var(--red-light)}
-
-/* DISCLAIMER */
-#disclaimer{position:fixed;bottom:0;left:0;right:0;z-index:50;background:#fff;border-top:1px solid var(--border-light);padding:8px 20px;font-size:11px;color:var(--muted);text-align:center;line-height:1.6}
-
-/* CATEGORY FILTER */
-#cat-filter{display:flex;flex-wrap:wrap;gap:4px;padding:6px 14px;background:var(--white);border-bottom:1px solid var(--border-light);flex-shrink:0}
-.cat-btn{padding:2px 9px;border-radius:12px;font-size:10px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .12s;color:#fff}
-.cat-btn.off{opacity:.38;filter:grayscale(.6)}
+#cat-filter{flex-shrink:0;background:var(--white);border-bottom:1px solid var(--border-light);padding:4px 14px;display:flex;flex-wrap:wrap;gap:3px;align-items:center}
+.cat-btn{padding:2px 7px;border-radius:10px;font-size:9px;font-weight:500;cursor:pointer;border:none;color:#fff;transition:opacity .15s;white-space:nowrap}
+.cat-btn.off{opacity:.28}
+#pt-wrap{flex:1;min-height:0;padding:5px 10px 3px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#pt-grid{display:grid;grid-template-columns:repeat(18,1fr);gap:2px}
+.el{border-radius:4px;cursor:grab;transition:transform .12s,box-shadow .12s;user-select:none;display:flex;flex-direction:column;align-items:center;justify-content:center;aspect-ratio:1;position:relative;overflow:hidden}
+.el:hover{transform:scale(1.24);box-shadow:0 4px 18px rgba(0,0,0,.3);z-index:20}
+.el:active{cursor:grabbing}
+.el-num{font-size:calc(var(--ts)*0.52);color:rgba(255,255,255,.72);position:absolute;top:2px;left:2px;line-height:1}
+.el-sym{font-family:'Google Sans',sans-serif;font-size:var(--ts);font-weight:600;color:#fff;line-height:1}
+.el-name{font-size:calc(var(--ts)*0.38);color:rgba(255,255,255,.75);text-align:center;line-height:1.1;overflow:hidden;width:100%;white-space:nowrap;text-overflow:ellipsis;padding:0 1px}
+.el-mass{font-size:calc(var(--ts)*0.35);color:rgba(255,255,255,.58);line-height:1}
+.cat-alkali{background:#e53935}.cat-alkaline{background:#fb8c00}.cat-transition{background:#d4941a}
+.cat-post{background:#689f38}.cat-metalloid{background:#00897b}.cat-nonmetal{background:#1e88e5}
+.cat-halogen{background:#8e24aa}.cat-noble{background:#5e35b1}.cat-lanthanide{background:#c62828}
+.cat-actinide{background:#6d4c41}.cat-unknown{background:#757575}.cat-synthetic{background:#546e7a}
+/* LIGAND STAGING PANEL */
+#ligand-panel{flex-shrink:0;background:#f0f4ff;border-top:2px solid #b3c8f8;display:flex;height:106px}
+#ligand-left{flex:1;display:flex;flex-direction:column;padding:6px 12px;gap:5px;min-width:0;border-right:1px solid #c5d8fb}
+#ligand-left.drag-over{background:#dce8ff;outline:2px dashed var(--blue)}
+#ligand-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.ligand-label{font-size:10px;color:#185fa5;font-family:'Google Sans',sans-serif;font-weight:600;letter-spacing:.02em}
+#ligand-atoms{display:flex;flex-wrap:wrap;gap:4px;align-items:center;min-height:32px;overflow-y:auto;max-height:48px}
+#ligand-controls{display:flex;align-items:center;gap:6px;margin-left:auto;flex-shrink:0}
+.lig-btn{padding:3px 10px;border-radius:14px;border:1px solid;font-size:10px;font-weight:600;cursor:pointer;font-family:'Roboto',sans-serif;transition:all .15s;white-space:nowrap}
+.lig-btn-wrap{background:#1a73e8;border-color:#1a73e8;color:#fff}
+.lig-btn-wrap:hover{background:#1557b0}
+.lig-btn-clear{background:transparent;border-color:#f5c6c3;color:var(--red)}
+.lig-btn-clear:hover{background:var(--red-light)}
+.charge-input-wrap{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted)}
+.charge-input-wrap input{width:38px;padding:2px 5px;border:1px solid var(--border);border-radius:8px;font-size:11px;font-family:'Roboto Mono',monospace;text-align:center;background:var(--white)}
+/* BRACKETED GROUP CHIPS */
+.bracket-chip{display:inline-flex;align-items:center;gap:3px;padding:3px 9px 3px 6px;border-radius:14px;font-size:11px;font-weight:500;border:2px solid;cursor:grab;user-select:none;background:var(--white);transition:transform .1s,box-shadow .1s}
+.bracket-chip:hover{transform:scale(1.05);box-shadow:var(--shadow-sm)}
+.bracket-chip:active{cursor:grabbing}
+.bracket-chip .bc-formula{font-family:'Roboto Mono',monospace;font-size:11px;font-weight:600}
+.bracket-chip .bc-charge{font-size:9px;vertical-align:super;margin-left:1px}
+.bracket-chip .bc-x{font-size:10px;opacity:.5;cursor:pointer;margin-left:3px}
+.bracket-chip .bc-x:hover{opacity:1}
+#ligand-model-panel{width:220px;flex-shrink:0;display:flex;flex-direction:column;background:#0d1f3c}
+#ligand-model-header{padding:5px 10px 2px;font-size:9px;font-weight:500;color:rgba(255,255,255,.35);font-family:'Google Sans',sans-serif;flex-shrink:0}
+#ligand-canvas-wrap{flex:1;position:relative}
+#ligand-canvas{position:absolute;inset:0;display:block;width:100%;height:100%}
+#builder{flex-shrink:0;background:var(--white);border-top:1px solid var(--border);display:flex;height:118px}
+#builder-left{flex:1;display:flex;flex-direction:column;padding:7px 12px;gap:5px;min-width:0;border-right:1px solid var(--border-light)}
+#builder-left.drag-over{background:#e8f0fe;outline:2px dashed var(--blue)}
+#builder-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+#compound-name{font-family:'Google Sans',sans-serif;font-size:13px;font-weight:600;color:var(--blue)}
+#formula-display{font-family:'Roboto Mono',monospace;font-size:11px;color:var(--text);background:var(--bg);padding:2px 8px;border-radius:14px;border:1px solid var(--border-light)}
+#compound-type{font-size:10px;color:var(--muted);padding:2px 7px;background:#f1f3f4;border-radius:10px}
+#builder-atoms{display:flex;flex-wrap:wrap;gap:4px;align-items:center;overflow-y:auto;max-height:56px}
+.atom-chip{display:inline-flex;align-items:center;gap:3px;padding:3px 8px 3px 7px;border-radius:14px;font-size:11px;font-weight:500;color:#fff}
+.chip-sym{font-family:'Google Sans',sans-serif;font-size:12px;font-weight:700}
+.chip-x{font-size:10px;opacity:.6;cursor:pointer;margin-left:1px;transition:opacity .1s}
+.chip-x:hover{opacity:1}
+.builder-hint{font-size:10px;color:var(--muted);font-style:italic}
+#model-panel{width:220px;flex-shrink:0;display:flex;flex-direction:column;background:#0b1829}
+#model-header{padding:5px 10px 2px;font-size:9px;font-weight:500;color:rgba(255,255,255,.4);font-family:'Google Sans',sans-serif;flex-shrink:0}
+#model-canvas-wrap{flex:1;position:relative}
+#model-canvas{position:absolute;inset:0;display:block;width:100%;height:100%}
+#legend{flex-shrink:0;background:var(--white);border-top:1px solid var(--border-light);padding:3px 14px;display:flex;flex-wrap:wrap;gap:5px 10px}
+.leg-item{display:flex;align-items:center;gap:3px;font-size:9px;color:var(--muted)}
+.leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+#disclaimer{flex-shrink:0;background:#fff;border-top:1px solid var(--border-light);padding:5px 16px;font-size:10px;color:var(--muted);text-align:center}
+#el-tooltip{position:fixed;z-index:800;background:var(--white);border:1px solid var(--border);border-radius:10px;padding:10px 12px 8px;box-shadow:var(--shadow);pointer-events:none;opacity:0;transition:opacity .15s;width:252px}
+.tt-head{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.tt-badge{width:40px;height:40px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Google Sans',sans-serif;font-size:18px;font-weight:700;color:#fff;flex-shrink:0}
+.tt-name{font-size:13px;font-weight:500;line-height:1.2}
+.tt-cat{font-size:10px;font-weight:500;margin-top:1px}
+.tt-row{display:flex;justify-content:space-between;font-size:10.5px;border-bottom:1px solid var(--border-light);padding:2.5px 0}
+.tt-row:last-of-type{border-bottom:none}
+.tt-key{color:var(--muted)}
+.tt-val{font-weight:500}
+#tt-shell-wrap{margin-top:6px;display:flex;justify-content:center;background:#0b1829;border-radius:6px;padding:4px 0}
 </style>
 </head>
 <body>
-
 <div id="splash"><div class="splash-by">A tool by <strong>Leon Dudhill</strong></div></div>
-
 <div id="topbar">
   <div class="topbar-inner">
     <div>
-      <div class="topbar-title">Molecule <span>Builder</span> <span class="topbar-badge">GCSE Chemistry</span></div>
-      <div class="topbar-sub">Click an element to add it · hover for details · drag order doesn't matter</div>
+      <div class="topbar-title">Molecule <span>Builder</span><span class="topbar-badge">GCSE / A-Level Chemistry</span></div>
+      <div class="topbar-sub">Hover for electron shell · click or drag element onto the molecule bar below</div>
     </div>
-    <div id="controls-bar" style="margin-left:auto;padding:0">
-      <button class="ctrl-btn danger" id="clear-btn">✕ Clear</button>
+    <div style="margin-left:auto;display:flex;gap:6px">
+      <span style="font-size:10px;color:var(--muted);align-self:center">Molecule Builder</span>
     </div>
   </div>
 </div>
-
-<div id="shell">
-  <!-- CATEGORY FILTER -->
-  <div id="cat-filter"></div>
-
-  <div id="main">
-    <!-- PERIODIC TABLE -->
-    <div id="pt-area">
-      <div id="pt-grid"></div>
-    </div>
-  </div>
-
-  <!-- BOTTOM BUILDER -->
-  <div id="builder">
-    <div id="builder-left">
-      <div id="builder-top">
-        <span id="builder-label">Molecule:</span>
-        <span id="compound-name">—</span>
-        <span id="formula-display" style="display:none"></span>
-        <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
-          <button class="ctrl-btn" id="undo-btn">↩ Undo</button>
+<div id="cat-filter"></div>
+<div id="pt-wrap"><div id="pt-grid"></div></div>
+<!-- LIGAND STAGING PANEL -->
+<div id="ligand-panel">
+  <div id="ligand-left">
+    <div id="ligand-top">
+      <span class="ligand-label">[ Ligand Staging ]</span>
+      <span style="font-size:9px;color:#5f8dd3">Drag elements here → wrap in brackets → drag the chip to the molecule bar below</span>
+      <div id="ligand-controls">
+        <div class="charge-input-wrap">
+          <span>Charge:</span>
+          <input type="text" id="charge-input" placeholder="e.g. 2+" maxlength="4" title="Enter charge, e.g. 2+ or 3-">
         </div>
+        <button class="lig-btn lig-btn-wrap" id="wrap-btn">[ Wrap ]</button>
+        <button class="lig-btn" id="lig-undo-btn" style="background:transparent;border-color:var(--border);color:var(--text)">↩ Undo</button>
+        <button class="lig-btn lig-btn-clear" id="lig-clear-btn">✕ Clear</button>
       </div>
-      <div id="builder-atoms"><span class="builder-hint">Click elements above to start building a molecule…</span></div>
     </div>
-    <div id="model-panel">
-      <div id="model-header">Ball-and-stick model</div>
-      <div id="model-canvas-wrap"><canvas id="model-canvas"></canvas></div>
-    </div>
+    <div id="ligand-atoms"><span class="builder-hint" style="color:#5f8dd3">Drag elements from the periodic table here…</span></div>
   </div>
-
-  <div id="legend"></div>
+  <div id="ligand-model-panel">
+    <div id="ligand-model-header">Ligand preview</div>
+    <div id="ligand-canvas-wrap"><canvas id="ligand-canvas"></canvas></div>
+  </div>
 </div>
 
+<div id="builder">
+  <div id="builder-left">
+    <div id="builder-top">
+      <span style="font-size:10px;color:var(--muted);font-family:'Google Sans',sans-serif;font-weight:500">Molecule:</span>
+      <span id="compound-name">—</span>
+      <span id="formula-display" style="display:none"></span>
+      <span id="compound-type" style="display:none"></span>
+      <div style="margin-left:auto;display:flex;gap:5px;flex-shrink:0">
+        <button class="ctrl-btn" id="undo-btn">↩ Undo</button>
+        <button class="ctrl-btn danger" id="clear-btn">✕ Clear</button>
+      </div>
+    </div>
+    <div id="builder-atoms"><span class="builder-hint">Click or drag elements above to build a molecule…</span></div>
+  </div>
+  <div id="model-panel">
+    <div id="model-header">Ball-and-stick model</div>
+    <div id="model-canvas-wrap"><canvas id="model-canvas"></canvas></div>
+  </div>
+</div>
+<div id="legend"></div>
+<div id="disclaimer"><strong style="color:var(--text)">Disclaimer:</strong> Molecule Builder is a tool to help me study for my GCSE Chemistry. You are welcome to use it but it may have errors and shouldn't be relied on without independently fact checking answers.</div>
 <div id="el-tooltip"></div>
-<div id="disclaimer">
-  <strong style="color:var(--text)">Disclaimer:</strong> Molecule Builder is a tool to help me study for my GCSE Chemistry. You are welcome to use it but it may have errors and shouldn't be relied on without independently fact checking answers.
-</div>
 
 <script>
-// ─── ELEMENT DATA ─────────────────────────────────────────────────────────────
-const ELEMENTS = [
-  {n:1, sym:'H',  name:'Hydrogen',    mass:'1.008',  cat:'nonmetal',   group:1,  period:1, valence:1,  r:31,  color:'#e3e3e3'},
-  {n:2, sym:'He', name:'Helium',      mass:'4.003',  cat:'noble',      group:18, period:1, valence:0,  r:140, color:'#b3cff5'},
-  {n:3, sym:'Li', name:'Lithium',     mass:'6.941',  cat:'alkali',     group:1,  period:2, valence:1,  r:152, color:'#ff8a80'},
-  {n:4, sym:'Be', name:'Beryllium',   mass:'9.012',  cat:'alkaline',   group:2,  period:2, valence:2,  r:112, color:'#ffcc80'},
-  {n:5, sym:'B',  name:'Boron',       mass:'10.81',  cat:'metalloid',  group:13, period:2, valence:3,  r:87,  color:'#80cbc4'},
-  {n:6, sym:'C',  name:'Carbon',      mass:'12.011', cat:'nonmetal',   group:14, period:2, valence:4,  r:77,  color:'#424242'},
-  {n:7, sym:'N',  name:'Nitrogen',    mass:'14.007', cat:'nonmetal',   group:15, period:2, valence:3,  r:75,  color:'#1565c0'},
-  {n:8, sym:'O',  name:'Oxygen',      mass:'15.999', cat:'nonmetal',   group:16, period:2, valence:2,  r:73,  color:'#c62828'},
-  {n:9, sym:'F',  name:'Fluorine',    mass:'18.998', cat:'halogen',    group:17, period:2, valence:1,  r:64,  color:'#6a1b9a'},
-  {n:10,sym:'Ne', name:'Neon',        mass:'20.180', cat:'noble',      group:18, period:2, valence:0,  r:154, color:'#b3cff5'},
-  {n:11,sym:'Na', name:'Sodium',      mass:'22.990', cat:'alkali',     group:1,  period:3, valence:1,  r:186, color:'#ff8a80'},
-  {n:12,sym:'Mg', name:'Magnesium',   mass:'24.305', cat:'alkaline',   group:2,  period:3, valence:2,  r:160, color:'#ffcc80'},
-  {n:13,sym:'Al', name:'Aluminium',   mass:'26.982', cat:'post',       group:13, period:3, valence:3,  r:143, color:'#aed581'},
-  {n:14,sym:'Si', name:'Silicon',     mass:'28.086', cat:'metalloid',  group:14, period:3, valence:4,  r:117, color:'#80cbc4'},
-  {n:15,sym:'P',  name:'Phosphorus',  mass:'30.974', cat:'nonmetal',   group:15, period:3, valence:3,  r:110, color:'#ef6c00'},
-  {n:16,sym:'S',  name:'Sulfur',      mass:'32.065', cat:'nonmetal',   group:16, period:3, valence:2,  r:103, color:'#f9a825'},
-  {n:17,sym:'Cl', name:'Chlorine',    mass:'35.453', cat:'halogen',    group:17, period:3, valence:1,  r:99,  color:'#558b2f'},
-  {n:18,sym:'Ar', name:'Argon',       mass:'39.948', cat:'noble',      group:18, period:3, valence:0,  r:188, color:'#b3cff5'},
-  {n:19,sym:'K',  name:'Potassium',   mass:'39.098', cat:'alkali',     group:1,  period:4, valence:1,  r:227, color:'#ff8a80'},
-  {n:20,sym:'Ca', name:'Calcium',     mass:'40.078', cat:'alkaline',   group:2,  period:4, valence:2,  r:197, color:'#ffcc80'},
-  {n:21,sym:'Sc', name:'Scandium',    mass:'44.956', cat:'transition', group:3,  period:4, valence:3,  r:162, color:'#ffd54f'},
-  {n:22,sym:'Ti', name:'Titanium',    mass:'47.867', cat:'transition', group:4,  period:4, valence:4,  r:147, color:'#ffd54f'},
-  {n:23,sym:'V',  name:'Vanadium',    mass:'50.942', cat:'transition', group:5,  period:4, valence:5,  r:134, color:'#ffd54f'},
-  {n:24,sym:'Cr', name:'Chromium',    mass:'51.996', cat:'transition', group:6,  period:4, valence:6,  r:128, color:'#ffd54f'},
-  {n:25,sym:'Mn', name:'Manganese',   mass:'54.938', cat:'transition', group:7,  period:4, valence:7,  r:127, color:'#ffd54f'},
-  {n:26,sym:'Fe', name:'Iron',        mass:'55.845', cat:'transition', group:8,  period:4, valence:3,  r:126, color:'#ffd54f'},
-  {n:27,sym:'Co', name:'Cobalt',      mass:'58.933', cat:'transition', group:9,  period:4, valence:2,  r:125, color:'#ffd54f'},
-  {n:28,sym:'Ni', name:'Nickel',      mass:'58.693', cat:'transition', group:10, period:4, valence:2,  r:124, color:'#ffd54f'},
-  {n:29,sym:'Cu', name:'Copper',      mass:'63.546', cat:'transition', group:11, period:4, valence:2,  r:128, color:'#ffd54f'},
-  {n:30,sym:'Zn', name:'Zinc',        mass:'65.38',  cat:'transition', group:12, period:4, valence:2,  r:122, color:'#ffd54f'},
-  {n:31,sym:'Ga', name:'Gallium',     mass:'69.723', cat:'post',       group:13, period:4, valence:3,  r:122, color:'#aed581'},
-  {n:32,sym:'Ge', name:'Germanium',   mass:'72.63',  cat:'metalloid',  group:14, period:4, valence:4,  r:122, color:'#80cbc4'},
-  {n:33,sym:'As', name:'Arsenic',     mass:'74.922', cat:'metalloid',  group:15, period:4, valence:3,  r:119, color:'#80cbc4'},
-  {n:34,sym:'Se', name:'Selenium',    mass:'78.96',  cat:'nonmetal',   group:16, period:4, valence:2,  r:120, color:'#1e88e5'},
-  {n:35,sym:'Br', name:'Bromine',     mass:'79.904', cat:'halogen',    group:17, period:4, valence:1,  r:114, color:'#6a1b9a'},
-  {n:36,sym:'Kr', name:'Krypton',     mass:'83.798', cat:'noble',      group:18, period:4, valence:0,  r:202, color:'#b3cff5'},
-  {n:37,sym:'Rb', name:'Rubidium',    mass:'85.468', cat:'alkali',     group:1,  period:5, valence:1,  r:248, color:'#ff8a80'},
-  {n:38,sym:'Sr', name:'Strontium',   mass:'87.62',  cat:'alkaline',   group:2,  period:5, valence:2,  r:215, color:'#ffcc80'},
-  {n:39,sym:'Y',  name:'Yttrium',     mass:'88.906', cat:'transition', group:3,  period:5, valence:3,  r:180, color:'#ffd54f'},
-  {n:40,sym:'Zr', name:'Zirconium',   mass:'91.224', cat:'transition', group:4,  period:5, valence:4,  r:160, color:'#ffd54f'},
-  {n:41,sym:'Nb', name:'Niobium',     mass:'92.906', cat:'transition', group:5,  period:5, valence:5,  r:146, color:'#ffd54f'},
-  {n:42,sym:'Mo', name:'Molybdenum',  mass:'95.96',  cat:'transition', group:6,  period:5, valence:6,  r:139, color:'#ffd54f'},
-  {n:43,sym:'Tc', name:'Technetium',  mass:'[98]',   cat:'transition', group:7,  period:5, valence:7,  r:136, color:'#ffd54f'},
-  {n:44,sym:'Ru', name:'Ruthenium',   mass:'101.07', cat:'transition', group:8,  period:5, valence:4,  r:134, color:'#ffd54f'},
-  {n:45,sym:'Rh', name:'Rhodium',     mass:'102.91', cat:'transition', group:9,  period:5, valence:3,  r:134, color:'#ffd54f'},
-  {n:46,sym:'Pd', name:'Palladium',   mass:'106.42', cat:'transition', group:10, period:5, valence:2,  r:137, color:'#ffd54f'},
-  {n:47,sym:'Ag', name:'Silver',      mass:'107.87', cat:'transition', group:11, period:5, valence:1,  r:144, color:'#ffd54f'},
-  {n:48,sym:'Cd', name:'Cadmium',     mass:'112.41', cat:'transition', group:12, period:5, valence:2,  r:151, color:'#ffd54f'},
-  {n:49,sym:'In', name:'Indium',      mass:'114.82', cat:'post',       group:13, period:5, valence:3,  r:167, color:'#aed581'},
-  {n:50,sym:'Sn', name:'Tin',         mass:'118.71', cat:'post',       group:14, period:5, valence:4,  r:140, color:'#aed581'},
-  {n:51,sym:'Sb', name:'Antimony',    mass:'121.76', cat:'metalloid',  group:15, period:5, valence:3,  r:141, color:'#80cbc4'},
-  {n:52,sym:'Te', name:'Tellurium',   mass:'127.60', cat:'metalloid',  group:16, period:5, valence:2,  r:137, color:'#80cbc4'},
-  {n:53,sym:'I',  name:'Iodine',      mass:'126.90', cat:'halogen',    group:17, period:5, valence:1,  r:133, color:'#6a1b9a'},
-  {n:54,sym:'Xe', name:'Xenon',       mass:'131.29', cat:'noble',      group:18, period:5, valence:0,  r:216, color:'#b3cff5'},
-  {n:55,sym:'Cs', name:'Caesium',     mass:'132.91', cat:'alkali',     group:1,  period:6, valence:1,  r:265, color:'#ff8a80'},
-  {n:56,sym:'Ba', name:'Barium',      mass:'137.33', cat:'alkaline',   group:2,  period:6, valence:2,  r:222, color:'#ffcc80'},
-  {n:57,sym:'La', name:'Lanthanum',   mass:'138.91', cat:'lanthanide', group:3,  period:6, valence:3,  r:187, color:'#ef9a9a'},
-  {n:72,sym:'Hf', name:'Hafnium',     mass:'178.49', cat:'transition', group:4,  period:6, valence:4,  r:159, color:'#ffd54f'},
-  {n:73,sym:'Ta', name:'Tantalum',    mass:'180.95', cat:'transition', group:5,  period:6, valence:5,  r:146, color:'#ffd54f'},
-  {n:74,sym:'W',  name:'Tungsten',    mass:'183.84', cat:'transition', group:6,  period:6, valence:6,  r:139, color:'#ffd54f'},
-  {n:75,sym:'Re', name:'Rhenium',     mass:'186.21', cat:'transition', group:7,  period:6, valence:7,  r:137, color:'#ffd54f'},
-  {n:76,sym:'Os', name:'Osmium',      mass:'190.23', cat:'transition', group:8,  period:6, valence:4,  r:135, color:'#ffd54f'},
-  {n:77,sym:'Ir', name:'Iridium',     mass:'192.22', cat:'transition', group:9,  period:6, valence:3,  r:136, color:'#ffd54f'},
-  {n:78,sym:'Pt', name:'Platinum',    mass:'195.08', cat:'transition', group:10, period:6, valence:2,  r:138, color:'#ffd54f'},
-  {n:79,sym:'Au', name:'Gold',        mass:'196.97', cat:'transition', group:11, period:6, valence:1,  r:144, color:'#ffd54f'},
-  {n:80,sym:'Hg', name:'Mercury',     mass:'200.59', cat:'transition', group:12, period:6, valence:2,  r:151, color:'#ffd54f'},
-  {n:81,sym:'Tl', name:'Thallium',    mass:'204.38', cat:'post',       group:13, period:6, valence:3,  r:170, color:'#aed581'},
-  {n:82,sym:'Pb', name:'Lead',        mass:'207.2',  cat:'post',       group:14, period:6, valence:4,  r:175, color:'#aed581'},
-  {n:83,sym:'Bi', name:'Bismuth',     mass:'208.98', cat:'post',       group:15, period:6, valence:3,  r:170, color:'#aed581'},
-  {n:84,sym:'Po', name:'Polonium',    mass:'[209]',  cat:'post',       group:16, period:6, valence:2,  r:168, color:'#aed581'},
-  {n:85,sym:'At', name:'Astatine',    mass:'[210]',  cat:'halogen',    group:17, period:6, valence:1,  r:150, color:'#6a1b9a'},
-  {n:86,sym:'Rn', name:'Radon',       mass:'[222]',  cat:'noble',      group:18, period:6, valence:0,  r:220, color:'#b3cff5'},
-  {n:87,sym:'Fr', name:'Francium',    mass:'[223]',  cat:'alkali',     group:1,  period:7, valence:1,  r:270, color:'#ff8a80'},
-  {n:88,sym:'Ra', name:'Radium',      mass:'[226]',  cat:'alkaline',   group:2,  period:7, valence:2,  r:223, color:'#ffcc80'},
-  {n:89,sym:'Ac', name:'Actinium',    mass:'[227]',  cat:'actinide',   group:3,  period:7, valence:3,  r:188, color:'#bcaaa4'},
-  {n:104,sym:'Rf',name:'Rutherfordium',mass:'[267]', cat:'transition', group:4,  period:7, valence:4,  r:150, color:'#ffd54f'},
-  {n:105,sym:'Db',name:'Dubnium',     mass:'[268]',  cat:'transition', group:5,  period:7, valence:5,  r:149, color:'#ffd54f'},
-  {n:106,sym:'Sg',name:'Seaborgium',  mass:'[271]',  cat:'transition', group:6,  period:7, valence:6,  r:143, color:'#ffd54f'},
-  {n:107,sym:'Bh',name:'Bohrium',     mass:'[272]',  cat:'transition', group:7,  period:7, valence:7,  r:141, color:'#ffd54f'},
-  {n:108,sym:'Hs',name:'Hassium',     mass:'[270]',  cat:'transition', group:8,  period:7, valence:8,  r:134, color:'#ffd54f'},
-  {n:109,sym:'Mt',name:'Meitnerium',  mass:'[278]',  cat:'unknown',    group:9,  period:7, valence:0,  r:129, color:'#9e9e9e'},
-  {n:110,sym:'Ds',name:'Darmstadtium',mass:'[281]',  cat:'unknown',    group:10, period:7, valence:0,  r:128, color:'#9e9e9e'},
-  {n:111,sym:'Rg',name:'Roentgenium', mass:'[282]',  cat:'unknown',    group:11, period:7, valence:0,  r:121, color:'#9e9e9e'},
-  {n:112,sym:'Cn',name:'Copernicium', mass:'[285]',  cat:'transition', group:12, period:7, valence:2,  r:122, color:'#ffd54f'},
-  {n:113,sym:'Nh',name:'Nihonium',    mass:'[286]',  cat:'unknown',    group:13, period:7, valence:0,  r:136, color:'#9e9e9e'},
-  {n:114,sym:'Fl',name:'Flerovium',   mass:'[289]',  cat:'unknown',    group:14, period:7, valence:0,  r:143, color:'#9e9e9e'},
-  {n:115,sym:'Mc',name:'Moscovium',   mass:'[290]',  cat:'unknown',    group:15, period:7, valence:0,  r:162, color:'#9e9e9e'},
-  {n:116,sym:'Lv',name:'Livermorium', mass:'[293]',  cat:'unknown',    group:16, period:7, valence:0,  r:175, color:'#9e9e9e'},
-  {n:117,sym:'Ts',name:'Tennessine',  mass:'[294]',  cat:'halogen',    group:17, period:7, valence:0,  r:165, color:'#6a1b9a'},
-  {n:118,sym:'Og',name:'Oganesson',   mass:'[294]',  cat:'noble',      group:18, period:7, valence:0,  r:157, color:'#b3cff5'},
-  // Lanthanides (period 8 = row 8 in grid, cols 4-17)
-  {n:58, sym:'Ce',name:'Cerium',      mass:'140.12', cat:'lanthanide', group:4,  period:8, valence:4,  r:183, color:'#ef9a9a'},
-  {n:59, sym:'Pr',name:'Praseodymium',mass:'140.91', cat:'lanthanide', group:5,  period:8, valence:3,  r:182, color:'#ef9a9a'},
-  {n:60, sym:'Nd',name:'Neodymium',   mass:'144.24', cat:'lanthanide', group:6,  period:8, valence:3,  r:181, color:'#ef9a9a'},
-  {n:61, sym:'Pm',name:'Promethium',  mass:'[145]',  cat:'lanthanide', group:7,  period:8, valence:3,  r:183, color:'#ef9a9a'},
-  {n:62, sym:'Sm',name:'Samarium',    mass:'150.36', cat:'lanthanide', group:8,  period:8, valence:3,  r:180, color:'#ef9a9a'},
-  {n:63, sym:'Eu',name:'Europium',    mass:'151.96', cat:'lanthanide', group:9,  period:8, valence:3,  r:180, color:'#ef9a9a'},
-  {n:64, sym:'Gd',name:'Gadolinium',  mass:'157.25', cat:'lanthanide', group:10, period:8, valence:3,  r:180, color:'#ef9a9a'},
-  {n:65, sym:'Tb',name:'Terbium',     mass:'158.93', cat:'lanthanide', group:11, period:8, valence:3,  r:177, color:'#ef9a9a'},
-  {n:66, sym:'Dy',name:'Dysprosium',  mass:'162.50', cat:'lanthanide', group:12, period:8, valence:3,  r:178, color:'#ef9a9a'},
-  {n:67, sym:'Ho',name:'Holmium',     mass:'164.93', cat:'lanthanide', group:13, period:8, valence:3,  r:176, color:'#ef9a9a'},
-  {n:68, sym:'Er',name:'Erbium',      mass:'167.26', cat:'lanthanide', group:14, period:8, valence:3,  r:176, color:'#ef9a9a'},
-  {n:69, sym:'Tm',name:'Thulium',     mass:'168.93', cat:'lanthanide', group:15, period:8, valence:3,  r:176, color:'#ef9a9a'},
-  {n:70, sym:'Yb',name:'Ytterbium',   mass:'173.04', cat:'lanthanide', group:16, period:8, valence:3,  r:176, color:'#ef9a9a'},
-  {n:71, sym:'Lu',name:'Lutetium',    mass:'174.97', cat:'lanthanide', group:17, period:8, valence:3,  r:174, color:'#ef9a9a'},
-  // Actinides (period 9)
-  {n:90, sym:'Th',name:'Thorium',     mass:'232.04', cat:'actinide',   group:4,  period:9, valence:4,  r:179, color:'#bcaaa4'},
-  {n:91, sym:'Pa',name:'Protactinium',mass:'231.04', cat:'actinide',   group:5,  period:9, valence:5,  r:163, color:'#bcaaa4'},
-  {n:92, sym:'U', name:'Uranium',     mass:'238.03', cat:'actinide',   group:6,  period:9, valence:6,  r:156, color:'#bcaaa4'},
-  {n:93, sym:'Np',name:'Neptunium',   mass:'[237]',  cat:'actinide',   group:7,  period:9, valence:5,  r:155, color:'#bcaaa4'},
-  {n:94, sym:'Pu',name:'Plutonium',   mass:'[244]',  cat:'actinide',   group:8,  period:9, valence:4,  r:159, color:'#bcaaa4'},
-  {n:95, sym:'Am',name:'Americium',   mass:'[243]',  cat:'actinide',   group:9,  period:9, valence:3,  r:173, color:'#bcaaa4'},
-  {n:96, sym:'Cm',name:'Curium',      mass:'[247]',  cat:'actinide',   group:10, period:9, valence:3,  r:174, color:'#bcaaa4'},
-  {n:97, sym:'Bk',name:'Berkelium',   mass:'[247]',  cat:'actinide',   group:11, period:9, valence:3,  r:170, color:'#bcaaa4'},
-  {n:98, sym:'Cf',name:'Californium', mass:'[251]',  cat:'actinide',   group:12, period:9, valence:3,  r:169, color:'#bcaaa4'},
-  {n:99, sym:'Es',name:'Einsteinium', mass:'[252]',  cat:'actinide',   group:13, period:9, valence:3,  r:166, color:'#bcaaa4'},
-  {n:100,sym:'Fm',name:'Fermium',     mass:'[257]',  cat:'actinide',   group:14, period:9, valence:3,  r:165, color:'#bcaaa4'},
-  {n:101,sym:'Md',name:'Mendelevium', mass:'[258]',  cat:'actinide',   group:15, period:9, valence:3,  r:164, color:'#bcaaa4'},
-  {n:102,sym:'No',name:'Nobelium',    mass:'[259]',  cat:'actinide',   group:16, period:9, valence:3,  r:163, color:'#bcaaa4'},
-  {n:103,sym:'Lr',name:'Lawrencium',  mass:'[262]',  cat:'actinide',   group:17, period:9, valence:3,  r:162, color:'#bcaaa4'},
+// ── ELEMENTS (all 118) ────────────────────────────────────────────────────────
+// p = period (row 1-7), g = group (col 1-18)
+// Lanthanides (57-71) use p:8 and actinides (89-103) use p:9 — rendered in footnote rows
+const EL=[
+ // Period 1
+ {n:1,  sym:'H',  name:'Hydrogen',       mass:'1.008',  cat:'nonmetal',   g:1,  p:1, v:1, r:31,  col:'#78909c', shells:[1]},
+ {n:2,  sym:'He', name:'Helium',         mass:'4.003',  cat:'noble',      g:18, p:1, v:0, r:140, col:'#5e35b1', shells:[2]},
+ // Period 2
+ {n:3,  sym:'Li', name:'Lithium',        mass:'6.941',  cat:'alkali',     g:1,  p:2, v:1, r:152, col:'#e53935', shells:[2,1]},
+ {n:4,  sym:'Be', name:'Beryllium',      mass:'9.012',  cat:'alkaline',   g:2,  p:2, v:2, r:112, col:'#fb8c00', shells:[2,2]},
+ {n:5,  sym:'B',  name:'Boron',          mass:'10.81',  cat:'metalloid',  g:13, p:2, v:3, r:87,  col:'#00897b', shells:[2,3]},
+ {n:6,  sym:'C',  name:'Carbon',         mass:'12.011', cat:'nonmetal',   g:14, p:2, v:4, r:77,  col:'#37474f', shells:[2,4]},
+ {n:7,  sym:'N',  name:'Nitrogen',       mass:'14.007', cat:'nonmetal',   g:15, p:2, v:3, r:75,  col:'#1565c0', shells:[2,5]},
+ {n:8,  sym:'O',  name:'Oxygen',         mass:'15.999', cat:'nonmetal',   g:16, p:2, v:2, r:73,  col:'#c62828', shells:[2,6]},
+ {n:9,  sym:'F',  name:'Fluorine',       mass:'18.998', cat:'halogen',    g:17, p:2, v:1, r:64,  col:'#6a1b9a', shells:[2,7]},
+ {n:10, sym:'Ne', name:'Neon',           mass:'20.180', cat:'noble',      g:18, p:2, v:0, r:154, col:'#4527a0', shells:[2,8]},
+ // Period 3
+ {n:11, sym:'Na', name:'Sodium',         mass:'22.990', cat:'alkali',     g:1,  p:3, v:1, r:186, col:'#e53935', shells:[2,8,1]},
+ {n:12, sym:'Mg', name:'Magnesium',      mass:'24.305', cat:'alkaline',   g:2,  p:3, v:2, r:160, col:'#fb8c00', shells:[2,8,2]},
+ {n:13, sym:'Al', name:'Aluminium',      mass:'26.982', cat:'post',       g:13, p:3, v:3, r:143, col:'#689f38', shells:[2,8,3]},
+ {n:14, sym:'Si', name:'Silicon',        mass:'28.086', cat:'metalloid',  g:14, p:3, v:4, r:117, col:'#00897b', shells:[2,8,4]},
+ {n:15, sym:'P',  name:'Phosphorus',     mass:'30.974', cat:'nonmetal',   g:15, p:3, v:3, r:110, col:'#ef6c00', shells:[2,8,5]},
+ {n:16, sym:'S',  name:'Sulfur',         mass:'32.065', cat:'nonmetal',   g:16, p:3, v:2, r:103, col:'#f9a825', shells:[2,8,6]},
+ {n:17, sym:'Cl', name:'Chlorine',       mass:'35.453', cat:'halogen',    g:17, p:3, v:1, r:99,  col:'#558b2f', shells:[2,8,7]},
+ {n:18, sym:'Ar', name:'Argon',          mass:'39.948', cat:'noble',      g:18, p:3, v:0, r:188, col:'#4527a0', shells:[2,8,8]},
+ // Period 4
+ {n:19, sym:'K',  name:'Potassium',      mass:'39.098', cat:'alkali',     g:1,  p:4, v:1, r:227, col:'#e53935', shells:[2,8,8,1]},
+ {n:20, sym:'Ca', name:'Calcium',        mass:'40.078', cat:'alkaline',   g:2,  p:4, v:2, r:197, col:'#fb8c00', shells:[2,8,8,2]},
+ {n:21, sym:'Sc', name:'Scandium',       mass:'44.956', cat:'transition', g:3,  p:4, v:3, r:162, col:'#d4941a', shells:[2,8,9,2]},
+ {n:22, sym:'Ti', name:'Titanium',       mass:'47.867', cat:'transition', g:4,  p:4, v:4, r:147, col:'#d4941a', shells:[2,8,10,2]},
+ {n:23, sym:'V',  name:'Vanadium',       mass:'50.942', cat:'transition', g:5,  p:4, v:5, r:134, col:'#d4941a', shells:[2,8,11,2]},
+ {n:24, sym:'Cr', name:'Chromium',       mass:'51.996', cat:'transition', g:6,  p:4, v:6, r:128, col:'#d4941a', shells:[2,8,13,1]},
+ {n:25, sym:'Mn', name:'Manganese',      mass:'54.938', cat:'transition', g:7,  p:4, v:7, r:127, col:'#d4941a', shells:[2,8,13,2]},
+ {n:26, sym:'Fe', name:'Iron',           mass:'55.845', cat:'transition', g:8,  p:4, v:3, r:126, col:'#d4941a', shells:[2,8,14,2]},
+ {n:27, sym:'Co', name:'Cobalt',         mass:'58.933', cat:'transition', g:9,  p:4, v:2, r:125, col:'#d4941a', shells:[2,8,15,2]},
+ {n:28, sym:'Ni', name:'Nickel',         mass:'58.693', cat:'transition', g:10, p:4, v:2, r:124, col:'#d4941a', shells:[2,8,16,2]},
+ {n:29, sym:'Cu', name:'Copper',         mass:'63.546', cat:'transition', g:11, p:4, v:2, r:128, col:'#d4941a', shells:[2,8,18,1]},
+ {n:30, sym:'Zn', name:'Zinc',           mass:'65.38',  cat:'transition', g:12, p:4, v:2, r:122, col:'#d4941a', shells:[2,8,18,2]},
+ {n:31, sym:'Ga', name:'Gallium',        mass:'69.723', cat:'post',       g:13, p:4, v:3, r:122, col:'#689f38', shells:[2,8,18,3]},
+ {n:32, sym:'Ge', name:'Germanium',      mass:'72.63',  cat:'metalloid',  g:14, p:4, v:4, r:122, col:'#00897b', shells:[2,8,18,4]},
+ {n:33, sym:'As', name:'Arsenic',        mass:'74.922', cat:'metalloid',  g:15, p:4, v:3, r:119, col:'#00897b', shells:[2,8,18,5]},
+ {n:34, sym:'Se', name:'Selenium',       mass:'78.96',  cat:'nonmetal',   g:16, p:4, v:2, r:120, col:'#1e88e5', shells:[2,8,18,6]},
+ {n:35, sym:'Br', name:'Bromine',        mass:'79.904', cat:'halogen',    g:17, p:4, v:1, r:114, col:'#6a1b9a', shells:[2,8,18,7]},
+ {n:36, sym:'Kr', name:'Krypton',        mass:'83.798', cat:'noble',      g:18, p:4, v:0, r:202, col:'#4527a0', shells:[2,8,18,8]},
+ // Period 5
+ {n:37, sym:'Rb', name:'Rubidium',       mass:'85.468', cat:'alkali',     g:1,  p:5, v:1, r:248, col:'#e53935', shells:[2,8,18,8,1]},
+ {n:38, sym:'Sr', name:'Strontium',      mass:'87.62',  cat:'alkaline',   g:2,  p:5, v:2, r:215, col:'#fb8c00', shells:[2,8,18,8,2]},
+ {n:39, sym:'Y',  name:'Yttrium',        mass:'88.906', cat:'transition', g:3,  p:5, v:3, r:180, col:'#d4941a', shells:[2,8,18,9,2]},
+ {n:40, sym:'Zr', name:'Zirconium',      mass:'91.224', cat:'transition', g:4,  p:5, v:4, r:160, col:'#d4941a', shells:[2,8,18,10,2]},
+ {n:41, sym:'Nb', name:'Niobium',        mass:'92.906', cat:'transition', g:5,  p:5, v:5, r:146, col:'#d4941a', shells:[2,8,18,12,1]},
+ {n:42, sym:'Mo', name:'Molybdenum',     mass:'95.96',  cat:'transition', g:6,  p:5, v:6, r:139, col:'#d4941a', shells:[2,8,18,13,1]},
+ {n:43, sym:'Tc', name:'Technetium',     mass:'[98]',   cat:'transition', g:7,  p:5, v:7, r:136, col:'#d4941a', shells:[2,8,18,13,2]},
+ {n:44, sym:'Ru', name:'Ruthenium',      mass:'101.07', cat:'transition', g:8,  p:5, v:4, r:134, col:'#d4941a', shells:[2,8,18,15,1]},
+ {n:45, sym:'Rh', name:'Rhodium',        mass:'102.91', cat:'transition', g:9,  p:5, v:3, r:134, col:'#d4941a', shells:[2,8,18,16,1]},
+ {n:46, sym:'Pd', name:'Palladium',      mass:'106.42', cat:'transition', g:10, p:5, v:2, r:137, col:'#d4941a', shells:[2,8,18,18]},
+ {n:47, sym:'Ag', name:'Silver',         mass:'107.87', cat:'transition', g:11, p:5, v:1, r:144, col:'#d4941a', shells:[2,8,18,18,1]},
+ {n:48, sym:'Cd', name:'Cadmium',        mass:'112.41', cat:'transition', g:12, p:5, v:2, r:151, col:'#d4941a', shells:[2,8,18,18,2]},
+ {n:49, sym:'In', name:'Indium',         mass:'114.82', cat:'post',       g:13, p:5, v:3, r:167, col:'#689f38', shells:[2,8,18,18,3]},
+ {n:50, sym:'Sn', name:'Tin',            mass:'118.71', cat:'post',       g:14, p:5, v:4, r:140, col:'#689f38', shells:[2,8,18,18,4]},
+ {n:51, sym:'Sb', name:'Antimony',       mass:'121.76', cat:'metalloid',  g:15, p:5, v:3, r:141, col:'#00897b', shells:[2,8,18,18,5]},
+ {n:52, sym:'Te', name:'Tellurium',      mass:'127.60', cat:'metalloid',  g:16, p:5, v:2, r:137, col:'#00897b', shells:[2,8,18,18,6]},
+ {n:53, sym:'I',  name:'Iodine',         mass:'126.90', cat:'halogen',    g:17, p:5, v:1, r:133, col:'#6a1b9a', shells:[2,8,18,18,7]},
+ {n:54, sym:'Xe', name:'Xenon',          mass:'131.29', cat:'noble',      g:18, p:5, v:0, r:216, col:'#4527a0', shells:[2,8,18,18,8]},
+ // Period 6
+ {n:55, sym:'Cs', name:'Caesium',        mass:'132.91', cat:'alkali',     g:1,  p:6, v:1, r:265, col:'#e53935', shells:[2,8,18,18,8,1]},
+ {n:56, sym:'Ba', name:'Barium',         mass:'137.33', cat:'alkaline',   g:2,  p:6, v:2, r:222, col:'#fb8c00', shells:[2,8,18,18,8,2]},
+ // La placeholder — lanthanides shown separately
+ {n:72, sym:'Hf', name:'Hafnium',        mass:'178.49', cat:'transition', g:4,  p:6, v:4, r:159, col:'#d4941a', shells:[2,8,18,32,10,2]},
+ {n:73, sym:'Ta', name:'Tantalum',       mass:'180.95', cat:'transition', g:5,  p:6, v:5, r:146, col:'#d4941a', shells:[2,8,18,32,11,2]},
+ {n:74, sym:'W',  name:'Tungsten',       mass:'183.84', cat:'transition', g:6,  p:6, v:6, r:139, col:'#d4941a', shells:[2,8,18,32,12,2]},
+ {n:75, sym:'Re', name:'Rhenium',        mass:'186.21', cat:'transition', g:7,  p:6, v:7, r:137, col:'#d4941a', shells:[2,8,18,32,13,2]},
+ {n:76, sym:'Os', name:'Osmium',         mass:'190.23', cat:'transition', g:8,  p:6, v:4, r:135, col:'#d4941a', shells:[2,8,18,32,14,2]},
+ {n:77, sym:'Ir', name:'Iridium',        mass:'192.22', cat:'transition', g:9,  p:6, v:3, r:136, col:'#d4941a', shells:[2,8,18,32,15,2]},
+ {n:78, sym:'Pt', name:'Platinum',       mass:'195.08', cat:'transition', g:10, p:6, v:2, r:138, col:'#d4941a', shells:[2,8,18,32,17,1]},
+ {n:79, sym:'Au', name:'Gold',           mass:'196.97', cat:'transition', g:11, p:6, v:1, r:144, col:'#d4941a', shells:[2,8,18,32,18,1]},
+ {n:80, sym:'Hg', name:'Mercury',        mass:'200.59', cat:'transition', g:12, p:6, v:2, r:151, col:'#d4941a', shells:[2,8,18,32,18,2]},
+ {n:81, sym:'Tl', name:'Thallium',       mass:'204.38', cat:'post',       g:13, p:6, v:3, r:170, col:'#689f38', shells:[2,8,18,32,18,3]},
+ {n:82, sym:'Pb', name:'Lead',           mass:'207.2',  cat:'post',       g:14, p:6, v:4, r:175, col:'#689f38', shells:[2,8,18,32,18,4]},
+ {n:83, sym:'Bi', name:'Bismuth',        mass:'208.98', cat:'post',       g:15, p:6, v:3, r:170, col:'#689f38', shells:[2,8,18,32,18,5]},
+ {n:84, sym:'Po', name:'Polonium',       mass:'[209]',  cat:'post',       g:16, p:6, v:2, r:168, col:'#689f38', shells:[2,8,18,32,18,6]},
+ {n:85, sym:'At', name:'Astatine',       mass:'[210]',  cat:'halogen',    g:17, p:6, v:1, r:150, col:'#6a1b9a', shells:[2,8,18,32,18,7]},
+ {n:86, sym:'Rn', name:'Radon',          mass:'[222]',  cat:'noble',      g:18, p:6, v:0, r:220, col:'#4527a0', shells:[2,8,18,32,18,8]},
+ // Period 7
+ {n:87, sym:'Fr', name:'Francium',       mass:'[223]',  cat:'alkali',     g:1,  p:7, v:1, r:270, col:'#e53935', shells:[2,8,18,32,18,8,1]},
+ {n:88, sym:'Ra', name:'Radium',         mass:'[226]',  cat:'alkaline',   g:2,  p:7, v:2, r:223, col:'#fb8c00', shells:[2,8,18,32,18,8,2]},
+ // Ac placeholder — actinides shown separately
+ {n:104,sym:'Rf', name:'Rutherfordium',  mass:'[267]',  cat:'transition', g:4,  p:7, v:4, r:150, col:'#d4941a', shells:[2,8,18,32,32,10,2]},
+ {n:105,sym:'Db', name:'Dubnium',        mass:'[268]',  cat:'transition', g:5,  p:7, v:5, r:149, col:'#d4941a', shells:[2,8,18,32,32,11,2]},
+ {n:106,sym:'Sg', name:'Seaborgium',     mass:'[271]',  cat:'transition', g:6,  p:7, v:6, r:143, col:'#d4941a', shells:[2,8,18,32,32,12,2]},
+ {n:107,sym:'Bh', name:'Bohrium',        mass:'[272]',  cat:'transition', g:7,  p:7, v:7, r:141, col:'#d4941a', shells:[2,8,18,32,32,13,2]},
+ {n:108,sym:'Hs', name:'Hassium',        mass:'[270]',  cat:'transition', g:8,  p:7, v:8, r:134, col:'#d4941a', shells:[2,8,18,32,32,14,2]},
+ {n:109,sym:'Mt', name:'Meitnerium',     mass:'[278]',  cat:'synthetic',  g:9,  p:7, v:0, r:129, col:'#546e7a', shells:[2,8,18,32,32,15,2]},
+ {n:110,sym:'Ds', name:'Darmstadtium',   mass:'[281]',  cat:'synthetic',  g:10, p:7, v:0, r:128, col:'#546e7a', shells:[2,8,18,32,32,16,2]},
+ {n:111,sym:'Rg', name:'Roentgenium',    mass:'[282]',  cat:'synthetic',  g:11, p:7, v:0, r:121, col:'#546e7a', shells:[2,8,18,32,32,17,2]},
+ {n:112,sym:'Cn', name:'Copernicium',    mass:'[285]',  cat:'synthetic',  g:12, p:7, v:2, r:122, col:'#546e7a', shells:[2,8,18,32,32,18,2]},
+ {n:113,sym:'Nh', name:'Nihonium',       mass:'[286]',  cat:'synthetic',  g:13, p:7, v:0, r:136, col:'#546e7a', shells:[2,8,18,32,32,18,3]},
+ {n:114,sym:'Fl', name:'Flerovium',      mass:'[289]',  cat:'synthetic',  g:14, p:7, v:0, r:143, col:'#546e7a', shells:[2,8,18,32,32,18,4]},
+ {n:115,sym:'Mc', name:'Moscovium',      mass:'[290]',  cat:'synthetic',  g:15, p:7, v:0, r:162, col:'#546e7a', shells:[2,8,18,32,32,18,5]},
+ {n:116,sym:'Lv', name:'Livermorium',    mass:'[293]',  cat:'synthetic',  g:16, p:7, v:0, r:175, col:'#546e7a', shells:[2,8,18,32,32,18,6]},
+ {n:117,sym:'Ts', name:'Tennessine',     mass:'[294]',  cat:'synthetic',  g:17, p:7, v:0, r:165, col:'#546e7a', shells:[2,8,18,32,32,18,7]},
+ {n:118,sym:'Og', name:'Oganesson',      mass:'[294]',  cat:'synthetic',  g:18, p:7, v:0, r:157, col:'#546e7a', shells:[2,8,18,32,32,18,8]},
+ // Lanthanides (period 8 = row 9 in grid, cols 4-17)
+ {n:57, sym:'La', name:'Lanthanum',      mass:'138.91', cat:'lanthanide', g:4,  p:8, v:3, r:187, col:'#c62828', shells:[2,8,18,18,9,2]},
+ {n:58, sym:'Ce', name:'Cerium',         mass:'140.12', cat:'lanthanide', g:5,  p:8, v:4, r:183, col:'#c62828', shells:[2,8,18,19,9,2]},
+ {n:59, sym:'Pr', name:'Praseodymium',   mass:'140.91', cat:'lanthanide', g:6,  p:8, v:3, r:182, col:'#c62828', shells:[2,8,18,21,8,2]},
+ {n:60, sym:'Nd', name:'Neodymium',      mass:'144.24', cat:'lanthanide', g:7,  p:8, v:3, r:181, col:'#c62828', shells:[2,8,18,22,8,2]},
+ {n:61, sym:'Pm', name:'Promethium',     mass:'[145]',  cat:'lanthanide', g:8,  p:8, v:3, r:183, col:'#c62828', shells:[2,8,18,23,8,2]},
+ {n:62, sym:'Sm', name:'Samarium',       mass:'150.36', cat:'lanthanide', g:9,  p:8, v:3, r:180, col:'#c62828', shells:[2,8,18,24,8,2]},
+ {n:63, sym:'Eu', name:'Europium',       mass:'151.96', cat:'lanthanide', g:10, p:8, v:3, r:180, col:'#c62828', shells:[2,8,18,25,8,2]},
+ {n:64, sym:'Gd', name:'Gadolinium',     mass:'157.25', cat:'lanthanide', g:11, p:8, v:3, r:180, col:'#c62828', shells:[2,8,18,25,9,2]},
+ {n:65, sym:'Tb', name:'Terbium',        mass:'158.93', cat:'lanthanide', g:12, p:8, v:3, r:177, col:'#c62828', shells:[2,8,18,27,8,2]},
+ {n:66, sym:'Dy', name:'Dysprosium',     mass:'162.50', cat:'lanthanide', g:13, p:8, v:3, r:178, col:'#c62828', shells:[2,8,18,28,8,2]},
+ {n:67, sym:'Ho', name:'Holmium',        mass:'164.93', cat:'lanthanide', g:14, p:8, v:3, r:176, col:'#c62828', shells:[2,8,18,29,8,2]},
+ {n:68, sym:'Er', name:'Erbium',         mass:'167.26', cat:'lanthanide', g:15, p:8, v:3, r:176, col:'#c62828', shells:[2,8,18,30,8,2]},
+ {n:69, sym:'Tm', name:'Thulium',        mass:'168.93', cat:'lanthanide', g:16, p:8, v:3, r:176, col:'#c62828', shells:[2,8,18,31,8,2]},
+ {n:70, sym:'Yb', name:'Ytterbium',      mass:'173.04', cat:'lanthanide', g:17, p:8, v:3, r:176, col:'#c62828', shells:[2,8,18,32,8,2]},
+ {n:71, sym:'Lu', name:'Lutetium',       mass:'174.97', cat:'lanthanide', g:18, p:8, v:3, r:174, col:'#c62828', shells:[2,8,18,32,9,2]},
+ // Actinides (period 9 = row 10 in grid, cols 4-17)
+ {n:89, sym:'Ac', name:'Actinium',       mass:'[227]',  cat:'actinide',   g:4,  p:9, v:3, r:188, col:'#6d4c41', shells:[2,8,18,32,18,9,2]},
+ {n:90, sym:'Th', name:'Thorium',        mass:'232.04', cat:'actinide',   g:5,  p:9, v:4, r:179, col:'#6d4c41', shells:[2,8,18,32,18,10,2]},
+ {n:91, sym:'Pa', name:'Protactinium',   mass:'231.04', cat:'actinide',   g:6,  p:9, v:5, r:163, col:'#6d4c41', shells:[2,8,18,32,20,9,2]},
+ {n:92, sym:'U',  name:'Uranium',        mass:'238.03', cat:'actinide',   g:7,  p:9, v:6, r:156, col:'#6d4c41', shells:[2,8,18,32,21,9,2]},
+ {n:93, sym:'Np', name:'Neptunium',      mass:'[237]',  cat:'actinide',   g:8,  p:9, v:5, r:155, col:'#6d4c41', shells:[2,8,18,32,22,9,2]},
+ {n:94, sym:'Pu', name:'Plutonium',      mass:'[244]',  cat:'actinide',   g:9,  p:9, v:4, r:159, col:'#6d4c41', shells:[2,8,18,32,24,8,2]},
+ {n:95, sym:'Am', name:'Americium',      mass:'[243]',  cat:'actinide',   g:10, p:9, v:3, r:173, col:'#6d4c41', shells:[2,8,18,32,25,8,2]},
+ {n:96, sym:'Cm', name:'Curium',         mass:'[247]',  cat:'actinide',   g:11, p:9, v:3, r:174, col:'#6d4c41', shells:[2,8,18,32,25,9,2]},
+ {n:97, sym:'Bk', name:'Berkelium',      mass:'[247]',  cat:'actinide',   g:12, p:9, v:3, r:170, col:'#6d4c41', shells:[2,8,18,32,27,8,2]},
+ {n:98, sym:'Cf', name:'Californium',    mass:'[251]',  cat:'actinide',   g:13, p:9, v:3, r:169, col:'#6d4c41', shells:[2,8,18,32,28,8,2]},
+ {n:99, sym:'Es', name:'Einsteinium',    mass:'[252]',  cat:'actinide',   g:14, p:9, v:3, r:166, col:'#6d4c41', shells:[2,8,18,32,29,8,2]},
+ {n:100,sym:'Fm', name:'Fermium',        mass:'[257]',  cat:'actinide',   g:15, p:9, v:3, r:165, col:'#6d4c41', shells:[2,8,18,32,30,8,2]},
+ {n:101,sym:'Md', name:'Mendelevium',    mass:'[258]',  cat:'actinide',   g:16, p:9, v:3, r:164, col:'#6d4c41', shells:[2,8,18,32,31,8,2]},
+ {n:102,sym:'No', name:'Nobelium',       mass:'[259]',  cat:'actinide',   g:17, p:9, v:3, r:163, col:'#6d4c41', shells:[2,8,18,32,32,8,2]},
+ {n:103,sym:'Lr', name:'Lawrencium',     mass:'[266]',  cat:'actinide',   g:18, p:9, v:3, r:162, col:'#6d4c41', shells:[2,8,18,32,32,8,3]},
 ];
 
-const CAT_INFO = {
-  alkali:     {label:'Alkali Metals',       css:'cat-alkali',     color:'#e53935'},
-  alkaline:   {label:'Alkaline Earth',      css:'cat-alkaline',   color:'#fb8c00'},
-  transition: {label:'Transition Metals',   css:'cat-transition', color:'#f9a825'},
-  post:       {label:'Post-transition',     css:'cat-post',       color:'#7cb342'},
-  metalloid:  {label:'Metalloids',          css:'cat-metalloid',  color:'#00897b'},
-  nonmetal:   {label:'Non-metals',          css:'cat-nonmetal',   color:'#1e88e5'},
-  halogen:    {label:'Halogens',            css:'cat-halogen',    color:'#8e24aa'},
-  noble:      {label:'Noble Gases',         css:'cat-noble',      color:'#5e35b1'},
-  lanthanide: {label:'Lanthanides',         css:'cat-lanthanide', color:'#c62828'},
-  actinide:   {label:'Actinides',           css:'cat-actinide',   color:'#6d4c41'},
-  unknown:    {label:'Unknown',             css:'cat-unknown',    color:'#757575'},
+const CAT={
+ alkali:{label:'Alkali Metals',col:'#e53935'},
+ alkaline:{label:'Alkaline Earth',col:'#fb8c00'},
+ transition:{label:'Transition Metals',col:'#d4941a'},
+ post:{label:'Post-transition',col:'#689f38'},
+ metalloid:{label:'Metalloids',col:'#00897b'},
+ nonmetal:{label:'Non-metals',col:'#1e88e5'},
+ halogen:{label:'Halogens',col:'#8e24aa'},
+ noble:{label:'Noble Gases',col:'#5e35b1'},
+ lanthanide:{label:'Lanthanides',col:'#c62828'},
+ actinide:{label:'Actinides',col:'#6d4c41'},
+ unknown:{label:'Unknown',col:'#757575'},
+ synthetic:{label:'Synthetic (predicted)',col:'#546e7a'},
 };
 
-// ─── COMPOUND DATABASE ────────────────────────────────────────────────────────
-const COMPOUNDS = {
-  'H2':     {name:'Hydrogen gas (H₂)',          bonds:[[0,1]]},
-  'O2':     {name:'Oxygen gas (O₂)',             bonds:[[0,1]]},
-  'N2':     {name:'Nitrogen gas (N₂)',           bonds:[[0,1]]},
-  'Cl2':    {name:'Chlorine gas (Cl₂)',          bonds:[[0,1]]},
-  'Br2':    {name:'Bromine (Br₂)',              bonds:[[0,1]]},
-  'I2':     {name:'Iodine (I₂)',                bonds:[[0,1]]},
-  'F2':     {name:'Fluorine gas (F₂)',           bonds:[[0,1]]},
-  'H2O':    {name:'Water (H₂O)',                bonds:[[1,0],[1,2]]},
-  'H2O2':   {name:'Hydrogen Peroxide (H₂O₂)',   bonds:[[0,2],[2,3],[3,1]]},
-  'CO2':    {name:'Carbon Dioxide (CO₂)',        bonds:[[1,0],[1,2]]},
-  'CO':     {name:'Carbon Monoxide (CO)',        bonds:[[0,1]]},
-  'NH3':    {name:'Ammonia (NH₃)',              bonds:[[0,1],[0,2],[0,3]]},
-  'CH4':    {name:'Methane (CH₄)',              bonds:[[0,1],[0,2],[0,3],[0,4]]},
-  'C2H6':   {name:'Ethane (C₂H₆)',             bonds:[[0,1],[0,2],[0,3],[0,4],[1,5],[1,6],[1,7]]},
-  'C2H4':   {name:'Ethene (C₂H₄)',             bonds:[[0,1],[0,2],[0,3],[1,4],[1,5]]},
-  'C2H2':   {name:'Ethyne (C₂H₂)',             bonds:[[0,1],[0,2],[1,3]]},
-  'C3H8':   {name:'Propane (C₃H₈)',            bonds:[[0,1],[0,2],[0,3],[0,4],[1,5],[1,6],[1,7],[1,8],[4,9],[4,10],[4,11]]},
-  'HCl':    {name:'Hydrochloric acid (HCl)',    bonds:[[0,1]]},
-  'HF':     {name:'Hydrogen Fluoride (HF)',     bonds:[[0,1]]},
-  'HBr':    {name:'Hydrogen Bromide (HBr)',     bonds:[[0,1]]},
-  'HI':     {name:'Hydrogen Iodide (HI)',       bonds:[[0,1]]},
-  'H2S':    {name:'Hydrogen Sulfide (H₂S)',     bonds:[[1,0],[1,2]]},
-  'SO2':    {name:'Sulfur Dioxide (SO₂)',       bonds:[[1,0],[1,2]]},
-  'SO3':    {name:'Sulfur Trioxide (SO₃)',      bonds:[[1,0],[1,2],[1,3]]},
-  'NO':     {name:'Nitric Oxide (NO)',          bonds:[[0,1]]},
-  'NO2':    {name:'Nitrogen Dioxide (NO₂)',     bonds:[[1,0],[1,2]]},
-  'N2O':    {name:'Nitrous Oxide (N₂O)',        bonds:[[0,1],[1,2]]},
-  'NaCl':   {name:'Sodium Chloride — table salt (NaCl)', bonds:[[0,1]]},
-  'NaOH':   {name:'Sodium Hydroxide (NaOH)',    bonds:[[0,1],[1,2]]},
-  'MgO':    {name:'Magnesium Oxide (MgO)',      bonds:[[0,1]]},
-  'MgCl2':  {name:'Magnesium Chloride (MgCl₂)',bonds:[[1,0],[1,2]]},
-  'CaO':    {name:'Calcium Oxide — quicklime (CaO)',  bonds:[[0,1]]},
-  'CaCl2':  {name:'Calcium Chloride (CaCl₂)',  bonds:[[1,0],[1,2]]},
-  'CaCO3':  {name:'Calcium Carbonate — limestone (CaCO₃)', bonds:[[0,1],[1,2],[1,3],[1,4]]},
-  'Ca(OH)2':{name:'Calcium Hydroxide — slaked lime (Ca(OH)₂)', bonds:[[0,1],[1,2],[0,3],[3,4]]},
-  'H2SO4':  {name:'Sulfuric Acid (H₂SO₄)',     bonds:[[2,0],[2,1],[2,3],[2,4],[3,5],[4,6]]},
-  'HNO3':   {name:'Nitric Acid (HNO₃)',         bonds:[[1,0],[0,2],[0,3],[3,4]]},
-  'KOH':    {name:'Potassium Hydroxide (KOH)',  bonds:[[0,1],[1,2]]},
-  'KCl':    {name:'Potassium Chloride (KCl)',   bonds:[[0,1]]},
-  'Al2O3':  {name:'Aluminium Oxide (Al₂O₃)',   bonds:[[0,2],[0,3],[0,4],[1,2],[1,3],[1,4]]},
-  'FeCl3':  {name:'Iron(III) Chloride (FeCl₃)',bonds:[[0,1],[0,2],[0,3]]},
-  'Fe2O3':  {name:'Iron(III) Oxide — rust (Fe₂O₃)', bonds:[[0,2],[0,3],[0,4],[1,2],[1,3],[1,4]]},
-  'CuO':    {name:'Copper(II) Oxide (CuO)',     bonds:[[0,1]]},
-  'CuSO4':  {name:'Copper(II) Sulfate (CuSO₄)',bonds:[[0,1],[1,2],[1,3],[1,4]]},
-  'ZnO':    {name:'Zinc Oxide (ZnO)',           bonds:[[0,1]]},
-  'C6H12O6':{name:'Glucose (C₆H₁₂O₆)',        bonds:[]},
-  'C12H22O11':{name:'Sucrose (C₁₂H₂₂O₁₁)',    bonds:[]},
-  'C2H5OH': {name:'Ethanol (C₂H₅OH)',          bonds:[[0,1],[0,2],[0,3],[0,4],[1,5],[1,6],[1,7]]},
-  'CH3OH':  {name:'Methanol (CH₃OH)',          bonds:[[0,1],[0,2],[0,3],[0,4],[4,5]]},
-  'CH3COOH':{name:'Ethanoic Acid — vinegar (CH₃COOH)', bonds:[]},
+// ── COMPOUND DATABASE ──────────────────────────────────────────────────────────
+const C={
+ 'H2':{n:'Hydrogen (H₂)',t:'Diatomic element',L:[[0,-1,0],[0,1,0]]},
+ 'O2':{n:'Oxygen (O₂)',t:'Diatomic element',L:[[0,-1,0],[0,1,0]]},
+ 'N2':{n:'Nitrogen (N₂)',t:'Diatomic element',L:[[0,-1,0],[0,1,0]]},
+ 'Cl2':{n:'Chlorine (Cl₂)',t:'Diatomic element',L:[[0,-1,0],[0,1,0]]},
+ 'Br2':{n:'Bromine (Br₂)',t:'Diatomic element',L:[[0,-1,0],[0,1,0]]},
+ 'I2':{n:'Iodine (I₂)',t:'Diatomic element',L:[[0,-1,0],[0,1,0]]},
+ 'F2':{n:'Fluorine (F₂)',t:'Diatomic element',L:[[0,-1,0],[0,1,0]]},
+ 'P4':{n:'Phosphorus (P₄)',t:'Allotrope',L:[[1,0.5,0],[-1,0.5,0],[0,-0.8,0.8],[0,-0.8,-0.8]]},
+ 'H2O':{n:'Water (H₂O)',t:'Inorganic — oxide',L:[[0,0.4,0],[-0.95,-0.5,0],[0.95,-0.5,0]]},
+ 'H2O2':{n:'Hydrogen Peroxide (H₂O₂)',t:'Inorganic — peroxide',L:[[-0.8,-0.3,0.3],[0,0,0],[0.8,0,0],[1.5,-0.3,-0.3]]},
+ 'H2S':{n:'Hydrogen Sulfide (H₂S)',t:'Inorganic — sulfide',L:[[0,0,0],[-0.97,-0.5,0],[0.97,-0.5,0]]},
+ 'H2Se':{n:'Hydrogen Selenide (H₂Se)',t:'Inorganic — selenide',L:[[0,0,0],[-1,-0.5,0],[1,-0.5,0]]},
+ 'ClH':{n:'Hydrogen Chloride (HCl)',t:'Inorganic — acid',L:[[0,-1,0],[0,1,0]]},
+ 'BrH':{n:'Hydrogen Bromide (HBr)',t:'Inorganic — acid',L:[[0,-1,0],[0,1,0]]},
+ 'FH':{n:'Hydrogen Fluoride (HF)',t:'Inorganic — acid',L:[[0,-1,0],[0,1,0]]},
+ 'HI':{n:'Hydrogen Iodide (HI)',t:'Inorganic — acid',L:[[0,-1,0],[0,1,0]]},
+ 'H3N':{n:'Ammonia (NH₃)',t:'Inorganic — nitrogen',L:[[0,0.3,0],[-0.94,-0.5,0.2],[0.94,-0.5,0.2],[0,-0.5,-0.8]]},
+ 'H4N2':{n:'Hydrazine (N₂H₄)',t:'Inorganic — nitrogen',L:[[0.4,0,0],[-0.4,0,0],[0.4,1,0.7],[0.4,1,-0.7],[-0.4,1,0.7],[-0.4,1,-0.7]]},
+ 'NO':{n:'Nitrogen Monoxide (NO)',t:'Inorganic — oxide',L:[[0,-1,0],[0,1,0]]},
+ 'NO2':{n:'Nitrogen Dioxide (NO₂)',t:'Inorganic — oxide',L:[[0,0.3,0],[-1,-0.6,0],[1,-0.6,0]]},
+ 'N2O':{n:'Nitrous Oxide (N₂O)',t:'Inorganic — oxide',L:[[0,-1,0],[0,0,0],[0,1,0]]},
+ 'N2O4':{n:'Dinitrogen Tetroxide (N₂O₄)',t:'Inorganic — oxide',L:[[0.7,0,0],[-0.7,0,0],[0.7,1,0],[0.7,-1,0],[-0.7,1,0],[-0.7,-1,0]]},
+ 'N2O5':{n:'Dinitrogen Pentoxide (N₂O₅)',t:'Inorganic — oxide',L:[[0,0,0],[1.2,0,0],[-1.2,0,0],[0.6,1,0],[0.6,-1,0],[-0.6,1,0],[-0.6,-1,0],[0,-1.2,0]]},
+ 'CO':{n:'Carbon Monoxide (CO)',t:'Inorganic — oxide',L:[[0,-1,0],[0,1,0]]},
+ 'CO2':{n:'Carbon Dioxide (CO₂)',t:'Inorganic — oxide',L:[[0,0,0],[0,-1.3,0],[0,1.3,0]]},
+ 'CS2':{n:'Carbon Disulfide (CS₂)',t:'Inorganic — sulfide',L:[[0,0,0],[0,-1.3,0],[0,1.3,0]]},
+ 'O2S':{n:'Sulfur Dioxide (SO₂)',t:'Inorganic — oxide',L:[[0,0.3,0],[-1,-0.6,0],[1,-0.6,0]]},
+ 'O3S':{n:'Sulfur Trioxide (SO₃)',t:'Inorganic — oxide',L:[[0,0,0],[0,-1.2,0],[1.04,0.6,0],[-1.04,0.6,0]]},
+ 'H2O4S':{n:'Sulfuric Acid (H₂SO₄)',t:'Inorganic — acid',L:[[0,0,0],[-1.1,0.8,0],[1.1,0.8,0],[0,-1.1,0.8],[0,-1.1,-0.8],[0,1.8,0],[0,-2,0.8],[-2,0.8,0]]},
+ 'HNO3':{n:'Nitric Acid (HNO₃)',t:'Inorganic — acid',L:[[0,0.3,0],[0,-0.8,0],[1.1,-1.2,0],[-1.1,-1.2,0],[1.1,-1.2,1.1]]},
+ 'H3O4P':{n:'Phosphoric Acid (H₃PO₄)',t:'Inorganic — acid',L:[[0,0,0],[0,1.2,0],[-1.1,-0.5,0.5],[1.1,-0.5,0.5],[0,-0.9,-0.9],[0,2.2,0],[-2.1,-0.5,0.5],[2.1,-0.5,0.5],[0,-1.9,-0.9]]},
+ 'CH2O3':{n:'Carbonic Acid (H₂CO₃)',t:'Inorganic — acid',L:[[0,0,0],[0,1.3,0],[-1.1,-0.5,0],[-1.1,-0.5,1.1],[1.1,-0.5,0],[1.1,-0.5,1.1]]},
+ 'P4O10':{n:'Phosphorus Pentoxide (P₄O₁₀)',t:'Inorganic — oxide',L:null},
+ 'CCl4':{n:'Tetrachloromethane (CCl₄)',t:'Organic — haloalkane',L:[[0,0,0],[0.82,0.82,0.82],[-0.82,-0.82,0.82],[-0.82,0.82,-0.82],[0.82,-0.82,-0.82]]},
+ 'CHCl3':{n:'Trichloromethane / Chloroform (CHCl₃)',t:'Organic — haloalkane',L:[[0,0,0],[0,1.1,0],[-0.94,-0.5,0.5],[0.94,-0.5,0.5],[0,-0.7,-0.9]]},
+ 'CH2Cl2':{n:'Dichloromethane (CH₂Cl₂)',t:'Organic — haloalkane',L:[[0,0,0],[0,1,0.6],[0,1,-0.6],[-1.1,-0.4,0],[1.1,-0.4,0]]},
+ 'CH3Cl':{n:'Chloromethane (CH₃Cl)',t:'Organic — haloalkane',L:[[0,0,0],[0,1.1,0],[0.94,-0.4,0.6],[-0.94,-0.4,0.6],[0,-0.5,-0.9]]},
+ 'C2H5Cl':{n:'Chloroethane (C₂H₅Cl)',t:'Organic — haloalkane',L:null},
+ 'C6H5Cl':{n:'Chlorobenzene (C₆H₅Cl)',t:'Organic — aromatic',L:null},
+ 'CH4':{n:'Methane (CH₄)',t:'Organic — alkane',L:[[0,0,0],[0.82,0.82,0.82],[-0.82,-0.82,0.82],[-0.82,0.82,-0.82],[0.82,-0.82,-0.82]]},
+ 'C2H6':{n:'Ethane (C₂H₆)',t:'Organic — alkane',L:[[-0.75,0,0],[0.75,0,0],[-0.75,1,0.8],[-0.75,1,-0.8],[-0.75,-1,0],[0.75,1,0.8],[0.75,1,-0.8],[0.75,-1,0]]},
+ 'C3H8':{n:'Propane (C₃H₈)',t:'Organic — alkane',L:[[-1.5,0,0],[0,0,0],[1.5,0,0],[-1.5,1,0.7],[-1.5,1,-0.7],[-1.5,-1,0],[0,1,0.7],[0,1,-0.7],[1.5,1,0.7],[1.5,1,-0.7],[1.5,-1,0]]},
+ 'C4H10':{n:'Butane (C₄H₁₀)',t:'Organic — alkane',L:null},
+ 'C5H12':{n:'Pentane (C₅H₁₂)',t:'Organic — alkane',L:null},
+ 'C6H14':{n:'Hexane (C₆H₁₄)',t:'Organic — alkane',L:null},
+ 'C7H16':{n:'Heptane (C₇H₁₆)',t:'Organic — alkane',L:null},
+ 'C8H18':{n:'Octane (C₈H₁₈)',t:'Organic — alkane',L:null},
+ 'C2H4':{n:'Ethene (C₂H₄)',t:'Organic — alkene',L:[[-0.65,0,0],[0.65,0,0],[-0.65,1,0.8],[-0.65,-1,0.8],[0.65,1,0.8],[0.65,-1,0.8]]},
+ 'C3H6':{n:'Propene (C₃H₆)',t:'Organic — alkene',L:null},
+ 'C4H8':{n:'But-1-ene (C₄H₈)',t:'Organic — alkene',L:null},
+ 'C2H2':{n:'Ethyne / Acetylene (C₂H₂)',t:'Organic — alkyne',L:[[0,-1.4,0],[0,-0.4,0],[0,0.4,0],[0,1.4,0]]},
+ 'C3H4':{n:'Propyne (C₃H₄)',t:'Organic — alkyne',L:null},
+ 'C6H6':{n:'Benzene (C₆H₆)',t:'Organic — aromatic',L:[[1.1,0,0],[0.55,0.95,0],[-0.55,0.95,0],[-1.1,0,0],[-0.55,-0.95,0],[0.55,-0.95,0],[2,0,0],[1,1.7,0],[-1,1.7,0],[-2,0,0],[-1,-1.7,0],[1,-1.7,0]]},
+ 'C7H8':{n:'Methylbenzene / Toluene (C₇H₈)',t:'Organic — aromatic',L:null},
+ 'C10H8':{n:'Naphthalene (C₁₀H₈)',t:'Organic — aromatic',L:null},
+ 'CH4O':{n:'Methanol (CH₃OH)',t:'Organic — alcohol',L:[[0,0,0],[0,1.1,0],[0.94,-0.4,0.6],[-0.94,-0.4,0.6],[0,-0.4,-1],[0,-0.4,-2]]},
+ 'C2H6O':{n:'Ethanol (C₂H₅OH)',t:'Organic — alcohol',L:[[-0.75,0,0],[0.75,0,0],[-0.75,1,0.7],[-0.75,1,-0.7],[-0.75,-1,0],[0.75,1,0.7],[0.75,1,-0.7],[0.75,-1,1.1],[0.75,-1,2.1]]},
+ 'C3H8O':{n:'Propan-1-ol (C₃H₇OH)',t:'Organic — alcohol',L:null},
+ 'C4H10O':{n:'Butan-1-ol (C₄H₉OH)',t:'Organic — alcohol',L:null},
+ 'C2H6O2':{n:'Ethane-1,2-diol (C₂H₆O₂)',t:'Organic — diol',L:null},
+ 'C3H8O2':{n:'Propane-1,2-diol (C₃H₈O₂)',t:'Organic — diol',L:null},
+ 'C6H6O':{n:'Phenol (C₆H₅OH)',t:'Organic — phenol',L:null},
+ 'CH2O':{n:'Methanal / Formaldehyde (HCHO)',t:'Organic — aldehyde',L:[[0,0,0],[0,1.3,0],[-1.1,-0.5,0],[1.1,-0.5,0]]},
+ 'C2H4O':{n:'Ethanal / Acetaldehyde (CH₃CHO)',t:'Organic — aldehyde',L:null},
+ 'C3H6O':{n:'Propanal (C₃H₅CHO)',t:'Organic — aldehyde',L:null},
+ 'C3H6O2':{n:'Propan-2-one / Acetone (CH₃COCH₃)',t:'Organic — ketone',L:null},
+ 'C4H8O':{n:'Butanone (C₂H₅COCH₃)',t:'Organic — ketone',L:null},
+ 'CH2O2':{n:'Methanoic acid / Formic acid (HCOOH)',t:'Organic — carboxylic acid',L:[[0,0,0],[0,1.2,0],[-1.1,-0.5,0],[1.1,-0.5,0],[1.1,-0.5,1.1]]},
+ 'C2H4O2':{n:'Ethanoic acid / Acetic acid (CH₃COOH)',t:'Organic — carboxylic acid',L:[[-0.75,0,0],[0.75,0,0],[-0.75,1,0.7],[-0.75,1,-0.7],[-0.75,-1,0],[0.75,1.2,0],[0.75,-0.8,0],[0.75,-0.8,1.1]]},
+ 'C3H6O2':{n:'Propanoic acid (C₂H₅COOH)',t:'Organic — carboxylic acid',L:null},
+ 'C4H8O2':{n:'Butanoic / Ethyl ethanoate',t:'Organic — carboxylic acid / ester',L:null},
+ 'C5H10O2':{n:'Ethyl propanoate / Methyl butanoate',t:'Organic — ester',L:null},
+ 'C2H2O4':{n:'Oxalic / Ethanedioic acid (HOOCCOOH)',t:'Organic — dicarboxylic acid',L:null},
+ 'C2H3ClO':{n:'Ethanoyl chloride (CH₃COCl)',t:'Organic — acyl chloride',L:null},
+ 'C4H6O3':{n:'Ethanoic anhydride ((CH₃CO)₂O)',t:'Organic — acid anhydride',L:null},
+ 'CH5N':{n:'Methylamine (CH₃NH₂)',t:'Organic — amine',L:null},
+ 'C2H7N':{n:'Ethylamine (C₂H₅NH₂)',t:'Organic — amine',L:null},
+ 'C6H7N':{n:'Phenylamine / Aniline (C₆H₅NH₂)',t:'Organic — primary amine',L:null},
+ 'CH3NO':{n:'Methanamide (HCONH₂)',t:'Organic — amide',L:null},
+ 'C2H5NO':{n:'Ethanamide (CH₃CONH₂)',t:'Organic — amide',L:null},
+ 'C2H3N':{n:'Ethanenitrile / Acetonitrile (CH₃CN)',t:'Organic — nitrile',L:null},
+ 'C3H5N':{n:'Propanenitrile (C₂H₅CN)',t:'Organic — nitrile',L:null},
+ 'C2H5NO2':{n:'Glycine (NH₂CH₂COOH)',t:'Organic — amino acid',L:null},
+ 'C3H7NO2':{n:'Alanine (CH₃CH(NH₂)COOH)',t:'Organic — amino acid',L:null},
+ 'C6H12O6':{n:'Glucose / Fructose (C₆H₁₂O₆)',t:'Organic — carbohydrate',L:null},
+ 'C12H22O11':{n:'Sucrose (C₁₂H₂₂O₁₁)',t:'Organic — carbohydrate',L:null},
+ 'Al2O3':{n:'Aluminium Oxide (Al₂O₃)',t:'Ionic — oxide',L:null},
+ 'CaO':{n:'Calcium Oxide — quicklime (CaO)',t:'Ionic — oxide',L:[[0,-1,0],[0,1,0]]},
+ 'Fe2O3':{n:'Iron(III) Oxide — rust (Fe₂O₃)',t:'Ionic — oxide',L:null},
+ 'Fe3O4':{n:'Iron(II,III) Oxide — magnetite (Fe₃O₄)',t:'Ionic — oxide',L:null},
+ 'FeO':{n:'Iron(II) Oxide (FeO)',t:'Ionic — oxide',L:[[0,-1,0],[0,1,0]]},
+ 'MgO':{n:'Magnesium Oxide (MgO)',t:'Ionic — oxide',L:[[0,-1,0],[0,1,0]]},
+ 'ZnO':{n:'Zinc Oxide (ZnO)',t:'Ionic — oxide',L:[[0,-1,0],[0,1,0]]},
+ 'CuO':{n:'Copper(II) Oxide (CuO)',t:'Ionic — oxide',L:[[0,-1,0],[0,1,0]]},
+ 'Cu2O':{n:'Copper(I) Oxide (Cu₂O)',t:'Ionic — oxide',L:[[0,0,0],[-1.1,-1,0],[1.1,-1,0]]},
+ 'K2O':{n:'Potassium Oxide (K₂O)',t:'Ionic — oxide',L:[[0,0,0],[-1.1,-1,0],[1.1,-1,0]]},
+ 'Na2O':{n:'Sodium Oxide (Na₂O)',t:'Ionic — oxide',L:[[0,0,0],[-1.1,-1,0],[1.1,-1,0]]},
+ 'BaO':{n:'Barium Oxide (BaO)',t:'Ionic — oxide',L:[[0,-1,0],[0,1,0]]},
+ 'MnO2':{n:'Manganese Dioxide (MnO₂)',t:'Ionic — oxide',L:[[0,0,0],[0,-1.2,0],[0,1.2,0]]},
+ 'O2Ti':{n:'Titanium Dioxide (TiO₂)',t:'Ionic — oxide',L:[[0,0,0],[0,-1.2,0],[0,1.2,0]]},
+ 'Cr2O3':{n:'Chromium(III) Oxide (Cr₂O₃)',t:'Ionic — oxide',L:null},
+ 'O2Pb':{n:'Lead(II) Oxide (PbO)',t:'Ionic — oxide',L:[[0,-1,0],[0,1,0]]},
+ 'O2Sn':{n:'Tin(IV) Oxide (SnO₂)',t:'Ionic — oxide',L:[[0,0,0],[0,-1.2,0],[0,1.2,0]]},
+ 'V2O5':{n:'Vanadium(V) Oxide (V₂O₅)',t:'Ionic — oxide',L:null},
+ 'HNaO':{n:'Sodium Hydroxide (NaOH)',t:'Ionic — hydroxide',L:[[0,0,0],[0,-1.2,0],[0,-1.2,-1.1]]},
+ 'HKO':{n:'Potassium Hydroxide (KOH)',t:'Ionic — hydroxide',L:[[0,0,0],[0,-1.2,0],[0,-1.2,-1.1]]},
+ 'HLiO':{n:'Lithium Hydroxide (LiOH)',t:'Ionic — hydroxide',L:[[0,0,0],[0,-1.2,0],[0,-1.2,-1.1]]},
+ 'CaH2O2':{n:'Calcium Hydroxide — slaked lime (Ca(OH)₂)',t:'Ionic — hydroxide',L:null},
+ 'H2MgO2':{n:'Magnesium Hydroxide (Mg(OH)₂)',t:'Ionic — hydroxide',L:null},
+ 'AlH3O3':{n:'Aluminium Hydroxide (Al(OH)₃)',t:'Ionic — hydroxide',L:null},
+ 'FeH2O2':{n:'Iron(II) Hydroxide (Fe(OH)₂)',t:'Ionic — hydroxide',L:null},
+ 'FeH3O3':{n:'Iron(III) Hydroxide (Fe(OH)₃)',t:'Ionic — hydroxide',L:null},
+ 'CuH2O2':{n:'Copper(II) Hydroxide (Cu(OH)₂)',t:'Ionic — hydroxide',L:null},
+ 'ClNa':{n:'Sodium Chloride — table salt (NaCl)',t:'Ionic — chloride',L:[[0,-1,0],[0,1,0]]},
+ 'ClK':{n:'Potassium Chloride (KCl)',t:'Ionic — chloride',L:[[0,-1,0],[0,1,0]]},
+ 'ClLi':{n:'Lithium Chloride (LiCl)',t:'Ionic — chloride',L:[[0,-1,0],[0,1,0]]},
+ 'Cl2Mg':{n:'Magnesium Chloride (MgCl₂)',t:'Ionic — chloride',L:[[0,0,0],[-1.2,-0.6,0],[1.2,-0.6,0]]},
+ 'CaCl2':{n:'Calcium Chloride (CaCl₂)',t:'Ionic — chloride',L:[[0,0,0],[-1.2,-0.6,0],[1.2,-0.6,0]]},
+ 'BaCl2':{n:'Barium Chloride (BaCl₂)',t:'Ionic — chloride',L:[[0,0,0],[-1.2,-0.6,0],[1.2,-0.6,0]]},
+ 'AlCl3':{n:'Aluminium Chloride (AlCl₃)',t:'Inorganic — chloride',L:[[0,0,0],[0,-1.2,0],[1.04,0.6,0],[-1.04,0.6,0]]},
+ 'Cl2Fe':{n:'Iron(II) Chloride (FeCl₂)',t:'Ionic — chloride',L:[[0,0,0],[-1.2,-0.6,0],[1.2,-0.6,0]]},
+ 'Cl3Fe':{n:'Iron(III) Chloride (FeCl₃)',t:'Ionic — chloride',L:[[0,0,0],[0,-1.2,0],[1.04,0.6,0],[-1.04,0.6,0]]},
+ 'Cl2Cu':{n:'Copper(II) Chloride (CuCl₂)',t:'Ionic — chloride',L:[[0,0,0],[-1.2,-0.6,0],[1.2,-0.6,0]]},
+ 'Cl2Zn':{n:'Zinc Chloride (ZnCl₂)',t:'Ionic — chloride',L:[[0,0,0],[-1.2,-0.6,0],[1.2,-0.6,0]]},
+ 'Cl2Ni':{n:'Nickel(II) Chloride (NiCl₂)',t:'Ionic — chloride',L:[[0,0,0],[-1.2,-0.6,0],[1.2,-0.6,0]]},
+ 'Cl3Cr':{n:'Chromium(III) Chloride (CrCl₃)',t:'Ionic — chloride',L:[[0,0,0],[0,-1.2,0],[1.04,0.6,0],[-1.04,0.6,0]]},
+ 'Cl2Mn':{n:'Manganese(II) Chloride (MnCl₂)',t:'Ionic — chloride',L:[[0,0,0],[-1.2,-0.6,0],[1.2,-0.6,0]]},
+ 'Cl3P':{n:'Phosphorus Trichloride (PCl₃)',t:'Inorganic — chloride',L:[[0,0.3,0],[-1,-0.7,0],[1,-0.7,0],[0,-0.7,-1]]},
+ 'Cl5P':{n:'Phosphorus Pentachloride (PCl₅)',t:'Inorganic — chloride',L:[[0,0,0],[0,1.2,0],[0,-1.2,0],[1.1,0,0.8],[-1.1,0,0.8],[0,0,-1.4]]},
+ 'Cl2Sn':{n:'Tin(II) Chloride (SnCl₂)',t:'Ionic — chloride',L:[[0,0,0],[-1.2,-0.6,0],[1.2,-0.6,0]]},
+ 'Cl4Sn':{n:'Tin(IV) Chloride (SnCl₄)',t:'Inorganic — chloride',L:[[0,0,0],[0.82,0.82,0.82],[-0.82,-0.82,0.82],[-0.82,0.82,-0.82],[0.82,-0.82,-0.82]]},
+ 'Cl2Pb':{n:'Lead(II) Chloride (PbCl₂)',t:'Ionic — chloride',L:[[0,0,0],[-1.2,-0.6,0],[1.2,-0.6,0]]},
+ 'Cl3Bi':{n:'Bismuth(III) Chloride (BiCl₃)',t:'Ionic — chloride',L:[[0,0,0],[0,-1.2,0],[1.04,0.6,0],[-1.04,0.6,0]]},
+ 'FNa':{n:'Sodium Fluoride (NaF)',t:'Ionic — fluoride',L:[[0,-1,0],[0,1,0]]},
+ 'FK':{n:'Potassium Fluoride (KF)',t:'Ionic — fluoride',L:[[0,-1,0],[0,1,0]]},
+ 'CaF2':{n:'Calcium Fluoride — fluorite (CaF₂)',t:'Ionic — fluoride',L:[[0,0,0],[-1.2,-0.6,0],[1.2,-0.6,0]]},
+ 'BrNa':{n:'Sodium Bromide (NaBr)',t:'Ionic — bromide',L:[[0,-1,0],[0,1,0]]},
+ 'BrK':{n:'Potassium Bromide (KBr)',t:'Ionic — bromide',L:[[0,-1,0],[0,1,0]]},
+ 'INa':{n:'Sodium Iodide (NaI)',t:'Ionic — iodide',L:[[0,-1,0],[0,1,0]]},
+ 'IK':{n:'Potassium Iodide (KI)',t:'Ionic — iodide',L:[[0,-1,0],[0,1,0]]},
+ 'AgCl':{n:'Silver Chloride (AgCl)',t:'Ionic — chloride',L:[[0,-1,0],[0,1,0]]},
+ 'AgBr':{n:'Silver Bromide (AgBr)',t:'Ionic — bromide',L:[[0,-1,0],[0,1,0]]},
+ 'AgI':{n:'Silver Iodide (AgI)',t:'Ionic — iodide',L:[[0,-1,0],[0,1,0]]},
+ 'Ag2O':{n:'Silver Oxide (Ag₂O)',t:'Ionic — oxide',L:[[0,0,0],[-1.1,-1,0],[1.1,-1,0]]},
+ 'BrF3':{n:'Bromine Trifluoride (BrF₃)',t:'Inorganic — interhalogen',L:[[0,0.3,0],[-1,-0.7,0],[1,-0.7,0],[0,-0.7,-1]]},
+ 'BrCl':{n:'Bromine Monochloride (BrCl)',t:'Interhalogen',L:[[0,-1,0],[0,1,0]]},
+ 'ClI':{n:'Iodine Monochloride (ICl)',t:'Interhalogen',L:[[0,-1,0],[0,1,0]]},
+ 'BrI':{n:'Iodine Monobromide (IBr)',t:'Interhalogen',L:[[0,-1,0],[0,1,0]]},
+ 'NaNO3':{n:'Sodium Nitrate (NaNO₃)',t:'Ionic — nitrate',L:null},
+ 'KNO3':{n:'Potassium Nitrate (KNO₃)',t:'Ionic — nitrate',L:null},
+ 'LiNO3':{n:'Lithium Nitrate (LiNO₃)',t:'Ionic — nitrate',L:null},
+ 'Ca(NO3)2':{n:'Calcium Nitrate (Ca(NO₃)₂)',t:'Ionic — nitrate',L:null},
+ 'Cu(NO3)2':{n:'Copper(II) Nitrate (Cu(NO₃)₂)',t:'Ionic — nitrate',L:null},
+ 'Fe(NO3)3':{n:'Iron(III) Nitrate (Fe(NO₃)₃)',t:'Ionic — nitrate',L:null},
+ 'AgNO3':{n:'Silver Nitrate (AgNO₃)',t:'Ionic — nitrate',L:null},
+ 'Na2SO4':{n:'Sodium Sulfate (Na₂SO₄)',t:'Ionic — sulfate',L:null},
+ 'K2SO4':{n:'Potassium Sulfate (K₂SO₄)',t:'Ionic — sulfate',L:null},
+ 'CaSO4':{n:'Calcium Sulfate — gypsum (CaSO₄)',t:'Ionic — sulfate',L:null},
+ 'MgSO4':{n:'Magnesium Sulfate (MgSO₄)',t:'Ionic — sulfate',L:null},
+ 'BaSO4':{n:'Barium Sulfate (BaSO₄)',t:'Ionic — sulfate',L:null},
+ 'FeSO4':{n:'Iron(II) Sulfate (FeSO₄)',t:'Ionic — sulfate',L:null},
+ 'Fe2(SO4)3':{n:'Iron(III) Sulfate (Fe₂(SO₄)₃)',t:'Ionic — sulfate',L:null},
+ 'CuSO4':{n:'Copper(II) Sulfate (CuSO₄)',t:'Ionic — sulfate',L:null},
+ 'ZnSO4':{n:'Zinc Sulfate (ZnSO₄)',t:'Ionic — sulfate',L:null},
+ 'Al2(SO4)3':{n:'Aluminium Sulfate (Al₂(SO₄)₃)',t:'Ionic — sulfate',L:null},
+ 'Na2SO3':{n:'Sodium Sulfite (Na₂SO₃)',t:'Ionic — sulfite',L:null},
+ 'NaHSO4':{n:'Sodium Hydrogensulfate (NaHSO₄)',t:'Ionic — salt',L:null},
+ 'CaCO3':{n:'Calcium Carbonate — limestone (CaCO₃)',t:'Ionic — carbonate',L:null},
+ 'Na2CO3':{n:'Sodium Carbonate (Na₂CO₃)',t:'Ionic — carbonate',L:null},
+ 'K2CO3':{n:'Potassium Carbonate (K₂CO₃)',t:'Ionic — carbonate',L:null},
+ 'MgCO3':{n:'Magnesium Carbonate (MgCO₃)',t:'Ionic — carbonate',L:null},
+ 'BaCO3':{n:'Barium Carbonate (BaCO₃)',t:'Ionic — carbonate',L:null},
+ 'CuCO3':{n:'Copper(II) Carbonate (CuCO₃)',t:'Ionic — carbonate',L:null},
+ 'ZnCO3':{n:'Zinc Carbonate (ZnCO₃)',t:'Ionic — carbonate',L:null},
+ 'FeCO3':{n:'Iron(II) Carbonate (FeCO₃)',t:'Ionic — carbonate',L:null},
+ 'Li2CO3':{n:'Lithium Carbonate (Li₂CO₃)',t:'Ionic — carbonate',L:null},
+ 'NaHCO3':{n:'Sodium Hydrogencarbonate (NaHCO₃)',t:'Ionic — carbonate',L:null},
+ 'KHCO3':{n:'Potassium Hydrogencarbonate (KHCO₃)',t:'Ionic — carbonate',L:null},
+ 'Na3PO4':{n:'Sodium Phosphate (Na₃PO₄)',t:'Ionic — phosphate',L:null},
+ 'Ca3(PO4)2':{n:'Calcium Phosphate (Ca₃(PO₄)₂)',t:'Ionic — phosphate',L:null},
+ 'ClH4N':{n:'Ammonium Chloride (NH₄Cl)',t:'Ionic — ammonium salt',L:[[0,0,0],[0,1.1,0],[0.94,-0.4,0.6],[-0.94,-0.4,0.6],[0,-0.5,-0.9],[0,0,1.6]]},
+ 'H4N2O3':{n:'Ammonium Nitrate (NH₄NO₃)',t:'Ionic — ammonium salt',L:null},
+ 'H8N2O4S':{n:'Ammonium Sulfate ((NH₄)₂SO₄)',t:'Ionic — ammonium salt',L:null},
+ 'Na2S':{n:'Sodium Sulfide (Na₂S)',t:'Ionic — sulfide',L:[[0,0,0],[-1.1,-1,0],[1.1,-1,0]]},
+ 'FeS':{n:'Iron(II) Sulfide (FeS)',t:'Ionic — sulfide',L:[[0,-1,0],[0,1,0]]},
+ 'CuS':{n:'Copper(II) Sulfide (CuS)',t:'Ionic — sulfide',L:[[0,-1,0],[0,1,0]]},
+ 'SZn':{n:'Zinc Sulfide (ZnS)',t:'Ionic — sulfide',L:[[0,-1,0],[0,1,0]]},
+ 'PbS':{n:'Lead(II) Sulfide — galena (PbS)',t:'Ionic — sulfide',L:[[0,-1,0],[0,1,0]]},
+ 'Ag2S':{n:'Silver Sulfide (Ag₂S)',t:'Ionic — sulfide',L:[[0,0,0],[-1.1,-1,0],[1.1,-1,0]]},
+ 'I2Pb':{n:'Lead(II) Iodide (PbI₂)',t:'Ionic — iodide',L:[[0,0,0],[-1.2,-0.6,0],[1.2,-0.6,0]]},
 };
 
-function formulaKey(atoms) {
-  // Build Hill system: C first, H second, then alphabetical
-  const counts = {};
-  atoms.forEach(a => counts[a.sym] = (counts[a.sym]||0) + 1);
-  const syms = Object.keys(counts);
-  const ordered = [];
-  if (counts['C']) { ordered.push('C'); }
-  if (counts['H']) { ordered.push('H'); }
-  syms.filter(s => s!=='C' && s!=='H').sort().forEach(s => ordered.push(s));
-  return ordered.map(s => counts[s]===1 ? s : s+counts[s]).join('');
+// ── FORMULA KEY ────────────────────────────────────────────────────────────────
+function fkey(atoms){
+ const c={};atoms.forEach(a=>c[a.sym]=(c[a.sym]||0)+1);
+ const k=Object.keys(c),o=[];
+ if(c.C)o.push('C');if(c.H)o.push('H');
+ k.filter(s=>s!=='C'&&s!=='H').sort().forEach(s=>o.push(s));
+ return o.map(s=>c[s]===1?s:s+c[s]).join('');
+}
+function fhtml(atoms){
+ const c={};atoms.forEach(a=>c[a.sym]=(c[a.sym]||0)+1);
+ const k=Object.keys(c),o=[];
+ if(c.C)o.push('C');if(c.H)o.push('H');
+ k.filter(s=>s!=='C'&&s!=='H').sort().forEach(s=>o.push(s));
+ return o.map(s=>c[s]===1?s:`${s}<sub>${c[s]}</sub>`).join('');
 }
 
-function formulaDisplay(atoms) {
-  const counts = {};
-  atoms.forEach(a => counts[a.sym] = (counts[a.sym]||0) + 1);
-  const syms = Object.keys(counts);
-  const ordered = [];
-  if (counts['C']) ordered.push('C');
-  if (counts['H']) ordered.push('H');
-  syms.filter(s=>s!=='C'&&s!=='H').sort().forEach(s=>ordered.push(s));
-  return ordered.map(s => counts[s]===1 ? s : s+'<sub>'+counts[s]+'</sub>').join('');
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let atoms=[],hist=[],hiddenCats=new Set(),draggedEl=null;
+
+// ── BUILD TABLE ───────────────────────────────────────────────────────────────
+function makeElDiv(el){
+ const div=document.createElement('div');
+ div.className=`el cat-${el.cat}`;div.dataset.sym=el.sym;div.dataset.cat=el.cat;div.draggable=true;
+ div.innerHTML=`<span class="el-num">${el.n}</span><span class="el-sym">${el.sym}</span><span class="el-name">${el.name}</span><span class="el-mass">${el.mass}</span>`;
+ div.addEventListener('mouseenter',e=>showTT(e,el));
+ div.addEventListener('mouseleave',hideTT);
+ div.addEventListener('click',()=>addAtom(el));
+ div.addEventListener('dragstart',e=>{draggedEl=el;e.dataTransfer.setData('text/plain',el.sym);div.style.opacity='.4';});
+ div.addEventListener('dragend',()=>{div.style.opacity='';draggedEl=null;});
+ return div;
+}
+function makeBlank(label){
+ const div=document.createElement('div');div.style.cssText='aspect-ratio:1';
+ if(label){
+  div.style.cssText='aspect-ratio:1;border-radius:3px;background:rgba(180,180,180,.12);display:flex;align-items:center;justify-content:center;overflow:hidden';
+  const sp=document.createElement('span');sp.style.cssText='font-size:4.5px;color:#bbb;text-align:center;line-height:1.3';
+  sp.textContent=label;div.appendChild(sp);
+ }
+ return div;
 }
 
-function identifyCompound(atoms) {
-  if (!atoms.length) return null;
-  const key = formulaKey(atoms);
-  return COMPOUNDS[key] || null;
-}
-
-// ─── STATE ────────────────────────────────────────────────────────────────────
-let currentAtoms = [];
-let history = [];
-let hiddenCats = new Set();
-
-// ─── PERIODIC TABLE BUILDER ───────────────────────────────────────────────────
-const GRID_ROWS = 9; // 7 main + 2 lanthanide/actinide
-const GRID_COLS = 18;
-
-function buildTable() {
-  const grid = document.getElementById('pt-grid');
-  grid.innerHTML = '';
-  const cells = {};
-  // Fill all 9*18 with empty divs
-  for (let r=1; r<=GRID_ROWS; r++) {
-    for (let c=1; c<=GRID_COLS; c++) cells[`${r},${c}`] = null;
+function buildTable(){
+ const grid=document.getElementById('pt-grid');
+ grid.innerHTML='';
+ // Rows 1-7: main table
+ for(let row=1;row<=7;row++){
+  for(let col=1;col<=18;col++){
+   const el=EL.find(e=>e.p===row&&e.g===col);
+   if(el){ grid.appendChild(makeElDiv(el)); }
+   else{
+    const lbl=(row===6&&col===3)?'57–71':(row===7&&col===3)?'89–103':null;
+    grid.appendChild(makeBlank(lbl));
+   }
   }
-  ELEMENTS.forEach(el => {
-    const r = el.period, c = el.group;
-    cells[`${r},${c}`] = el;
-  });
-  for (let r=1; r<=GRID_ROWS; r++) {
-    for (let c=1; c<=GRID_COLS; c++) {
-      const el = cells[`${r},${c}`];
-      const div = document.createElement('div');
-      if (!el) {
-        div.style.cssText='aspect-ratio:1;border-radius:4px;';
-        // add a blank spacer with special styling for lanthanide/actinide gap
-        if((r===6||r===7) && c===3) {
-          div.style.cssText='aspect-ratio:1;border-radius:4px;background:rgba(200,200,200,.12);border:1px dashed #e0e0e0;font-size:7px;color:#aaa;display:flex;align-items:center;justify-content:center;';
-          div.textContent = r===6?'57-71':'89-103';
-        }
-        grid.appendChild(div);
-        continue;
-      }
-      div.className = `el cat-${el.cat}`;
-      div.dataset.sym = el.sym;
-      div.dataset.cat = el.cat;
-      div.innerHTML = `<span class="el-num">${el.n}</span><span class="el-sym">${el.sym}</span><span class="el-name">${el.name}</span><span class="el-mass">${el.mass}</span>`;
-      div.addEventListener('mouseenter', e => showTooltip(e, el));
-      div.addEventListener('mouseleave', hideTooltip);
-      div.addEventListener('click', () => addAtom(el));
-      grid.appendChild(div);
-    }
+ }
+ // Row 8: spacer row (col 1-3 blank, cols 4-18 = lanthanides La-Lu, col 3 label)
+ for(let col=1;col<=18;col++){
+  if(col===1){grid.appendChild(makeBlank());continue;}
+  if(col===2){
+   const d=document.createElement('div');
+   d.style.cssText='aspect-ratio:1;display:flex;align-items:center;justify-content:center;';
+   d.innerHTML='<span style="font-size:5px;color:#c62828;font-weight:600;text-align:center;line-height:1.3">Lanthanides<br>57–71</span>';
+   grid.appendChild(d);continue;
   }
-}
-
-// ─── TOOLTIP ─────────────────────────────────────────────────────────────────
-const tooltip = document.getElementById('el-tooltip');
-let ttTimeout;
-function showTooltip(e, el) {
-  clearTimeout(ttTimeout);
-  const ci = CAT_INFO[el.cat];
-  const valStr = el.valence===0 ? 'Inert (0)' : el.valence;
-  tooltip.innerHTML = `
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-      <div style="width:44px;height:44px;border-radius:8px;background:${ci.color};display:flex;align-items:center;justify-content:center;font-family:'Google Sans',sans-serif;font-size:20px;font-weight:700;color:#fff">${el.sym}</div>
-      <div><div class="tt-name">${el.name}</div><div style="font-size:10px;color:${ci.color};font-weight:500">${ci.label}</div></div>
-    </div>
-    <div class="tt-row"><span class="tt-key">Atomic number</span><span class="tt-val">${el.n}</span></div>
-    <div class="tt-row"><span class="tt-key">Atomic mass</span><span class="tt-val">${el.mass} u</span></div>
-    <div class="tt-row"><span class="tt-key">Valence electrons</span><span class="tt-val">${valStr}</span></div>
-    <div class="tt-row"><span class="tt-key">Atomic radius</span><span class="tt-val">${el.r} pm</span></div>
-    <div class="tt-row" style="border-bottom:none"><span class="tt-key">Click to add to molecule</span><span class="tt-val" style="color:var(--blue)">+</span></div>
-  `;
-  const r = e.target.getBoundingClientRect();
-  let left = r.right + 8, top = r.top;
-  if (left + 210 > window.innerWidth) left = r.left - 218;
-  if (top + 220 > window.innerHeight) top = window.innerHeight - 230;
-  tooltip.style.left = left + 'px';
-  tooltip.style.top = Math.max(4, top) + 'px';
-  tooltip.style.opacity = '1';
-}
-function hideTooltip() {
-  ttTimeout = setTimeout(() => tooltip.style.opacity='0', 80);
-}
-
-// ─── ATOM MANAGEMENT ─────────────────────────────────────────────────────────
-function addAtom(el) {
-  saveHistory();
-  currentAtoms.push({...el, id: Date.now() + Math.random()});
-  updateBuilder();
-}
-function removeAtomById(id) {
-  saveHistory();
-  currentAtoms = currentAtoms.filter(a => a.id !== id);
-  updateBuilder();
-}
-function saveHistory() {
-  history.push(JSON.parse(JSON.stringify(currentAtoms)));
-  if (history.length > 30) history.shift();
-}
-function undo() {
-  if (!history.length) return;
-  currentAtoms = history.pop();
-  updateBuilder();
-}
-function clearAll() {
-  saveHistory();
-  currentAtoms = [];
-  updateBuilder();
-}
-
-function updateBuilder() {
-  const container = document.getElementById('builder-atoms');
-  const nameEl = document.getElementById('compound-name');
-  const formulaEl = document.getElementById('formula-display');
-
-  if (!currentAtoms.length) {
-    container.innerHTML = '<span class="builder-hint">Click elements above to start building a molecule…</span>';
-    nameEl.textContent = '—';
-    formulaEl.style.display = 'none';
-    clearModel();
-    return;
+  if(col===3){grid.appendChild(makeBlank());continue;}
+  // cols 4-18 = La(57) through Lu(71), g values 4-18
+  const el=EL.find(e=>e.p===8&&e.g===col);
+  grid.appendChild(el?makeElDiv(el):makeBlank());
+ }
+ // Row 9: actinides Ac-Lr
+ for(let col=1;col<=18;col++){
+  if(col===1){grid.appendChild(makeBlank());continue;}
+  if(col===2){
+   const d=document.createElement('div');
+   d.style.cssText='aspect-ratio:1;display:flex;align-items:center;justify-content:center;';
+   d.innerHTML='<span style="font-size:5px;color:#6d4c41;font-weight:600;text-align:center;line-height:1.3">Actinides<br>89–103</span>';
+   grid.appendChild(d);continue;
   }
+  if(col===3){grid.appendChild(makeBlank());continue;}
+  const el=EL.find(e=>e.p===9&&e.g===col);
+  grid.appendChild(el?makeElDiv(el):makeBlank());
+ }
+ fitTable();
+}
 
-  // Count per element
-  const counts = {};
-  currentAtoms.forEach(a => { if (!counts[a.sym]) counts[a.sym] = {el:a, count:0}; counts[a.sym].count++; });
+function fitTable(){
+ const wrap=document.getElementById('pt-wrap');
+ const W=wrap.clientWidth-20,H=wrap.clientHeight-8;
+ const gap=2;
+ // 18 cols, 9 rows (7 main + 2 lanthanide/actinide)
+ const S=Math.max(16,Math.floor(Math.min((W-17*gap)/18,(H-8*gap)/9)));
+ const ts=Math.max(6,Math.floor(S*0.35));
+ document.documentElement.style.setProperty('--ts',ts+'px');
+ const grid=document.getElementById('pt-grid');
+ grid.style.gap=gap+'px';
+ grid.style.gridTemplateColumns=`repeat(18,${S}px)`;
+ grid.style.gridTemplateRows=`repeat(9,${S}px)`;
+}
 
-  container.innerHTML = '';
-  Object.values(counts).forEach(({el, count}) => {
-    const chip = document.createElement('div');
-    chip.className = 'atom-chip';
-    chip.style.background = CAT_INFO[el.cat].color;
-    chip.innerHTML = `<span class="chip-sym">${el.sym}</span><span class="chip-count">${count>1?'×'+count:''}</span><span class="chip-x" title="Remove one">✕</span>`;
-    chip.querySelector('.chip-x').addEventListener('click', e => {
-      e.stopPropagation();
-      saveHistory();
-      // remove last occurrence
-      const idx = [...currentAtoms].reverse().findIndex(a => a.sym === el.sym);
-      if (idx >= 0) currentAtoms.splice(currentAtoms.length - 1 - idx, 1);
-      updateBuilder();
-    });
-    container.appendChild(chip);
-  });
+// ── TOOLTIP + SHELL ────────────────────────────────────────────────────────────
+const TT=document.getElementById('el-tooltip');
+let ttTO;
+function showTT(e,el){
+ clearTimeout(ttTO);
+ const cat=CAT[el.cat];
+ TT.innerHTML=`
+  <div class="tt-head">
+   <div class="tt-badge" style="background:${cat.col}">${el.sym}</div>
+   <div><div class="tt-name">${el.name}</div><div class="tt-cat" style="color:${cat.col}">${cat.label}</div></div>
+  </div>
+  <div class="tt-row"><span class="tt-key">Atomic number</span><span class="tt-val">${el.n}</span></div>
+  <div class="tt-row"><span class="tt-key">Atomic mass</span><span class="tt-val">${el.mass} u</span></div>
+  <div class="tt-row"><span class="tt-key">Electron shells</span><span class="tt-val">${el.shells.join(', ')}</span></div>
+  <div class="tt-row"><span class="tt-key">Valence electrons</span><span class="tt-val">${el.v===0?'Inert (0)':el.v}</span></div>
+  <div class="tt-row"><span class="tt-key">Atomic radius</span><span class="tt-val">${el.r} pm</span></div>
+  ${el.cat==='synthetic'?'<div style="margin-top:6px;padding:4px 6px;background:#eceff1;border-radius:5px;font-size:9.5px;color:#546e7a;line-height:1.4">⚗️ Superheavy synthetic element — category and properties are <em>predicted</em> from periodic table position. Too unstable to observe directly.</div>':''}
+  <div id="tt-shell-wrap"></div>`;
+ drawShell(el,document.getElementById('tt-shell-wrap'));
+ const r=e.target.getBoundingClientRect();
+ let left=r.right+8,top=r.top-10;
+ if(left+262>window.innerWidth)left=r.left-270;
+ if(top+340>window.innerHeight)top=window.innerHeight-345;
+ TT.style.left=Math.max(4,left)+'px';TT.style.top=Math.max(4,top)+'px';TT.style.opacity='1';
+}
+function hideTT(){ttTO=setTimeout(()=>TT.style.opacity='0',100);}
 
-  const compound = identifyCompound(currentAtoms);
-  const fKey = formulaKey(currentAtoms);
-  formulaEl.innerHTML = formulaDisplay(currentAtoms);
-  formulaEl.style.display = 'inline-block';
-
-  if (compound) {
-    nameEl.textContent = compound.name;
-    nameEl.style.color = 'var(--green)';
-    drawModel(currentAtoms, compound);
-  } else {
-    nameEl.textContent = 'Unknown compound';
-    nameEl.style.color = 'var(--muted)';
-    drawModel(currentAtoms, null);
+function drawShell(el,container){
+ const S=118,cx=S/2,cy=S/2;
+ const cv=document.createElement('canvas');cv.width=S;cv.height=S;
+ cv.style.cssText=`width:${S}px;height:${S}px`;
+ const ctx=cv.getContext('2d');
+ const shells=el.shells,ns=shells.length;
+ const radii=shells.map((_,i)=>10+(i+1)*(S/2-11)/ns);
+ const nr=Math.max(4,9-ns);
+ const ng=ctx.createRadialGradient(cx-nr*.3,cy-nr*.3,1,cx,cy,nr);
+ ng.addColorStop(0,'#ff8a65');ng.addColorStop(1,'#c62828');
+ ctx.beginPath();ctx.arc(cx,cy,nr,0,Math.PI*2);ctx.fillStyle=ng;ctx.fill();
+ ctx.fillStyle='#fff';ctx.font=`bold ${Math.max(5,nr*.9)}px Roboto,sans-serif`;
+ ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(el.n,cx,cy);
+ shells.forEach((count,si)=>{
+  const r=radii[si];
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.strokeStyle='rgba(120,160,255,.22)';ctx.lineWidth=0.7;ctx.stroke();
+  for(let ei=0;ei<count;ei++){
+   const a=(ei/count)*Math.PI*2-Math.PI/2;
+   const ex=cx+r*Math.cos(a),ey=cy+r*Math.sin(a);
+   const er=Math.max(2,3.2-si*.3);
+   const eg=ctx.createRadialGradient(ex-er*.3,ey-er*.3,.5,ex,ey,er);
+   eg.addColorStop(0,'#90caf9');eg.addColorStop(1,'#1565c0');
+   ctx.beginPath();ctx.arc(ex,ey,er,0,Math.PI*2);ctx.fillStyle=eg;ctx.fill();
   }
+ });
+ container.appendChild(cv);
 }
 
-// ─── BALL-AND-STICK MODEL ─────────────────────────────────────────────────────
-const modelCanvas = document.getElementById('model-canvas');
-const mctx = modelCanvas.getContext('2d');
-let modelAngle = 0, modelRAF = null;
-
-function resizeModel() {
-  const wrap = document.getElementById('model-canvas-wrap');
-  const DPR = window.devicePixelRatio || 1;
-  const W = wrap.clientWidth, H = wrap.clientHeight;
-  modelCanvas.width = W * DPR; modelCanvas.height = H * DPR;
-  modelCanvas.style.width = W + 'px'; modelCanvas.style.height = H + 'px';
-  mctx.scale(DPR, DPR);
-}
-
-// Pre-defined 3D atom positions for known molecules
-const MODEL_LAYOUTS = {
-  'H2':    [[0,-1,0],[0,1,0]],
-  'O2':    [[0,-1,0],[0,1,0]],
-  'N2':    [[0,-1,0],[0,1,0]],
-  'Cl2':   [[0,-1,0],[0,1,0]],
-  'HCl':   [[0,-1,0],[0,1,0]],
-  'HF':    [[0,-1,0],[0,1,0]],
-  'HBr':   [[0,-1,0],[0,1,0]],
-  'CO':    [[0,-1,0],[0,1,0]],
-  'NaCl':  [[0,-1,0],[0,1,0]],
-  'MgO':   [[0,-1,0],[0,1,0]],
-  'CaO':   [[0,-1,0],[0,1,0]],
-  'KCl':   [[0,-1,0],[0,1,0]],
-  'CuO':   [[0,-1,0],[0,1,0]],
-  'ZnO':   [[0,-1,0],[0,1,0]],
-  'H2O':   [[0,0,0],[-0.95,-0.60,0],[0.95,-0.60,0]],
-  'CO2':   [[0,0,0],[0,-1.2,0],[0,1.2,0]],
-  'H2S':   [[0,0,0],[-0.9,-0.7,0],[0.9,-0.7,0]],
-  'SO2':   [[0,0,0],[-0.9,-0.7,0],[0.9,-0.7,0]],
-  'NO2':   [[0,0,0],[-0.9,-0.7,0],[0.9,-0.7,0]],
-  'NH3':   [[0,0.4,0],[-0.9,-0.5,0.3],[0.9,-0.5,0.3],[0,-0.5,-0.8]],
-  'CH4':   [[0,0,0],[0.82,0.82,0.82],[-0.82,-0.82,0.82],[-0.82,0.82,-0.82],[0.82,-0.82,-0.82]],
-  'C2H6':  [[-0.75,0,0],[0.75,0,0],[-0.75,1,0.8],[-0.75,1,-0.8],[-0.75,-1,0],[0.75,1,0.8],[0.75,1,-0.8],[0.75,-1,0]],
-  'C2H4':  [[-0.65,0,0],[0.65,0,0],[-0.65,1,0.8],[-0.65,-1,0.8],[0.65,1,0.8],[0.65,-1,0.8]],
-  'HNO3':  [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
-  'SO3':   [[0,0,0],[0,-1.2,0],[1.04,0.6,0],[-1.04,0.6,0]],
-  'CH3OH': [[0,0,0],[-1,0,0],[-0,1,0.8],[-0,1,-0.8],[-0,-1,0],[-1,0.6,-0.7],[-1,-0.8,0]],
-};
-
-function project3D(x, y, z, angle, cx, cy, scale) {
-  const cos = Math.cos(angle), sin = Math.sin(angle);
-  const rx = x * cos - z * sin;
-  const rz = x * sin + z * cos;
-  return { sx: cx + rx * scale, sy: cy + (y * 0.9 + rz * 0.3) * scale, depth: rz };
-}
-
-let currentModelData = null;
-
-function drawModel(atoms, compound) {
-  if (modelRAF) { cancelAnimationFrame(modelRAF); modelRAF = null; }
-  const fKey = formulaKey(atoms);
-  const layout = MODEL_LAYOUTS[fKey];
-  if (!layout || layout.length < atoms.length) {
-    // Generic layout: arrange in a ring
-    const n = atoms.length;
-    const pts = [];
-    for (let i=0; i<n; i++) {
-      const angle = (i / n) * Math.PI * 2;
-      pts.push([Math.cos(angle) * 1.1, Math.sin(angle) * 1.1, 0]);
-    }
-    currentModelData = { atoms, bonds: compound ? compound.bonds : [], layout: pts };
-  } else {
-    const bondList = compound ? compound.bonds : [];
-    currentModelData = { atoms, bonds: bondList, layout };
-  }
-  animateModel();
-}
-
-function clearModel() {
-  if (modelRAF) { cancelAnimationFrame(modelRAF); modelRAF = null; }
-  currentModelData = null;
-  const wrap = document.getElementById('model-canvas-wrap');
-  const W = wrap.clientWidth, H = wrap.clientHeight;
-  mctx.clearRect(0, 0, W, H);
-  mctx.fillStyle = '#f8f9fa';
-  mctx.fillRect(0, 0, W, H);
-  mctx.fillStyle = '#bbb';
-  mctx.font = '11px Roboto,sans-serif';
-  mctx.textAlign = 'center';
-  mctx.fillText('Add elements to see model', W/2, H/2);
-}
-
-function animateModel() {
-  if (!currentModelData) return;
-  const wrap = document.getElementById('model-canvas-wrap');
-  const W = wrap.clientWidth, H = wrap.clientHeight;
-  const { atoms, bonds, layout } = currentModelData;
-  const cx = W/2, cy = H/2;
-  const scale = Math.min(W, H) * 0.28;
-  modelAngle += 0.012;
-
-  mctx.clearRect(0, 0, W, H);
-  mctx.fillStyle = '#0d1b2a';
-  mctx.fillRect(0, 0, W, H);
-
-  // Project all atoms
-  const projected = layout.map((pos, i) => {
-    const p = project3D(pos[0], pos[1], pos[2]||0, modelAngle, cx, cy, scale);
-    return { ...p, el: atoms[i] || atoms[0] };
-  });
-
-  // Sort by depth for painter's algorithm
-  const sortedAtoms = [...projected.keys()].sort((a,b) => projected[a].depth - projected[b].depth);
-
-  // Draw bonds first
-  bonds.forEach(([a, b]) => {
-    if (a >= projected.length || b >= projected.length) return;
-    const pa = projected[a], pb = projected[b];
-    const midDepth = (pa.depth + pb.depth) / 2;
-    const alpha = 0.55 + midDepth * 0.15;
-    mctx.save();
-    mctx.strokeStyle = `rgba(180,200,220,${Math.min(0.9,Math.max(0.3,alpha))})`;
-    mctx.lineWidth = 2.5;
-    mctx.beginPath(); mctx.moveTo(pa.sx, pa.sy); mctx.lineTo(pb.sx, pb.sy); mctx.stroke();
-    mctx.restore();
-  });
-
-  // Draw atoms
-  sortedAtoms.forEach(i => {
-    const p = projected[i];
-    const el = p.el;
-    if (!el) return;
-    const baseR = Math.max(12, Math.min(24, 14 + el.r * 0.03));
-    const depthScale = 0.85 + p.depth * 0.1;
-    const r = baseR * Math.max(0.6, depthScale);
-    const grad = mctx.createRadialGradient(p.sx - r*0.3, p.sy - r*0.3, r*0.05, p.sx, p.sy, r);
-    grad.addColorStop(0, lighten(el.color, 60));
-    grad.addColorStop(0.5, el.color);
-    grad.addColorStop(1, darken(el.color, 40));
-    mctx.beginPath(); mctx.arc(p.sx, p.sy, r, 0, Math.PI*2);
-    mctx.fillStyle = grad; mctx.fill();
-    mctx.strokeStyle = 'rgba(255,255,255,0.25)'; mctx.lineWidth = 1;
-    mctx.stroke();
-    mctx.fillStyle = '#fff';
-    mctx.font = `bold ${Math.max(8, r*0.72)}px Google Sans,sans-serif`;
-    mctx.textAlign = 'center'; mctx.textBaseline = 'middle';
-    mctx.fillText(el.sym, p.sx, p.sy + 0.5);
-  });
-
-  modelRAF = requestAnimationFrame(animateModel);
-}
-
-function lighten(hex, amt) {
-  let r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
-  return `rgb(${Math.min(255,r+amt)},${Math.min(255,g+amt)},${Math.min(255,b+amt)})`;
-}
-function darken(hex, amt) {
-  let r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
-  return `rgb(${Math.max(0,r-amt)},${Math.max(0,g-amt)},${Math.max(0,b-amt)})`;
-}
-
-// ─── CATEGORY FILTER ─────────────────────────────────────────────────────────
-function buildCatFilter() {
-  const bar = document.getElementById('cat-filter');
-  Object.entries(CAT_INFO).forEach(([cat, info]) => {
-    const btn = document.createElement('button');
-    btn.className = `cat-btn cat-${cat}`;
-    btn.style.background = info.color;
-    btn.textContent = info.label;
-    btn.dataset.cat = cat;
-    btn.addEventListener('click', () => {
-      if (hiddenCats.has(cat)) hiddenCats.delete(cat);
-      else hiddenCats.add(cat);
-      btn.classList.toggle('off', hiddenCats.has(cat));
-      document.querySelectorAll(`.el[data-cat="${cat}"]`).forEach(el => {
-        el.style.visibility = hiddenCats.has(cat) ? 'hidden' : '';
-      });
-    });
-    bar.appendChild(btn);
-  });
-}
-
-// ─── LEGEND ──────────────────────────────────────────────────────────────────
-function buildLegend() {
-  const leg = document.getElementById('legend');
-  Object.entries(CAT_INFO).forEach(([cat, info]) => {
-    const item = document.createElement('div');
-    item.className = 'leg-item';
-    item.innerHTML = `<div class="leg-dot" style="background:${info.color}"></div>${info.label}`;
-    leg.appendChild(item);
-  });
-}
-
-// ─── CONTROLS ────────────────────────────────────────────────────────────────
-document.getElementById('clear-btn').addEventListener('click', clearAll);
-document.getElementById('undo-btn').addEventListener('click', undo);
-
-// ─── INIT ─────────────────────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-  buildTable();
-  buildCatFilter();
-  buildLegend();
-  resizeModel();
-  clearModel();
+// ── DRAG TO BUILDER ────────────────────────────────────────────────────────────
+const BL=document.getElementById('builder-left');
+BL.addEventListener('dragover',e=>{e.preventDefault();BL.classList.add('drag-over');});
+BL.addEventListener('dragleave',()=>BL.classList.remove('drag-over'));
+BL.addEventListener('drop',e=>{
+ e.preventDefault();BL.classList.remove('drag-over');
+ // Accept either a raw element OR a bracketed group chip
+ if(draggedBracket){addBracketToMain(draggedBracket);draggedBracket=null;}
+ else if(draggedEl){addAtom(draggedEl);}
 });
-window.addEventListener('resize', () => { resizeModel(); if(currentModelData) animateModel(); });
+
+// ── LIGAND STAGING ─────────────────────────────────────────────────────────────
+let ligandAtoms=[];       // raw atoms in the staging area
+let bracketGroups=[];     // completed bracket chips in staging
+let draggedBracket=null;  // bracket chip being dragged to main builder
+let ligHist=[];
+
+const LL=document.getElementById('ligand-left');
+LL.addEventListener('dragover',e=>{e.preventDefault();LL.classList.add('drag-over');});
+LL.addEventListener('dragleave',()=>LL.classList.remove('drag-over'));
+LL.addEventListener('drop',e=>{
+ e.preventDefault();LL.classList.remove('drag-over');
+ if(draggedEl) addLigandAtom(draggedEl);
+});
+
+function addLigandAtom(el){
+ ligHist.push(JSON.parse(JSON.stringify(ligandAtoms)));
+ if(ligHist.length>30)ligHist.shift();
+ ligandAtoms.push({...el,uid:Math.random()});
+ updateLigand();
+}
+
+function updateLigand(){
+ const cont=document.getElementById('ligand-atoms');
+ cont.innerHTML='';
+
+ // First show any completed bracket chips sitting in staging
+ bracketGroups.forEach((grp,gi)=>{
+  const chip=makeBracketChip(grp,true);
+  // allow removing from staging
+  chip.querySelector('.bc-x').addEventListener('click',ev=>{
+   ev.stopPropagation();bracketGroups.splice(gi,1);updateLigand();
+  });
+  cont.appendChild(chip);
+ });
+
+ // Then show raw atoms being built
+ if(ligandAtoms.length){
+  const counts={};
+  ligandAtoms.forEach(a=>{if(!counts[a.sym])counts[a.sym]={el:a,n:0};counts[a.sym].n++;});
+  Object.values(counts).forEach(({el,n})=>{
+   const chip=document.createElement('div');
+   chip.className='atom-chip';chip.style.background=CAT[el.cat].col;
+   chip.style.opacity='.85';
+   chip.innerHTML=`<span class="chip-sym">${el.sym}</span>${n>1?`<span style="font-size:10px;opacity:.8">×${n}</span>`:''}<span class="chip-x">✕</span>`;
+   chip.querySelector('.chip-x').addEventListener('click',ev=>{
+    ev.stopPropagation();
+    const idx=[...ligandAtoms].reverse().findIndex(a=>a.sym===el.sym);
+    if(idx>=0)ligandAtoms.splice(ligandAtoms.length-1-idx,1);
+    updateLigand();
+   });
+   cont.appendChild(chip);
+  });
+ }
+
+ if(!ligandAtoms.length&&!bracketGroups.length){
+  cont.innerHTML='<span class="builder-hint" style="color:#5f8dd3">Drag elements from the periodic table here…</span>';
+ }
+
+ // Update ligand 3D preview
+ if(ligandAtoms.length) drawLigandModel(ligandAtoms);
+ else clearLigandModel();
+}
+
+function makeBracketChip(grp, inStaging){
+ // grp = {atoms, charge, formula}
+ const chip=document.createElement('div');
+ chip.className='bracket-chip';
+ chip.style.borderColor=grp.color||'#1a73e8';
+ chip.style.color=grp.color||'#1a73e8';
+ chip.draggable=true;
+ const chargeStr=grp.charge?`<span class="bc-charge">${escCharge(grp.charge)}</span>`:'';
+ chip.innerHTML=`<span style="font-size:12px;font-weight:700;opacity:.7">[</span><span class="bc-formula">${grp.formula}</span><span style="font-size:12px;font-weight:700;opacity:.7">]</span>${chargeStr}<span class="bc-x">✕</span>`;
+ chip.addEventListener('dragstart',e=>{
+  draggedBracket=grp;
+  e.dataTransfer.setData('text/plain','bracket');
+  chip.style.opacity='.45';
+ });
+ chip.addEventListener('dragend',()=>{chip.style.opacity='';draggedBracket=null;});
+ chip.addEventListener('click',()=>{
+  // clicking also adds to main builder
+  addBracketToMain(grp);
+ });
+ return chip;
+}
+
+function escCharge(c){
+ // turn "2+" → "2⁺", "3-" → "3⁻" for display
+ return c.replace('+','⁺').replace('-','⁻');
+}
+
+document.getElementById('wrap-btn').addEventListener('click',()=>{
+ if(!ligandAtoms.length){alert('Add some elements to the staging area first!');return;}
+ const charge=document.getElementById('charge-input').value.trim();
+ const formula=buildFormulaHTML(ligandAtoms);
+ const plainFormula=fkey(ligandAtoms);
+ // pick a representative colour from the most prominent element
+ const dominant=ligandAtoms.reduce((a,b)=>a.n>b.n?a:b);
+ const color=CAT[dominant.cat]?CAT[dominant.cat].col:'#1a73e8';
+ const grp={atoms:JSON.parse(JSON.stringify(ligandAtoms)),charge,formula,plainFormula,color,uid:Math.random()};
+ bracketGroups.push(grp);
+ ligandAtoms=[];
+ document.getElementById('charge-input').value='';
+ updateLigand();
+});
+
+document.getElementById('lig-undo-btn').addEventListener('click',()=>{
+ if(ligHist.length){ligandAtoms=ligHist.pop();updateLigand();}
+ else if(bracketGroups.length){bracketGroups.pop();updateLigand();}
+});
+document.getElementById('lig-clear-btn').addEventListener('click',()=>{
+ ligandAtoms=[];bracketGroups=[];
+ document.getElementById('charge-input').value='';
+ updateLigand();
+});
+
+function buildFormulaHTML(atomList){
+ const c={};atomList.forEach(a=>c[a.sym]=(c[a.sym]||0)+1);
+ const k=Object.keys(c),o=[];
+ if(c.C)o.push('C');if(c.H)o.push('H');
+ k.filter(s=>s!=='C'&&s!=='H').sort().forEach(s=>o.push(s));
+ return o.map(s=>c[s]===1?s:`${s}<sub>${c[s]}</sub>`).join('');
+}
+
+function addBracketToMain(grp){
+ // Expand the bracket group's atoms into the main atoms array
+ // We store it as a special "bracket" entry so it renders as a chip
+ saveH();
+ // Add a single meta-atom representing the whole complex
+ atoms.push({
+  isBracket:true,
+  uid:grp.uid+Math.random(),
+  formula:grp.formula,
+  plainFormula:grp.plainFormula,
+  charge:grp.charge,
+  color:grp.color,
+  atoms:grp.atoms,
+ });
+ updateBuilder();
+}
+
+// ── ATOM MANAGEMENT ───────────────────────────────────────────────────────────
+function addAtom(el){saveH();atoms.push({...el,uid:Math.random()});updateBuilder();}
+function saveH(){hist.push(JSON.parse(JSON.stringify(atoms)));if(hist.length>40)hist.shift();}
+document.getElementById('undo-btn').addEventListener('click',()=>{if(hist.length){atoms=hist.pop();updateBuilder();}});
+document.getElementById('clear-btn').addEventListener('click',()=>{saveH();atoms=[];updateBuilder();});
+
+function updateBuilder(){
+ const cont=document.getElementById('builder-atoms');
+ const nameEl=document.getElementById('compound-name');
+ const fEl=document.getElementById('formula-display');
+ const tEl=document.getElementById('compound-type');
+ if(!atoms.length){
+  cont.innerHTML='<span class="builder-hint">Click or drag elements above, or drag bracket groups from the ligand panel…</span>';
+  nameEl.textContent='—';nameEl.style.color='var(--blue)';
+  fEl.style.display='none';tEl.style.display='none';clearModel();return;
+ }
+ cont.innerHTML='';
+
+ // Separate bracket groups from plain atoms
+ const brackets=atoms.filter(a=>a.isBracket);
+ const plain=atoms.filter(a=>!a.isBracket);
+
+ // Render bracket chips
+ brackets.forEach(grp=>{
+  const chip=makeBracketChip(grp,false);
+  chip.querySelector('.bc-x').addEventListener('click',ev=>{
+   ev.stopPropagation();saveH();
+   const idx=atoms.findIndex(a=>a.uid===grp.uid);
+   if(idx>=0)atoms.splice(idx,1);updateBuilder();
+  });
+  cont.appendChild(chip);
+ });
+
+ // Render plain atom chips grouped by symbol
+ if(plain.length){
+  const counts={};
+  plain.forEach(a=>{if(!counts[a.sym])counts[a.sym]={el:a,n:0};counts[a.sym].n++;});
+  Object.values(counts).forEach(({el,n})=>{
+   const chip=document.createElement('div');chip.className='atom-chip';chip.style.background=CAT[el.cat].col;
+   chip.innerHTML=`<span class="chip-sym">${el.sym}</span>${n>1?`<span style="font-size:10px;opacity:.8">×${n}</span>`:''}<span class="chip-x">✕</span>`;
+   chip.querySelector('.chip-x').addEventListener('click',ev=>{
+    ev.stopPropagation();saveH();
+    const idx=[...atoms].reverse().findIndex(a=>!a.isBracket&&a.sym===el.sym);
+    if(idx>=0)atoms.splice(atoms.length-1-idx,1);updateBuilder();
+   });
+   cont.appendChild(chip);
+  });
+ }
+
+ // Build formula display — bracket groups shown as [formula]charge
+ let fullFormula='';
+ brackets.forEach(g=>{
+  fullFormula+=`[${g.formula}]`;
+  if(g.charge)fullFormula+=`<sup>${escCharge(g.charge)}</sup>`;
+ });
+ if(plain.length) fullFormula+=buildFormulaHTML(plain);
+ fEl.innerHTML=fullFormula||'—';fEl.style.display='inline-block';
+
+ // Name lookup — only works for pure plain-atom molecules
+ if(!brackets.length){
+  const k=fkey(plain);
+  const cpd=C[k];
+  if(cpd){
+   nameEl.textContent=cpd.n;nameEl.style.color='var(--green)';
+   tEl.textContent=cpd.t;tEl.style.display='inline-block';
+   drawModel(plain,cpd);
+  } else {
+   nameEl.textContent='Unknown combination';nameEl.style.color='var(--muted)';
+   tEl.style.display='none';drawModel(plain,null);
+  }
+ } else {
+  // Has coordination brackets — show as coordination compound
+  nameEl.textContent='Coordination compound';nameEl.style.color='#1a73e8';
+  tEl.textContent='Complex ion / coordination chemistry';tEl.style.display='inline-block';
+  // Model: flatten all atoms for display
+  const allAtoms=[...plain];
+  brackets.forEach(g=>allAtoms.push(...g.atoms));
+  drawModel(allAtoms,null);
+ }
+}
+
+// ── 3D MODEL ──────────────────────────────────────────────────────────────────
+const MC=document.getElementById('model-canvas');const mctx=MC.getContext('2d');
+let mW=0,mH=0,mAng=0,mRAF=null,mData=null;
+function resizeModel(){
+ const w=document.getElementById('model-canvas-wrap');const DPR=window.devicePixelRatio||1;
+ mW=w.clientWidth;mH=w.clientHeight;
+ MC.width=mW*DPR;MC.height=mH*DPR;MC.style.width=mW+'px';MC.style.height=mH+'px';
+ mctx.scale(DPR,DPR);
+}
+function prj(x,y,z,a,cx,cy,sc){
+ const co=Math.cos(a),si=Math.sin(a),rx=x*co-z*si,rz=x*si+z*co;
+ return{sx:cx+rx*sc,sy:cy+(y*.88+rz*.28)*sc,d:rz};
+}
+function li(h,a){const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return`rgb(${Math.min(255,r+a)},${Math.min(255,g+a)},${Math.min(255,b+a)})`;}
+function dk(h,a){const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return`rgb(${Math.max(0,r-a)},${Math.max(0,g-a)},${Math.max(0,b-a)})`;}
+
+function drawModel(al,cpd){
+ if(mRAF){cancelAnimationFrame(mRAF);mRAF=null;}
+ const n=al.length;
+ let layout=cpd&&cpd.L&&cpd.L.length>=n?cpd.L:null;
+ if(!layout){layout=[];for(let i=0;i<n;i++){const a=(i/n)*Math.PI*2;layout.push([Math.cos(a)*1.1,Math.sin(a)*1.1,0]);}}
+ // auto-bonds
+ const MB={H:1,He:0,Li:1,Be:2,B:3,C:4,N:3,O:2,F:1,Ne:0,Na:1,Mg:2,Al:3,Si:4,P:3,S:2,Cl:1,Ar:0,K:1,Ca:2,Br:1,I:1,default:4};
+ const bc=new Array(n).fill(0),bonds=[];
+ const ds=[];
+ for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
+  const p=layout[i],q=layout[j];
+  ds.push({i,j,d:Math.hypot(p[0]-q[0],p[1]-q[1],(p[2]||0)-(q[2]||0))});
+ }
+ ds.sort((a,b)=>a.d-b.d);
+ ds.forEach(({i,j,d})=>{
+  if(d>2.2)return;
+  const mi=MB[al[i].sym]||MB.default,mj=MB[al[j].sym]||MB.default;
+  if(bc[i]<mi&&bc[j]<mj){bonds.push([i,j]);bc[i]++;bc[j]++;}
+ });
+ mData={al,bonds,layout:layout.slice(0,n)};animModel();
+}
+function clearModel(){
+ if(mRAF){cancelAnimationFrame(mRAF);mRAF=null;}mData=null;
+ mctx.clearRect(0,0,mW,mH);mctx.fillStyle='#0b1829';mctx.fillRect(0,0,mW,mH);
+ mctx.fillStyle='rgba(255,255,255,.25)';mctx.font='9px Roboto,sans-serif';mctx.textAlign='center';mctx.textBaseline='middle';
+ mctx.fillText('Add elements to see model',mW/2,mH/2);
+}
+function animModel(){
+ if(!mData)return;
+ const{al,bonds,layout}=mData;
+ const cx=mW/2,cy=mH/2,sc=Math.min(mW,mH)*.27;
+ mAng+=0.011;
+ mctx.clearRect(0,0,mW,mH);mctx.fillStyle='#0b1829';mctx.fillRect(0,0,mW,mH);
+ const pp=layout.map((p,i)=>({...prj(p[0],p[1],p[2]||0,mAng,cx,cy,sc),el:al[i]}));
+ const sorted=[...pp.keys()].sort((a,b)=>pp[a].d-pp[b].d);
+ bonds.forEach(([a,b])=>{
+  if(a>=pp.length||b>=pp.length)return;
+  mctx.save();mctx.strokeStyle='rgba(170,200,230,.6)';mctx.lineWidth=2;mctx.lineCap='round';
+  mctx.beginPath();mctx.moveTo(pp[a].sx,pp[a].sy);mctx.lineTo(pp[b].sx,pp[b].sy);mctx.stroke();mctx.restore();
+ });
+ sorted.forEach(i=>{
+  const p=pp[i];if(!p.el)return;
+  const br=Math.max(10,Math.min(20,12+p.el.r*.02));
+  const r=br*Math.max(.65,.85+p.d*.08);
+  const g=mctx.createRadialGradient(p.sx-r*.3,p.sy-r*.3,r*.05,p.sx,p.sy,r);
+  g.addColorStop(0,li(p.el.col,55));g.addColorStop(.5,p.el.col);g.addColorStop(1,dk(p.el.col,40));
+  mctx.beginPath();mctx.arc(p.sx,p.sy,r,0,Math.PI*2);mctx.fillStyle=g;mctx.fill();
+  mctx.strokeStyle='rgba(255,255,255,.18)';mctx.lineWidth=.7;mctx.stroke();
+  mctx.fillStyle='#fff';mctx.font=`bold ${Math.max(6,r*.68)}px Google Sans,sans-serif`;
+  mctx.textAlign='center';mctx.textBaseline='middle';mctx.fillText(p.el.sym,p.sx,p.sy+.5);
+ });
+ mRAF=requestAnimationFrame(animModel);
+}
+
+// ── CATEGORY FILTER ───────────────────────────────────────────────────────────
+function buildCatFilter(){
+ const bar=document.getElementById('cat-filter');
+ const lbl=document.createElement('span');
+ lbl.style.cssText='font-size:9px;color:var(--muted);margin-right:3px;white-space:nowrap';
+ lbl.textContent='Filter:';bar.appendChild(lbl);
+ Object.entries(CAT).forEach(([cat,info])=>{
+  const btn=document.createElement('button');
+  btn.className=`cat-btn cat-${cat}`;btn.style.background=info.col;btn.textContent=info.label;
+  btn.addEventListener('click',()=>{
+   if(hiddenCats.has(cat))hiddenCats.delete(cat);else hiddenCats.add(cat);
+   btn.classList.toggle('off',hiddenCats.has(cat));
+   document.querySelectorAll(`.el[data-cat="${cat}"]`).forEach(e=>e.style.visibility=hiddenCats.has(cat)?'hidden':'');
+  });
+  bar.appendChild(btn);
+ });
+}
+
+// ── LEGEND ────────────────────────────────────────────────────────────────────
+function buildLegend(){
+ const leg=document.getElementById('legend');
+ Object.entries(CAT).forEach(([cat,info])=>{
+  const d=document.createElement('div');d.className='leg-item';
+  d.innerHTML=`<div class="leg-dot" style="background:${info.col}"></div>${info.label}`;
+  leg.appendChild(d);
+ });
+}
+
+// ── LIGAND 3D PREVIEW ─────────────────────────────────────────────────────────
+const LC=document.getElementById('ligand-canvas');const lctx=LC.getContext('2d');
+let lW=0,lH=0,lAng=0,lRAF=null,lData=null;
+function resizeLigandModel(){
+ const w=document.getElementById('ligand-canvas-wrap');const DPR=window.devicePixelRatio||1;
+ lW=w.clientWidth;lH=w.clientHeight;
+ LC.width=lW*DPR;LC.height=lH*DPR;LC.style.width=lW+'px';LC.style.height=lH+'px';
+ lctx.scale(DPR,DPR);
+}
+function drawLigandModel(al){
+ if(lRAF){cancelAnimationFrame(lRAF);lRAF=null;}
+ const n=al.length;
+ const layout=[];
+ for(let i=0;i<n;i++){const a=(i/n)*Math.PI*2;layout.push([Math.cos(a)*1.1,Math.sin(a)*1.1,0]);}
+ const MB={H:1,He:0,C:4,N:3,O:2,F:1,S:2,Cl:1,Br:1,I:1,P:3,default:4};
+ const bc=new Array(n).fill(0),bonds=[];
+ const ds=[];
+ for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
+  const p=layout[i],q=layout[j];
+  ds.push({i,j,d:Math.hypot(p[0]-q[0],p[1]-q[1])});
+ }
+ ds.sort((a,b)=>a.d-b.d);
+ ds.forEach(({i,j,d})=>{
+  if(d>2.2)return;
+  const mi=MB[al[i].sym]||MB.default,mj=MB[al[j].sym]||MB.default;
+  if(bc[i]<mi&&bc[j]<mj){bonds.push([i,j]);bc[i]++;bc[j]++;}
+ });
+ lData={al,bonds,layout};animLigand();
+}
+function clearLigandModel(){
+ if(lRAF){cancelAnimationFrame(lRAF);lRAF=null;}lData=null;
+ lctx.clearRect(0,0,lW,lH);lctx.fillStyle='#0d1f3c';lctx.fillRect(0,0,lW,lH);
+ lctx.fillStyle='rgba(255,255,255,.2)';lctx.font='8px Roboto,sans-serif';lctx.textAlign='center';lctx.textBaseline='middle';
+ lctx.fillText('Ligand preview',lW/2,lH/2);
+}
+function animLigand(){
+ if(!lData)return;
+ const{al,bonds,layout}=lData;
+ const cx=lW/2,cy=lH/2,sc=Math.min(lW,lH)*.27;
+ lAng+=0.013;
+ lctx.clearRect(0,0,lW,lH);lctx.fillStyle='#0d1f3c';lctx.fillRect(0,0,lW,lH);
+ const pp=layout.map((p,i)=>({...prj(p[0],p[1],p[2]||0,lAng,cx,cy,sc),el:al[i]}));
+ const sorted=[...pp.keys()].sort((a,b)=>pp[a].d-pp[b].d);
+ bonds.forEach(([a,b])=>{
+  lctx.save();lctx.strokeStyle='rgba(150,200,255,.55)';lctx.lineWidth=2;lctx.lineCap='round';
+  lctx.beginPath();lctx.moveTo(pp[a].sx,pp[a].sy);lctx.lineTo(pp[b].sx,pp[b].sy);lctx.stroke();lctx.restore();
+ });
+ sorted.forEach(i=>{
+  const p=pp[i];if(!p.el)return;
+  const br=Math.max(9,Math.min(18,11+p.el.r*.018));
+  const r=br*Math.max(.65,.85+p.d*.08);
+  const g=lctx.createRadialGradient(p.sx-r*.3,p.sy-r*.3,r*.05,p.sx,p.sy,r);
+  g.addColorStop(0,li(p.el.col,55));g.addColorStop(.5,p.el.col);g.addColorStop(1,dk(p.el.col,40));
+  lctx.beginPath();lctx.arc(p.sx,p.sy,r,0,Math.PI*2);lctx.fillStyle=g;lctx.fill();
+  lctx.strokeStyle='rgba(255,255,255,.18)';lctx.lineWidth=.6;lctx.stroke();
+  lctx.fillStyle='#fff';lctx.font=`bold ${Math.max(6,r*.65)}px Google Sans,sans-serif`;
+  lctx.textAlign='center';lctx.textBaseline='middle';lctx.fillText(p.el.sym,p.sx,p.sy+.5);
+ });
+ lRAF=requestAnimationFrame(animLigand);
+}
+
+window.addEventListener('resize',()=>{fitTable();resizeModel();resizeLigandModel();if(mData)animModel();if(lData)animLigand();});
+window.addEventListener('DOMContentLoaded',()=>{
+ buildCatFilter();buildTable();buildLegend();
+ setTimeout(()=>{resizeModel();clearModel();resizeLigandModel();clearLigandModel();},60);
+});
 </script>
 </body>
 </html>
