@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Geometry Explorer 2D — GCSE Maths</title>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600&family=Roboto:wght@300;400;500&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8f9fa;--white:#fff;--border:#dadce0;--border-light:#e8eaed;
+  --text:#202124;--muted:#5f6368;
+  --blue:#1a73e8;--blue-light:#e8f0fe;
+  --green:#1e8e3e;--green-light:#e6f4ea;
+  --red:#d93025;--red-light:#fce8e6;
+  --yellow:#f9ab00;--yellow-light:#fef7e0;
+  --purple:#7c4dff;--purple-light:#ede7f6;
+  --orange:#e65100;--orange-light:#fff3e0;
+  --shadow-sm:0 1px 2px rgba(60,64,67,.10),0 1px 3px rgba(60,64,67,.15);
+  --shadow:0 1px 3px rgba(60,64,67,.12),0 2px 6px rgba(60,64,67,.15);
+  --r:12px;
+}
+body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* SPLASH */
+#splash{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#fff;animation:splashLife 2s ease forwards;pointer-events:none}
+@keyframes splashLife{0%{opacity:0}20%{opacity:1}75%{opacity:1}100%{opacity:0;visibility:hidden}}
+.splash-by{font-size:1.15rem;font-weight:400;color:#111;letter-spacing:0.01em}
+
+/* TOPBAR */
+#topbar{background:var(--white);border-bottom:1px solid var(--border-light);position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(60,64,67,.08)}
+.topbar-inner{max-width:1600px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:16px}
+.topbar-title{font-family:'Google Sans',sans-serif;font-size:18px;font-weight:500}
+.topbar-title span{color:var(--blue)}
+.topbar-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.topbar-badge{font-size:10px;padding:2px 8px;background:var(--blue-light);color:var(--blue);border-radius:10px;font-weight:500;margin-left:4px}
+
+/* MAIN LAYOUT */
+#app{display:grid;grid-template-columns:1fr 300px;height:calc(100vh - 57px - 38px);opacity:0;animation:fadeIn .4s 2.1s ease forwards}
+@keyframes fadeIn{to{opacity:1}}
+
+/* CANVAS AREA */
+#canvas-area{display:flex;flex-direction:column;padding:14px 14px 14px 16px;gap:10px;min-width:0;background:var(--bg)}
+
+/* TOOLBAR */
+#toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--white);border:1px solid var(--border);border-radius:10px;padding:8px 12px;box-shadow:var(--shadow-sm)}
+.ctrl-btn{padding:5px 14px;border:1px solid var(--border);border-radius:20px;background:var(--white);font-size:12px;font-family:'Roboto',sans-serif;cursor:pointer;color:var(--text);font-weight:500;transition:all .15s;white-space:nowrap}
+.ctrl-btn:hover{background:var(--bg);border-color:#bbb}
+.ctrl-btn.active{background:var(--blue-light);border-color:var(--blue);color:var(--blue)}
+.ctrl-btn.danger{color:var(--red);border-color:#f5c6c3}
+.ctrl-btn.danger:hover{background:var(--red-light)}
+.ctrl-sep{width:1px;height:24px;background:var(--border-light);flex-shrink:0}
+.mode-pill{font-size:11px;padding:3px 10px;border-radius:20px;background:#f1f3f4;color:var(--muted);margin-left:auto;font-family:'Roboto',sans-serif}
+
+/* CANVAS */
+#canvas-wrap{flex:1;position:relative;background:var(--white);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-sm);overflow:hidden;cursor:default}
+#geo-canvas{display:block;width:100%;height:100%}
+
+/* STATUS BAR */
+#status-bar{display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;border:1px solid var(--border-light);background:var(--white);font-size:12px;transition:background .3s,border-color .3s;box-shadow:var(--shadow-sm)}
+.sdot{width:9px;height:9px;border-radius:50%;flex-shrink:0;background:#1a73e8}
+#smsg{font-weight:500;color:var(--text);font-family:'Google Sans',sans-serif}
+#sdetail{color:var(--muted);font-size:11px;margin-left:auto}
+#hint{font-size:10.5px;color:var(--muted);padding:0 2px}
+
+/* RIGHT PANEL */
+#info-panel{background:var(--white);border-left:1px solid var(--border-light);display:flex;flex-direction:column;overflow:hidden}
+.panel-header{padding:12px 14px 8px;border-bottom:1px solid var(--border-light);flex-shrink:0}
+.panel-title{font-family:'Google Sans',sans-serif;font-size:13px;font-weight:500;color:var(--text);margin-bottom:1px}
+.panel-sub{font-size:10px;color:var(--muted)}
+.panel-scroll{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px}
+.panel-scroll::-webkit-scrollbar{width:4px}
+.panel-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.panel-footer{border-top:1px solid var(--border-light);padding:8px 12px;font-size:10px;color:var(--muted);text-align:center;flex-shrink:0}
+
+/* STATS CARD */
+.stats-card{border:1px solid var(--border-light);border-radius:10px;overflow:hidden}
+.stats-card-header{background:#f8f9fa;padding:7px 12px;font-size:10.5px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border-light)}
+.stat-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border-light);gap:6px}
+.stat-row:last-child{border-bottom:none}
+.stat-label{font-size:11.5px;color:var(--muted);flex-shrink:0}
+.stat-value{font-size:12px;font-weight:500;color:var(--text);font-family:'Google Sans',sans-serif}
+.stat-value.big{font-size:14px;color:var(--blue)}
+
+/* ANGLE CARD */
+.angle-card{border:1px solid var(--border-light);border-radius:10px;overflow:hidden}
+.angle-card-header{background:#f8f9fa;padding:7px 12px;font-size:10.5px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:6px}
+.angle-row{display:flex;align-items:center;gap:6px;padding:7px 10px;border-bottom:1px solid var(--border-light)}
+.angle-row:last-child{border-bottom:none}
+.angle-vertex{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;flex-shrink:0;font-family:'Google Sans',sans-serif}
+.angle-fields{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.angle-field-row{display:flex;align-items:center;gap:4px}
+.angle-field-label{font-size:9.5px;color:var(--muted);width:26px;flex-shrink:0}
+.angle-input{width:52px;padding:2px 5px;border:1px solid var(--border);border-radius:5px;font-size:11px;font-family:'Roboto Mono',monospace;color:var(--text);background:var(--white);text-align:right}
+.angle-input:focus{outline:none;border-color:var(--blue);background:var(--blue-light)}
+.angle-input.locked{background:#f1f3f4;color:var(--muted);border-color:var(--border-light)}
+.angle-deg{font-size:10px;color:var(--muted)}
+.lock-btn{width:26px;height:26px;border:1px solid var(--border);border-radius:6px;background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s;flex-shrink:0}
+.lock-btn:hover{background:var(--yellow-light);border-color:var(--yellow)}
+.lock-btn.locked{background:var(--yellow-light);border-color:var(--yellow)}
+
+/* SIDE CARD */
+.side-card{border:1px solid var(--border-light);border-radius:10px;overflow:hidden}
+.side-card-header{background:#f8f9fa;padding:7px 12px;font-size:10.5px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border-light)}
+.side-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--border-light)}
+.side-row:last-child{border-bottom:none}
+.side-label{font-size:11px;color:var(--muted);flex-shrink:0;width:28px;font-family:'Roboto Mono',monospace}
+.side-input{width:70px;padding:3px 6px;border:1px solid var(--border);border-radius:5px;font-size:11px;font-family:'Roboto Mono',monospace;color:var(--text);background:var(--white);text-align:right}
+.side-input:focus{outline:none;border-color:var(--blue);background:var(--blue-light)}
+.side-unit{font-size:10px;color:var(--muted)}
+.side-px{font-size:9.5px;color:var(--muted)}
+
+/* SHAPE PICKER */
+.shape-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.shape-btn{padding:8px 6px;border:1px solid var(--border-light);border-radius:8px;background:#fafafa;cursor:pointer;transition:all .15s;text-align:center;font-size:11px;font-weight:500;color:var(--text);font-family:'Roboto',sans-serif}
+.shape-btn:hover{background:var(--blue-light);border-color:#c5d8fb}
+.shape-btn.active{background:var(--blue-light);border-color:var(--blue);color:var(--blue)}
+.shape-btn .shape-icon{font-size:18px;display:block;margin-bottom:2px}
+
+/* INLINE EDITABLE INPUT ON CANVAS */
+#canvas-input-wrap{position:absolute;display:none;z-index:50}
+#canvas-input{border:2px solid var(--blue);border-radius:4px;padding:2px 5px;font-size:12px;font-family:'Roboto Mono',monospace;background:var(--white);color:var(--text);width:60px;text-align:center}
+
+/* NOTICE */
+.notice{font-size:11px;color:var(--muted);padding:6px 10px;background:#f8f9fa;border-radius:8px;border:1px solid var(--border-light);text-align:center}
+
+@media(max-width:900px){
+  #app{grid-template-columns:1fr;grid-template-rows:1fr 280px;height:auto}
+  #info-panel{border-left:none;border-top:1px solid var(--border-light);height:280px}
+  .panel-scroll{flex-direction:row;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;padding:8px;gap:8px}
+  .angle-card,.side-card,.stats-card{min-width:200px}
+}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash"><div class="splash-by">A tool by <strong>Leon Dudhill</strong></div></div>
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="topbar-inner">
+    <div>
+      <div class="topbar-title">Geometry <span>Explorer 2D</span> <span class="topbar-badge">GCSE Maths</span></div>
+      <div class="topbar-sub">Drag vertices · Edit angles & sides · Interior &amp; exterior angles always shown</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+
+  <!-- LEFT: CANVAS AREA -->
+  <div id="canvas-area">
+    <div id="toolbar">
+      <button class="ctrl-btn" id="btn-triangle" onclick="setShape('triangle')">3</button>
+      <button class="ctrl-btn" id="btn-quad" onclick="setShape('quad')">4</button>
+      <button class="ctrl-btn" id="btn-pentagon" onclick="setShape('pentagon')">5</button>
+      <button class="ctrl-btn" id="btn-hexagon" onclick="setShape('hexagon')">6</button>
+      <button class="ctrl-btn" id="btn-heptagon" onclick="setShape('heptagon')">7</button>
+      <button class="ctrl-btn" id="btn-nonagon" onclick="setShape('nonagon')">9</button>
+      <button class="ctrl-btn" id="btn-decagon" onclick="setShape('decagon')">10</button>
+      <button class="ctrl-btn" id="btn-hendecagon" onclick="setShape('hendecagon')">11</button>
+      <button class="ctrl-btn" id="btn-dodecagon" onclick="setShape('dodecagon')">12</button>
+      <div class="ctrl-sep"></div>
+      <button class="ctrl-btn" id="btn-regular" onclick="makeRegular()">✦ Regularise</button>
+      <button class="ctrl-btn" id="btn-reset" onclick="resetShape()">↺ Reset</button>
+      <span class="mode-pill" id="mode-pill">Drag any vertex to reshape</span>
+    </div>
+
+    <div id="canvas-wrap">
+      <canvas id="geo-canvas"></canvas>
+      <div id="canvas-input-wrap"><input id="canvas-input" type="number" step="0.1"></div>
+    </div>
+
+    <div id="status-bar">
+      <div class="sdot"></div>
+      <span id="smsg">Triangle selected</span>
+      <span id="sdetail">Drag any vertex to change the shape</span>
+    </div>
+    <div id="hint">Drag vertices to reshape · Edit angles & side lengths in the right panel · Buttons show number of sides</div>
+  </div>
+
+  <!-- RIGHT: INFO PANEL -->
+  <div id="info-panel">
+    <div class="panel-header">
+      <div class="panel-title">Shape Properties</div>
+      <div class="panel-sub">All values update live</div>
+    </div>
+    <div class="panel-scroll" id="panel-scroll">
+
+      <!-- STATS -->
+      <div class="stats-card">
+        <div class="stats-card-header">Measurements</div>
+        <div class="stat-row">
+          <span class="stat-label">Perimeter</span>
+          <span class="stat-value big" id="val-perimeter">—</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Area</span>
+          <span class="stat-value big" id="val-area">—</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Interior angle sum</span>
+          <span class="stat-value" id="val-angle-sum">—</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Exterior angle sum</span>
+          <span class="stat-value" id="val-ext-sum">360°</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Shape type</span>
+          <span class="stat-value" id="val-shape-type">—</span>
+        </div>
+        <div class="stat-row" id="row-shape-type2" style="display:none">
+          <span class="stat-label">Also known as</span>
+          <span class="stat-value" id="val-shape-type2" style="font-size:11px;color:var(--muted)">—</span>
+        </div>
+      </div>
+
+      <!-- ANGLES -->
+      <div class="angle-card" id="angle-card">
+        <div class="angle-card-header">
+          <span>Angles</span>
+        </div>
+        <div id="angle-rows"></div>
+      </div>
+
+      <!-- SIDES -->
+      <div class="side-card" id="side-card">
+        <div class="side-card-header">Side Lengths <span style="font-size:9px;font-weight:400">(units)</span></div>
+        <div id="side-rows"></div>
+      </div>
+
+      <div class="notice" id="notice-box">Interior sum = (n−2)×180° · Exterior angle = 360° − interior · Interior + Exterior = 360°</div>
+
+    </div>
+    <div class="panel-footer">A tool by Leon Dudhill · Geometry Explorer 2D</div>
+  </div>
+
+</div>
+
+<div id="disclaimer" style="position:fixed;bottom:0;left:0;right:0;z-index:50;background:#fff;border-top:1px solid var(--border-light);padding:8px 20px;font-size:11px;color:var(--muted);text-align:center;line-height:1.6">
+  <strong style="color:var(--text)">Disclaimer:</strong> Geometry Explorer 2D is a tool to help me study for my GCSE Maths. You are welcome to use it but it may have errors and shouldn't be relied on without independently fact checking answers.
+</div>
+
+<script>
+// ─── GLOBALS ──────────────────────────────────────────────────────────────────
+const canvas = document.getElementById('geo-canvas');
+const ctx = canvas.getContext('2d');
+const wrap = document.getElementById('canvas-wrap');
+
+let W = 0, H = 0;
+let vertices = []; // [{x,y}]
+let lockedAngles = []; // bool[]
+let currentShape = 'triangle';
+let draggingVertex = -1;
+let dragOffset = {x:0, y:0};
+
+// PIXEL TO UNIT scale (1 unit = 50px default)
+const SCALE = 50;
+
+// Vertex colours (up to 12)
+const VERTEX_COLORS = ['#d93025','#1a73e8','#1e8e3e','#f9ab00','#7c4dff','#e65100','#00838f','#ad1457','#558b2f','#00695c','#4527a0','#37474f'];
+const VERTEX_LABELS = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+
+// ─── RESIZE ───────────────────────────────────────────────────────────────────
+function resize(){
+  const r = wrap.getBoundingClientRect();
+  W = r.width; H = r.height;
+  canvas.width = W * devicePixelRatio;
+  canvas.height = H * devicePixelRatio;
+  canvas.style.width = W+'px';
+  canvas.style.height = H+'px';
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+  render();
+}
+
+// ─── SHAPE PRESETS ────────────────────────────────────────────────────────────
+function getRegularPolygon(n, cx, cy, r) {
+  const pts = [];
+  for(let i = 0; i < n; i++) {
+    const a = -Math.PI/2 + (2*Math.PI*i)/n;
+    pts.push({x: cx + r*Math.cos(a), y: cy + r*Math.sin(a)});
+  }
+  return pts;
+}
+
+const SHAPE_SIDES = {triangle:3,quad:4,pentagon:5,hexagon:6,heptagon:7,nonagon:9,decagon:10,hendecagon:11,dodecagon:12};
+const SHAPE_NAMES = {triangle:'Triangle',quad:'Quadrilateral',pentagon:'Pentagon',hexagon:'Hexagon',heptagon:'Heptagon',nonagon:'Nonagon',decagon:'Decagon',hendecagon:'Hendecagon',dodecagon:'Dodecagon'};
+
+function setShape(name) {
+  currentShape = name;
+  resetShape();
+  Object.keys(SHAPE_SIDES).forEach(s=>{
+    const btn=document.getElementById('btn-'+s);
+    if(btn) btn.classList.toggle('active', s===name);
+  });
+  document.getElementById('smsg').textContent = (SHAPE_NAMES[name]||name)+' selected';
+}
+
+function resetShape() {
+  const cx = W/2, cy = H/2;
+  const n = SHAPE_SIDES[currentShape] || 3;
+  const r = Math.min(W,H)*0.3;
+  vertices = getRegularPolygon(n, cx, cy, r);
+  lockedAngles = Array(n).fill(false);
+  render();
+  buildPanel();
+}
+
+function makeRegular() {
+  const n = vertices.length;
+  const cx = vertices.reduce((s,v)=>s+v.x,0)/n;
+  const cy = vertices.reduce((s,v)=>s+v.y,0)/n;
+  const r = Math.min(W,H)*0.3;
+  vertices = getRegularPolygon(n, cx, cy, r);
+  lockedAngles = Array(n).fill(false);
+  render();
+  buildPanel();
+}
+
+// ─── GEOMETRY MATHS ───────────────────────────────────────────────────────────
+function polyArea(verts) {
+  let s = 0;
+  const n = verts.length;
+  for(let i=0;i<n;i++){
+    const j=(i+1)%n;
+    s += verts[i].x*verts[j].y - verts[j].x*verts[i].y;
+  }
+  return Math.abs(s)/2;
+}
+
+function sideLength(verts, i) {
+  const j = (i+1)%verts.length;
+  return Math.hypot(verts[j].x-verts[i].x, verts[j].y-verts[i].y);
+}
+
+function interiorAngle(verts, i) {
+  const n = verts.length;
+  const prev = verts[(i-1+n)%n];
+  const curr = verts[i];
+  const next = verts[(i+1)%n];
+  const ax = prev.x-curr.x, ay = prev.y-curr.y;
+  const bx = next.x-curr.x, by = next.y-curr.y;
+  const dot = ax*bx+ay*by;
+  const mag = Math.hypot(ax,ay)*Math.hypot(bx,by);
+  if(mag===0) return 0;
+  // acos of the dot product always gives the angle between the two edge vectors (0-180°)
+  // This IS the interior angle for convex polygons
+  return Math.acos(Math.max(-1,Math.min(1,dot/mag)))*180/Math.PI;
+}
+
+function isClockwise(verts){
+  let sum=0;
+  for(let i=0;i<verts.length;i++){
+    const j=(i+1)%verts.length;
+    sum+=(verts[j].x-verts[i].x)*(verts[j].y+verts[i].y);
+  }
+  return sum>0;
+}
+
+function classifyShape(verts) {
+  const n = verts.length;
+  const angles = verts.map((_,i)=>interiorAngle(verts,i));
+  const sides = verts.map((_,i)=>sideLength(verts,i));
+  const allAnglesEqual = angles.every(a=>Math.abs(a-angles[0])<1.5);
+  const allSidesEqual = sides.every(s=>Math.abs(s-sides[0])<2);
+
+  if(n===3){
+    // --- By sides ---
+    const isEquil = allSidesEqual;
+    const isIsos = !isEquil && (
+      Math.abs(sides[0]-sides[1])<2 ||
+      Math.abs(sides[1]-sides[2])<2 ||
+      Math.abs(sides[0]-sides[2])<2
+    );
+    const isScalene = !isEquil && !isIsos;
+    const bySides = isEquil ? 'Equilateral' : isIsos ? 'Isosceles' : 'Scalene';
+
+    // --- By angles ---
+    const hasRight  = angles.some(a => Math.abs(a-90) < 2);
+    const hasObtuse = angles.some(a => a > 92);
+    const byAngles  = hasRight ? 'Right-angled' : hasObtuse ? 'Obtuse-angled' : 'Acute-angled';
+
+    // --- Combine (skip redundant combos) ---
+    // Equilateral is always acute — just say Equilateral triangle
+    if(isEquil) return 'Equilateral triangle';
+    // Right-angled isosceles is a recognised combo
+    if(hasRight && isIsos)   return 'Right-angled isosceles triangle';
+    // Right-angled scalene
+    if(hasRight && isScalene) return 'Right-angled scalene triangle';
+    // Obtuse isosceles
+    if(hasObtuse && isIsos)  return 'Obtuse-angled isosceles triangle';
+    // Obtuse scalene
+    if(hasObtuse && isScalene) return 'Obtuse-angled scalene triangle';
+    // Acute isosceles
+    if(isIsos)  return 'Acute-angled isosceles triangle';
+    // Acute scalene (catch-all)
+    return 'Acute-angled scalene triangle';
+  }
+  if(n===4){
+    if(allSidesEqual && allAnglesEqual) return 'Square';
+    if(allAnglesEqual) return 'Rectangle';
+    if(allSidesEqual) return 'Rhombus';
+    if(Math.abs(sides[0]-sides[2])<2&&Math.abs(sides[1]-sides[3])<2) return 'Parallelogram';
+    const v=verts;
+    const p01=(v[1].y-v[0].y)/(v[1].x-v[0].x+1e-9);
+    const p23=(v[3].y-v[2].y)/(v[3].x-v[2].x+1e-9);
+    const p12=(v[2].y-v[1].y)/(v[2].x-v[1].x+1e-9);
+    const p30=(v[0].y-v[3].y)/(v[0].x-v[3].x+1e-9);
+    if(Math.abs(p01-p23)<0.05||Math.abs(p12-p30)<0.05) return 'Trapezium';
+    return 'Quadrilateral';
+  }
+  const nameMap={5:'Pentagon',6:'Hexagon',7:'Heptagon',8:'Octagon',9:'Nonagon',10:'Decagon',11:'Hendecagon',12:'Dodecagon'};
+  const base = nameMap[n]||(n+'-gon');
+  return (allSidesEqual&&allAnglesEqual?'Regular ':'')+base;
+}
+
+// ─── DRAWING ─────────────────────────────────────────────────────────────────
+function render(){
+  ctx.clearRect(0,0,W,H);
+  drawGrid();
+  if(vertices.length < 2) return;
+  drawShape();
+  drawAngles();
+  drawSideLabels();
+  drawVertices();
+  updatePanel();
+}
+
+function drawGrid(){
+  ctx.save();
+  ctx.strokeStyle='#f0f0f0';
+  ctx.lineWidth=1;
+  const step=50;
+  for(let x=0;x<W;x+=step){ ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke(); }
+  for(let y=0;y<H;y+=step){ ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke(); }
+  ctx.restore();
+}
+
+function drawShape(){
+  const n=vertices.length;
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(vertices[0].x, vertices[0].y);
+  for(let i=1;i<n;i++) ctx.lineTo(vertices[i].x, vertices[i].y);
+  ctx.closePath();
+  ctx.fillStyle='rgba(26,115,232,0.07)';
+  ctx.fill();
+  ctx.strokeStyle='#1a73e8';
+  ctx.lineWidth=2.5;
+  ctx.lineJoin='round';
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawAngles(){
+  const n = vertices.length;
+  const cx = vertices.reduce((s,v)=>s+v.x,0)/n;
+  const cy = vertices.reduce((s,v)=>s+v.y,0)/n;
+  ctx.save();
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+
+  for(let i=0;i<n;i++){
+    const prev = vertices[(i-1+n)%n];
+    const curr = vertices[i];
+    const next = vertices[(i+1)%n];
+
+    const ax = prev.x-curr.x, ay = prev.y-curr.y;
+    const bx = next.x-curr.x, by = next.y-curr.y;
+    const lenA = Math.hypot(ax,ay), lenB = Math.hypot(bx,by);
+    if(lenA===0||lenB===0) continue;
+
+    const intAngle = interiorAngle(vertices, i);
+    // Exterior angle = 360° − interior (the full reflex exterior, interior + exterior = 360°)
+    const extAngle = 360 - intAngle;
+
+    const angleA = Math.atan2(ay,ax);
+    const angleB = Math.atan2(by,bx);
+
+    const arcR = 26;
+
+    // Inward direction = from vertex toward centroid (always reliable)
+    const toCx = cx - curr.x, toCy = cy - curr.y;
+    const toCLen = Math.hypot(toCx, toCy) || 1;
+    const inDirX = toCx / toCLen;
+    const inDirY = toCy / toCLen;
+
+    // Draw the arc (sweep the interior angle)
+    const cw = isClockwise(vertices);
+    ctx.beginPath();
+    ctx.arc(curr.x, curr.y, arcR, angleA, angleB, !cw);
+    ctx.strokeStyle = VERTEX_COLORS[i%VERTEX_COLORS.length]+'99';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Interior label: pushed INWARD toward centroid
+    const intLabelDist = arcR + 18;
+    const ilx = curr.x + inDirX * intLabelDist;
+    const ily = curr.y + inDirY * intLabelDist;
+    const intLabel = intAngle.toFixed(1)+'°';
+    ctx.font = 'bold 11px Google Sans,sans-serif';
+    const tw = ctx.measureText(intLabel).width + 6;
+    ctx.fillStyle='rgba(255,255,255,0.92)';
+    ctx.beginPath();
+    ctx.roundRect(ilx-tw/2, ily-9, tw, 18, 4);
+    ctx.fill();
+    ctx.fillStyle = VERTEX_COLORS[i%VERTEX_COLORS.length];
+    ctx.fillText(intLabel, ilx, ily);
+
+    // Exterior label: pushed OUTWARD away from centroid
+    const extLabelDist = 48;
+    const elx = curr.x - inDirX * extLabelDist;
+    const ely = curr.y - inDirY * extLabelDist;
+    const extLabel = extAngle.toFixed(1)+'°';
+    ctx.font = '10px Google Sans,sans-serif';
+    const etw = ctx.measureText(extLabel).width + 6;
+    ctx.fillStyle='rgba(248,249,250,0.92)';
+    ctx.beginPath();
+    ctx.roundRect(elx-etw/2, ely-8, etw, 16, 3);
+    ctx.fill();
+    ctx.fillStyle = VERTEX_COLORS[i%VERTEX_COLORS.length]+'bb';
+    ctx.fillText(extLabel, elx, ely);
+  }
+  ctx.restore();
+}
+
+function drawSideLabels(){
+  const n=vertices.length;
+  ctx.save();
+  ctx.font='11px Roboto Mono,monospace';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  for(let i=0;i<n;i++){
+    const j=(i+1)%n;
+    const mx=(vertices[i].x+vertices[j].x)/2;
+    const my=(vertices[i].y+vertices[j].y)/2;
+    const dx=vertices[j].x-vertices[i].x;
+    const dy=vertices[j].y-vertices[i].y;
+    const len=Math.hypot(dx,dy);
+    // perpendicular offset (inward)
+    const cx=vertices.reduce((s,v)=>s+v.x,0)/n;
+    const cy=vertices.reduce((s,v)=>s+v.y,0)/n;
+    let nx=-dy/len, ny=dx/len;
+    // ensure pointing away from center
+    if((mx+nx*20-cx)*(mx-cx)+(my+ny*20-cy)*(my-cy)<0){nx=-nx;ny=-ny;}
+    const lx=mx+nx*22, ly=my+ny*22;
+    const lenU=(len/SCALE).toFixed(2);
+    const label=lenU+' u';
+    const tw=ctx.measureText(label).width+8;
+    ctx.fillStyle='rgba(255,255,255,0.92)';
+    ctx.beginPath();
+    ctx.roundRect(lx-tw/2, ly-9, tw, 18, 4);
+    ctx.fill();
+    ctx.fillStyle='#5f6368';
+    ctx.fillText(label, lx, ly);
+  }
+  ctx.restore();
+}
+
+function drawVertices(){
+  const n=vertices.length;
+  ctx.save();
+  for(let i=0;i<n;i++){
+    const v=vertices[i];
+    const col=VERTEX_COLORS[i%VERTEX_COLORS.length];
+    // shadow
+    ctx.shadowColor='rgba(0,0,0,0.15)';
+    ctx.shadowBlur=6;
+    ctx.beginPath();
+    ctx.arc(v.x,v.y,11,0,Math.PI*2);
+    ctx.fillStyle='#fff';
+    ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.beginPath();
+    ctx.arc(v.x,v.y,11,0,Math.PI*2);
+    ctx.strokeStyle=col;
+    ctx.lineWidth=2.5;
+    ctx.stroke();
+    // letter
+    ctx.fillStyle=col;
+    ctx.font='bold 11px Google Sans,sans-serif';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText(VERTEX_LABELS[i], v.x, v.y);
+    // lock indicator
+    if(lockedAngles[i]){
+      ctx.fillStyle=VERTEX_COLORS[i%VERTEX_COLORS.length];
+      ctx.font='9px sans-serif';
+      ctx.fillText('🔒',v.x+10,v.y-10);
+    }
+  }
+  ctx.restore();
+}
+
+// ─── PANEL UPDATE ─────────────────────────────────────────────────────────────
+function buildPanel(){
+  buildAngleRows();
+  buildSideRows();
+  updatePanel();
+}
+
+function buildAngleRows(){
+  const n=vertices.length;
+  const cont=document.getElementById('angle-rows');
+  cont.innerHTML='';
+  for(let i=0;i<n;i++){
+    const row=document.createElement('div');
+    row.className='angle-row';
+    row.id='arow-'+i;
+    const dot=document.createElement('div');
+    dot.className='angle-vertex';
+    dot.style.background=VERTEX_COLORS[i%VERTEX_COLORS.length];
+    dot.textContent=VERTEX_LABELS[i];
+    const fields=document.createElement('div');
+    fields.className='angle-fields';
+    // interior
+    const intRow=document.createElement('div');
+    intRow.className='angle-field-row';
+    const intLbl=document.createElement('span');
+    intLbl.className='angle-field-label';
+    intLbl.textContent='Int:';
+    const intInp=document.createElement('input');
+    intInp.type='number';intInp.min=1;intInp.max=358;intInp.step=0.1;
+    intInp.className='angle-input';intInp.id='int-inp-'+i;
+    intInp.addEventListener('change',()=>applyInteriorAngle(i,parseFloat(intInp.value)));
+    intInp.addEventListener('keydown',e=>{if(e.key==='Enter')applyInteriorAngle(i,parseFloat(intInp.value));});
+    const intDeg=document.createElement('span');intDeg.className='angle-deg';intDeg.textContent='°';
+    intRow.append(intLbl,intInp,intDeg);
+    // exterior (180 - interior)
+    const extRow=document.createElement('div');
+    extRow.className='angle-field-row';
+    const extLbl=document.createElement('span');
+    extLbl.className='angle-field-label';
+    extLbl.textContent='Ext:';
+    const extInp=document.createElement('input');
+    extInp.type='number';extInp.min=181;extInp.max=359;extInp.step=0.1;
+    extInp.className='angle-input';extInp.id='ext-inp-'+i;
+    extInp.addEventListener('change',()=>applyInteriorAngle(i, 360-parseFloat(extInp.value)));
+    extInp.addEventListener('keydown',e=>{if(e.key==='Enter')applyInteriorAngle(i,360-parseFloat(extInp.value));});
+    const extDeg=document.createElement('span');extDeg.className='angle-deg';extDeg.textContent='°';
+    extRow.append(extLbl,extInp,extDeg);
+    fields.append(intRow,extRow);
+    row.append(dot,fields);
+    cont.appendChild(row);
+  }
+}
+
+function buildSideRows(){
+  const n=vertices.length;
+  const cont=document.getElementById('side-rows');
+  cont.innerHTML='';
+  for(let i=0;i<n;i++){
+    const j=(i+1)%n;
+    const row=document.createElement('div');
+    row.className='side-row';
+    const lbl=document.createElement('span');
+    lbl.className='side-label';
+    lbl.style.color=VERTEX_COLORS[i%VERTEX_COLORS.length];
+    lbl.textContent=VERTEX_LABELS[i]+VERTEX_LABELS[j];
+    const inp=document.createElement('input');
+    inp.type='number';inp.min=0.1;inp.step=0.01;
+    inp.className='side-input';inp.id='side-inp-'+i;
+    inp.addEventListener('change',()=>applySideLength(i,parseFloat(inp.value)));
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter')applySideLength(i,parseFloat(inp.value));});
+    const unit=document.createElement('span');unit.className='side-unit';unit.textContent='units';
+    row.append(lbl,inp,unit);
+    cont.appendChild(row);
+  }
+}
+
+function updatePanel(){
+  const n=vertices.length;
+  const angles=vertices.map((_,i)=>interiorAngle(vertices,i));
+  const sides=vertices.map((_,i)=>sideLength(vertices,i));
+  const area=polyArea(vertices)/(SCALE*SCALE);
+  const peri=sides.reduce((s,v)=>s+v,0)/SCALE;
+  const angSum=(n-2)*180;
+  // Exterior angle sum: sum of all (360° - interior) at each vertex
+  const extSum = angles.reduce((s,a)=>s+(360-a),0);
+
+  document.getElementById('val-perimeter').textContent=peri.toFixed(2)+' u';
+  document.getElementById('val-area').textContent=area.toFixed(2)+' u²';
+  document.getElementById('val-angle-sum').textContent=angSum+'°';
+  document.getElementById('val-ext-sum').textContent=extSum.toFixed(1)+'°';
+  const shapeType = classifyShape(vertices);
+  document.getElementById('val-shape-type').textContent = shapeType;
+
+  // For triangles, also show the two individual classifications
+  const row2 = document.getElementById('row-shape-type2');
+  const val2  = document.getElementById('val-shape-type2');
+  if(n===3){
+    const angles3 = vertices.map((_,i)=>interiorAngle(vertices,i));
+    const sides3  = vertices.map((_,i)=>sideLength(vertices,i));
+    const isEquil = sides3.every(s=>Math.abs(s-sides3[0])<2);
+    const isIsos  = !isEquil && (Math.abs(sides3[0]-sides3[1])<2||Math.abs(sides3[1]-sides3[2])<2||Math.abs(sides3[0]-sides3[2])<2);
+    const bySides = isEquil?'Equilateral':isIsos?'Isosceles':'Scalene';
+    const hasRight  = angles3.some(a=>Math.abs(a-90)<2);
+    const hasObtuse = angles3.some(a=>a>92);
+    const byAngles  = hasRight?'Right-angled':hasObtuse?'Obtuse-angled':'Acute-angled';
+    row2.style.display='';
+    val2.textContent = `By sides: ${bySides} · By angles: ${byAngles}`;
+  } else {
+    row2.style.display='none';
+  }
+
+  for(let i=0;i<n;i++){
+    const intInp=document.getElementById('int-inp-'+i);
+    const extInp=document.getElementById('ext-inp-'+i);
+    if(intInp) intInp.value=angles[i].toFixed(1);
+    if(extInp) extInp.value=(360-angles[i]).toFixed(1);
+    const sideInp=document.getElementById('side-inp-'+i);
+    if(sideInp) sideInp.value=(sides[i]/SCALE).toFixed(2);
+  }
+}
+
+
+// ─── ANGLE EDITING ────────────────────────────────────────────────────────────
+// Move vertex i to achieve a target interior angle at vertex i
+// We rotate the next vertex around curr to achieve desired angle
+function applyInteriorAngle(idx, targetDeg){
+  if(lockedAngles[idx]) return;
+  const n=vertices.length;
+  // Find which vertex to move (move next vertex around current)
+  const curr=vertices[idx];
+  const prev=vertices[(idx-1+n)%n];
+  const next=vertices[(idx+1)%n];
+
+  const ax=prev.x-curr.x, ay=prev.y-curr.y;
+  const lenA=Math.hypot(ax,ay);
+  const bx=next.x-curr.x, by=next.y-curr.y;
+  const lenB=Math.hypot(bx,by);
+  if(lenA===0||lenB===0) return;
+
+  const currentAngle=interiorAngle(vertices,idx);
+  const delta=(targetDeg-currentAngle)*Math.PI/180;
+
+  // Rotate next vertex around curr by delta (adjust sign for winding)
+  const sign=isClockwise(vertices)?1:-1;
+  const cosD=Math.cos(sign*delta), sinD=Math.sin(sign*delta);
+  const nx2=bx*cosD-by*sinD;
+  const ny2=bx*sinD+by*cosD;
+  const nextIdx=(idx+1)%n;
+  if(!lockedAngles[nextIdx]){
+    vertices[nextIdx]={x:curr.x+nx2, y:curr.y+ny2};
+  }
+  render();
+  updatePanel();
+}
+
+// ─── SIDE LENGTH EDITING ─────────────────────────────────────────────────────
+function applySideLength(idx, targetUnits){
+  const n=vertices.length;
+  const targetPx=targetUnits*SCALE;
+  const i=idx, j=(idx+1)%n;
+  const dx=vertices[j].x-vertices[i].x;
+  const dy=vertices[j].y-vertices[i].y;
+  const len=Math.hypot(dx,dy);
+  if(len===0) return;
+  const scale=targetPx/len;
+  // Move vertex j, keep i fixed (unless j is locked)
+  const newJx=vertices[i].x+dx*scale;
+  const newJy=vertices[i].y+dy*scale;
+  vertices[j]={x:newJx, y:newJy};
+  render();
+  updatePanel();
+}
+
+// ─── MOUSE / TOUCH INTERACTION ────────────────────────────────────────────────
+function canvasXY(e){
+  const r=canvas.getBoundingClientRect();
+  const cx=e.clientX??e.touches[0].clientX;
+  const cy=e.clientY??e.touches[0].clientY;
+  return{x:(cx-r.left),y:(cy-r.top)};
+}
+
+function nearestVertex(x,y){
+  let best=-1, bestD=Infinity;
+  vertices.forEach((v,i)=>{
+    const d=Math.hypot(v.x-x,v.y-y);
+    if(d<20&&d<bestD){bestD=d;best=i;}
+  });
+  return best;
+}
+
+canvas.addEventListener('mousedown',e=>{
+  const {x,y}=canvasXY(e);
+  const vi=nearestVertex(x,y);
+  if(vi>=0){
+    draggingVertex=vi;
+    dragOffset={x:x-vertices[vi].x, y:y-vertices[vi].y};
+    canvas.style.cursor='grabbing';
+  }
+});
+canvas.addEventListener('mousemove',e=>{
+  const {x,y}=canvasXY(e);
+  if(draggingVertex>=0){
+    vertices[draggingVertex]={x:x-dragOffset.x, y:y-dragOffset.y};
+    render();
+    updatePanel();
+  } else {
+    const vi=nearestVertex(x,y);
+    canvas.style.cursor=vi>=0?'grab':'default';
+  }
+});
+canvas.addEventListener('mouseup',()=>{draggingVertex=-1;canvas.style.cursor='default';});
+canvas.addEventListener('mouseleave',()=>{draggingVertex=-1;});
+
+// Touch
+canvas.addEventListener('touchstart',e=>{e.preventDefault();const {x,y}=canvasXY(e);const vi=nearestVertex(x,y);if(vi>=0){draggingVertex=vi;dragOffset={x:x-vertices[vi].x,y:y-vertices[vi].y};}},{passive:false});
+canvas.addEventListener('touchmove',e=>{e.preventDefault();const {x,y}=canvasXY(e);if(draggingVertex>=0){vertices[draggingVertex]={x:x-dragOffset.x,y:y-dragOffset.y};render();updatePanel();}},{passive:false});
+canvas.addEventListener('touchend',()=>{draggingVertex=-1;});
+
+// ─── BOOT ────────────────────────────────────────────────────────────────────
+window.addEventListener('resize', resize);
+window.addEventListener('DOMContentLoaded', ()=>{
+  resize();
+  setShape('triangle');
+});
+</script>
+</body>
+</html>
