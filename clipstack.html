@@ -4,243 +4,166 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Clipstack</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600&family=Roboto:wght@300;400;500&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #080c10;
-  --surface: #0d1117;
-  --border: #1e2030;
-  --border2: #2a3040;
-  --accent: #cc44ff;
-  --accent2: #8800cc;
-  --accent-dim: #1a0028;
-  --dim: #3a4a5a;
-  --text: #c8d8e8;
-  --green: #39ff14;
-  --orange: #ff6b35;
-  --red: #ff3355;
-  --yellow: #ffd700;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8f9fa;
+  --white:#fff;
+  --border:#dadce0;
+  --border-light:#e8eaed;
+  --text:#202124;
+  --muted:#5f6368;
+  --blue:#1a73e8;
+  --blue-light:#e8f0fe;
+  --blue-mid:#1557b0;
+  --green:#1e8e3e;
+  --green-light:#e6f4ea;
+  --red:#d93025;
+  --red-light:#fce8e6;
+  --yellow:#f9ab00;
+  --yellow-light:#fef7e0;
+  --purple:#7c4dff;
+  --purple-light:#ede7f6;
+  --shadow-sm:0 1px 2px rgba(60,64,67,.10),0 1px 3px rgba(60,64,67,.15);
+  --shadow:0 1px 3px rgba(60,64,67,.12),0 2px 6px rgba(60,64,67,.15);
+  --shadow-md:0 4px 12px rgba(60,64,67,.15),0 2px 4px rgba(60,64,67,.10);
+  --r:12px;
+  --r-sm:8px;
 }
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-height:100vh;line-height:1.5}
+a{text-decoration:none;color:inherit}
 
-body {
-  min-height: 100vh;
-  background: var(--bg);
-  background-image:
-    radial-gradient(ellipse at 20% 20%, rgba(180,0,255,0.05) 0%, transparent 55%),
-    radial-gradient(ellipse at 80% 80%, rgba(100,0,200,0.04) 0%, transparent 50%),
-    repeating-linear-gradient(0deg, transparent, transparent 47px, rgba(255,255,255,0.01) 47px, rgba(255,255,255,0.01) 48px),
-    repeating-linear-gradient(90deg, transparent, transparent 47px, rgba(255,255,255,0.01) 47px, rgba(255,255,255,0.01) 48px);
-  font-family: 'Share Tech Mono', monospace;
-  display: flex; align-items: flex-start; justify-content: center;
-  padding: 24px 10px 60px;
+/* ── SPLASH ── */
+#splash{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#fff;animation:splashLife 1.8s ease forwards;pointer-events:none}
+@keyframes splashLife{0%{opacity:0}22%{opacity:1}78%{opacity:1}100%{opacity:0;visibility:hidden}}
+.splash-by{font-size:clamp(0.95rem,3vw,1.2rem);font-weight:400;color:#111;letter-spacing:0.01em}
+
+/* ── TOPBAR ── */
+#topbar{background:var(--white);border-bottom:1px solid var(--border-light);position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(60,64,67,.08)}
+.topbar-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:14px}
+.topbar-logo{font-family:'Google Sans',sans-serif;font-size:20px;font-weight:600;color:var(--text);letter-spacing:-.01em}
+.topbar-logo span{color:var(--blue)}
+.topbar-sub{font-size:12px;color:var(--muted);margin-left:2px}
+.topbar-sep{width:1px;height:20px;background:var(--border);flex-shrink:0}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.topbar-count{background:var(--blue-light);color:var(--blue);font-size:12px;font-weight:500;padding:4px 12px;border-radius:20px;font-family:'Google Sans',sans-serif}
+
+/* ── LAYOUT ── */
+#main{max-width:1100px;margin:0 auto;padding:24px 24px 60px;opacity:0;animation:fadeIn .4s 2s ease forwards}
+@keyframes fadeIn{to{opacity:1}}
+
+/* ── ADD CARD ── */
+.add-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:20px 22px;margin-bottom:18px;box-shadow:var(--shadow-sm);opacity:0;transform:translateY(10px);animation:slideUp .4s 2.1s ease forwards}
+@keyframes slideUp{to{opacity:1;transform:none}}
+.add-card-title{font-family:'Google Sans',sans-serif;font-size:14px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}
+.add-row{display:flex;gap:10px;margin-bottom:12px}
+.add-textarea{flex:1;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:'Roboto',sans-serif;font-size:14px;color:var(--text);background:var(--white);resize:none;min-height:58px;max-height:130px;overflow-y:auto;transition:border-color .2s,box-shadow .2s;outline:none;line-height:1.5}
+.add-textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,115,232,.12)}
+.add-textarea::placeholder{color:#b0b8c1}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:20px;border:none;font-size:13px;font-weight:500;font-family:'Google Sans',sans-serif;cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:var(--blue-mid);box-shadow:var(--shadow-sm)}
+.btn-primary:active{transform:scale(.97)}
+.btn-secondary{background:var(--white);color:var(--blue);border:1.5px solid var(--border)}
+.btn-secondary:hover{background:var(--blue-light);border-color:var(--blue)}
+.btn-sm{padding:6px 14px;font-size:12px}
+.label-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.label-input{padding:8px 12px;border:1.5px solid var(--border);border-radius:20px;font-family:'Roboto',sans-serif;font-size:12px;color:var(--text);background:var(--white);outline:none;transition:border-color .2s;width:160px}
+.label-input:focus{border-color:var(--blue)}
+.label-input::placeholder{color:var(--muted)}
+.color-dots{display:flex;gap:6px;align-items:center}
+.cdot{width:18px;height:18px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;transition:transform .15s,border-color .15s,box-shadow .15s;flex-shrink:0}
+.cdot:hover{transform:scale(1.15)}
+.cdot.sel{border-color:var(--text);box-shadow:0 0 0 1px var(--white) inset}
+
+/* ── TOOLBAR ── */
+.toolbar{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap;opacity:0;animation:slideUp .4s 2.15s ease forwards}
+.search-wrap{flex:1;min-width:180px;position:relative}
+.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.search-input{width:100%;padding:9px 12px 9px 38px;border:1.5px solid var(--border);border-radius:20px;font-family:'Roboto',sans-serif;font-size:13px;color:var(--text);background:var(--white);outline:none;transition:border-color .2s,box-shadow .2s}
+.search-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,115,232,.10)}
+.search-input::placeholder{color:var(--muted)}
+.sort-btn{padding:9px 16px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);font-size:12px;font-weight:500;font-family:'Google Sans',sans-serif;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap}
+.sort-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
+.sort-btn.active{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
+.count-chip{font-size:12px;color:var(--muted);white-space:nowrap;padding:0 4px}
+
+/* ── CATEGORY FILTER ── */
+.cat-bar{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.cf-btn{padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);font-size:12px;font-weight:500;font-family:'Google Sans',sans-serif;color:var(--muted);cursor:pointer;transition:all .15s}
+.cf-btn:hover{border-color:var(--blue);color:var(--blue)}
+.cf-btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
+
+/* ── ACTIVE BAR ── */
+.active-bar{background:var(--white);border:1.5px solid var(--blue);border-radius:var(--r);padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px;box-shadow:0 0 0 4px rgba(26,115,232,.06);opacity:0;animation:slideUp .4s 2.2s ease forwards}
+.active-pill{display:inline-flex;align-items:center;gap:6px;background:var(--blue);color:#fff;font-size:11px;font-weight:500;font-family:'Google Sans',sans-serif;padding:4px 10px;border-radius:20px;flex-shrink:0;letter-spacing:.04em}
+.active-dot{width:6px;height:6px;border-radius:50%;background:#fff;animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.active-text{font-size:13px;color:var(--blue);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'Roboto Mono',monospace}
+.active-text.empty{color:var(--muted);font-family:'Roboto',sans-serif;font-size:13px}
+.copy-active-btn{padding:8px 18px;border-radius:20px;border:none;background:var(--blue);color:#fff;font-size:13px;font-weight:500;font-family:'Google Sans',sans-serif;cursor:pointer;transition:all .2s;flex-shrink:0}
+.copy-active-btn:hover{background:var(--blue-mid);box-shadow:var(--shadow-sm)}
+.copy-active-btn.flash{background:var(--green);box-shadow:0 0 0 4px rgba(30,142,62,.15)}
+
+/* ── GRID ── */
+.clips-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted);grid-column:1/-1}
+.empty-state .big{font-size:3rem;margin-bottom:12px}
+.empty-state h2{font-family:'Google Sans',sans-serif;font-size:18px;color:var(--text);margin-bottom:6px}
+.empty-state p{font-size:13px}
+
+/* ── CLIP CARD ── */
+.clip-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:0;overflow:hidden;box-shadow:var(--shadow-sm);transition:box-shadow .2s,border-color .2s,transform .2s;cursor:pointer;position:relative;opacity:0;animation:slideUp .3s ease forwards}
+.clip-card:hover{box-shadow:var(--shadow-md);border-color:#c5d1e8;transform:translateY(-2px)}
+.clip-card.active-clip{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,115,232,.12),var(--shadow)}
+.clip-card.active-clip:hover{transform:translateY(-2px)}
+.clip-card-top{display:flex;align-items:center;gap:8px;padding:12px 14px 10px;border-bottom:1px solid var(--border-light)}
+.clip-color-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.clip-label-chip{font-size:11px;font-weight:500;font-family:'Google Sans',sans-serif;padding:2px 9px;border-radius:12px;background:var(--blue-light);color:var(--blue);max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.clip-label-chip.no-label{background:#f1f3f4;color:var(--muted)}
+.clip-meta{font-size:11px;color:var(--muted);margin-left:auto;white-space:nowrap}
+.clip-card-body{padding:12px 14px}
+.clip-text{font-family:'Roboto Mono',monospace;font-size:12px;color:var(--text);line-height:1.6;word-break:break-word;white-space:pre-wrap;max-height:76px;overflow:hidden;mask-image:linear-gradient(to bottom,#000 55%,transparent 100%)}
+.clip-text.expanded{max-height:none;mask-image:none}
+.clip-card-footer{display:flex;align-items:center;gap:5px;padding:8px 10px;border-top:1px solid var(--border-light);flex-wrap:wrap}
+.ca-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;font-size:11px;font-weight:500;font-family:'Google Sans',sans-serif;color:var(--muted);cursor:pointer;transition:all .15s}
+.ca-btn:hover{background:#f1f3f4;border-color:#c0c8d0;color:var(--text)}
+.ca-btn.copy{background:var(--blue-light);color:var(--blue);border-color:#c5d8fb}
+.ca-btn.copy:hover{background:#d2e4fd}
+.ca-btn.del:hover{background:var(--red-light);color:var(--red);border-color:#f5c6c3}
+.ca-btn.pin.pinned{background:var(--yellow-light);color:#7d5700;border-color:#fde096}
+.clip-chars{font-size:11px;color:var(--muted);margin-left:auto}
+
+/* ── CHIPS ── */
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:12px;font-size:11px;font-weight:500;font-family:'Google Sans',sans-serif}
+.chip-blue{background:var(--blue-light);color:var(--blue)}
+.chip-green{background:var(--green-light);color:var(--green)}
+.chip-red{background:var(--red-light);color:var(--red)}
+.chip-yellow{background:var(--yellow-light);color:#7d5700}
+.chip-grey{background:#f1f3f4;color:var(--muted)}
+.chip-purple{background:var(--purple-light);color:var(--purple)}
+
+/* ── FOOTER ── */
+.page-footer{text-align:center;padding:20px;font-size:11px;color:var(--muted);border-top:1px solid var(--border-light);margin-top:24px}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--text);color:#fff;font-family:'Roboto',sans-serif;font-size:13px;padding:10px 20px;border-radius:20px;opacity:0;transition:all .25s;pointer-events:none;z-index:9998;white-space:nowrap;box-shadow:var(--shadow-md)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#dadce0;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#bdc1c6}
+
+/* ── RESPONSIVE ── */
+@media(max-width:640px){
+  #main{padding:16px 14px 40px}
+  .clips-grid{grid-template-columns:1fr}
+  .topbar-inner{padding:12px 14px}
+  .add-row{flex-direction:column}
 }
-
-/* ===== SPLASH ===== */
-#splash {
-  position: fixed; inset: 0; z-index: 9999;
-  background: #fff;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  opacity: 0;
-  animation: splashIn 0.4s ease 0.1s forwards;
-}
-@keyframes splashIn { to { opacity: 1; } }
-#splash.out { animation: splashOut 0.4s ease forwards; }
-@keyframes splashOut { to { opacity: 0; pointer-events: none; } }
-.splash-by { font-size: clamp(0.95rem, 3vw, 1.2rem); font-weight: 400; color: #111; letter-spacing: 0.01em; }
-
-/* ===== APP ===== */
-.app { width: 500px; opacity:0; transform:translateY(16px); transition:opacity 0.5s,transform 0.5s; }
-.app.in { opacity:1; transform:translateY(0); }
-
-.shell {
-  background: linear-gradient(160deg, #100818 0%, #080510 100%);
-  border: 1px solid var(--border2); border-radius: 8px;
-  padding: 20px 18px 24px;
-  box-shadow: 0 0 0 1px #000, 0 60px 120px rgba(0,0,0,0.9), inset 0 1px 0 rgba(180,0,255,0.08);
-  position: relative;
-}
-.shell::before {
-  content:''; position:absolute; top:0;left:0;right:0;height:2px;border-radius:8px 8px 0 0;
-  background:linear-gradient(90deg,transparent,var(--accent2),var(--accent),var(--accent2),transparent);
-  animation:topbar 4s ease-in-out infinite;
-}
-@keyframes topbar { 0%,100%{opacity:.4;} 50%{opacity:1;} }
-
-/* ===== HEADER ===== */
-.header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-.logo { font-family:'Orbitron',sans-serif; font-size:22px; font-weight:900; letter-spacing:4px; color:var(--accent); text-shadow:0 0 20px rgba(180,0,255,0.4); }
-.logo span { font-size:9px; font-weight:400; color:var(--dim); display:block; letter-spacing:3px; margin-top:2px; }
-.hdr-stats { text-align:right; font-size:10px; color:var(--dim); letter-spacing:1px; }
-.hdr-stats strong { color:var(--accent); font-size:13px; display:block; }
-
-/* ===== ADD BAR ===== */
-.add-section { margin-bottom:14px; }
-.add-row { display:flex; gap:8px; margin-bottom:8px; }
-.add-input {
-  flex:1; background:#050810; border:1px solid var(--border2); color:var(--text);
-  font-family:'Share Tech Mono',monospace; font-size:13px; padding:10px 12px; border-radius:3px;
-  resize:none; min-height:52px; max-height:120px; overflow-y:auto;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-.add-input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 8px rgba(180,0,255,0.2); }
-.add-input::placeholder { color:var(--dim); }
-
-.add-btn {
-  font-family:'Orbitron',sans-serif; font-size:11px; font-weight:700; letter-spacing:2px;
-  padding:0 16px; background:var(--accent-dim); border:1px solid var(--accent2);
-  color:var(--accent); border-radius:3px; cursor:pointer; transition:all 0.2s;
-  white-space:nowrap; min-width:80px;
-}
-.add-btn:hover { background:#280044; box-shadow:0 0 14px rgba(180,0,255,0.3); }
-.add-btn:active { transform:scale(0.96); }
-
-/* ===== LABEL ROW ===== */
-.label-row { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
-.label-inp {
-  background:#050810; border:1px solid var(--border); color:#8877aa;
-  font-family:'Share Tech Mono',monospace; font-size:11px; padding:5px 8px; border-radius:2px;
-  width:140px;
-}
-.label-inp:focus { outline:none; border-color:var(--accent); }
-.label-inp::placeholder { color:var(--dim); }
-
-.color-dots { display:flex; gap:5px; align-items:center; }
-.cdot {
-  width:16px; height:16px; border-radius:50%; cursor:pointer; border:2px solid transparent;
-  transition:transform 0.15s, border-color 0.15s; flex-shrink:0;
-}
-.cdot:hover { transform:scale(1.2); }
-.cdot.sel { border-color:#fff; transform:scale(1.15); }
-
-/* ===== SEARCH ===== */
-.search-row { display:flex; gap:6px; margin-bottom:12px; align-items:center; }
-.search-inp {
-  flex:1; background:#050810; border:1px solid var(--border); color:var(--text);
-  font-family:'Share Tech Mono',monospace; font-size:12px; padding:7px 10px; border-radius:3px;
-}
-.search-inp:focus { outline:none; border-color:var(--accent); }
-.search-inp::placeholder { color:var(--dim); }
-.sort-btn {
-  font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:1px;
-  padding:7px 10px; background:#050810; border:1px solid var(--border); color:var(--dim);
-  border-radius:3px; cursor:pointer; transition:all 0.2s; white-space:nowrap;
-}
-.sort-btn.active { color:var(--accent); border-color:var(--accent); }
-.count-badge { font-size:9px; color:var(--dim); letter-spacing:1px; white-space:nowrap; }
-
-/* ===== STACK ===== */
-.stack { display:flex; flex-direction:column; gap:6px; min-height:60px; }
-.empty-msg { text-align:center; padding:40px; font-size:11px; color:var(--dim); letter-spacing:2px; border:1px dashed var(--border); border-radius:4px; }
-
-/* ===== CLIP CARD ===== */
-.clip {
-  background:#08080f; border:1px solid var(--border);
-  border-radius:4px; padding:12px 14px; cursor:pointer;
-  transition:all 0.18s; position:relative; overflow:hidden;
-  border-left:3px solid var(--border);
-}
-.clip::before { content:''; position:absolute; top:0;left:0;right:0;height:1px; background:transparent; transition:background 0.2s; }
-.clip:hover { border-color:var(--border2); background:#0d0a14; }
-.clip:hover::before { background:linear-gradient(90deg,transparent,var(--accent),transparent); opacity:0.4; }
-.clip.active-clip { border-color:var(--accent) !important; background:#120a1e; box-shadow:0 0 16px rgba(180,0,255,0.15); }
-.clip.active-clip::before { background:linear-gradient(90deg,transparent,var(--accent),transparent) !important; opacity:0.6 !important; }
-.clip.just-copied { animation:copyFlash 0.4s ease; }
-@keyframes copyFlash { 0%{background:#1a0030;} 50%{background:#220040;} 100%{background:#120a1e;} }
-
-.clip-top { display:flex; align-items:flex-start; gap:10px; margin-bottom:6px; }
-.clip-label {
-  font-size:9px; letter-spacing:2px; color:var(--dim); flex-shrink:0;
-  padding:2px 6px; border-radius:2px; border:1px solid var(--border);
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:120px;
-}
-.clip-label.has-label { color:var(--accent); border-color:var(--accent2); }
-.clip-meta { font-size:9px; color:var(--dim); letter-spacing:1px; margin-left:auto; white-space:nowrap; flex-shrink:0; }
-.clip-text {
-  font-size:13px; color:var(--text); line-height:1.5; word-break:break-word;
-  white-space:pre-wrap; max-height:80px; overflow:hidden;
-  mask-image:linear-gradient(to bottom,#fff 60%,transparent 100%);
-}
-.clip-text.expanded { max-height:none; mask-image:none; }
-
-.clip-actions { display:flex; gap:5px; margin-top:8px; align-items:center; }
-.ca-btn {
-  font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:1px;
-  padding:4px 8px; background:transparent; border:1px solid var(--border);
-  color:var(--dim); border-radius:2px; cursor:pointer; transition:all 0.15s;
-}
-.ca-btn:hover { color:var(--text); border-color:var(--border2); }
-.ca-btn.copy-btn { color:var(--accent); border-color:var(--accent2); }
-.ca-btn.copy-btn:hover { background:var(--accent-dim); box-shadow:0 0 8px rgba(180,0,255,0.2); }
-.ca-btn.del-btn:hover { color:var(--red); border-color:var(--red); }
-.ca-btn.pin-btn.pinned { color:var(--yellow); border-color:#664400; }
-.clip-charcount { font-size:9px; color:var(--dim); margin-left:auto; letter-spacing:1px; }
-.clip-color-bar { position:absolute; left:0;top:0;bottom:0;width:3px; border-radius:4px 0 0 4px; }
-
-/* ===== ACTIVE INDICATOR ===== */
-.active-label {
-  display:inline-flex; align-items:center; gap:5px;
-  font-size:9px; letter-spacing:2px; color:var(--accent);
-  padding:3px 8px; border:1px solid var(--accent2);
-  border-radius:2px; background:var(--accent-dim);
-}
-.active-dot { width:6px; height:6px; border-radius:50%; background:var(--accent); animation:pulse 1.5s ease-in-out infinite; }
-@keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.5;transform:scale(0.8);} }
-
-/* ===== ACTIVE BAR ===== */
-.active-bar {
-  background:#05080e; border:1px solid var(--border2); border-radius:3px;
-  padding:10px 14px; margin-bottom:12px; display:flex; align-items:center; gap:10px;
-  min-height:46px;
-}
-.active-bar-text { font-size:12px; color:#8877aa; flex:1; word-break:break-all; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
-.active-bar-text.has-content { color:var(--accent); }
-.paste-btn {
-  font-family:'Orbitron',sans-serif; font-size:10px; font-weight:700; letter-spacing:2px;
-  padding:8px 14px; background:var(--accent-dim); border:1px solid var(--accent);
-  color:var(--accent); border-radius:3px; cursor:pointer; transition:all 0.2s; white-space:nowrap;
-  text-shadow:0 0 8px rgba(180,0,255,0.4);
-}
-.paste-btn:hover { background:#280044; box-shadow:0 0 18px rgba(180,0,255,0.35); }
-.paste-btn:active { transform:scale(0.95); }
-.paste-btn.flash { background:#330055; box-shadow:0 0 24px rgba(180,0,255,0.6); }
-
-/* ===== CATEGORY FILTER ===== */
-.cat-filter { display:flex; gap:5px; margin-bottom:10px; flex-wrap:wrap; }
-.cf-btn {
-  font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:1px;
-  padding:4px 9px; background:#050810; border:1px solid var(--border); color:var(--dim);
-  border-radius:2px; cursor:pointer; transition:all 0.15s;
-}
-.cf-btn:hover { color:#8877aa; border-color:var(--border2); }
-.cf-btn.active { color:var(--accent); border-color:var(--accent2); background:var(--accent-dim); }
-
-/* ===== BOTTOM ===== */
-.bottom { display:flex; justify-content:space-between; align-items:center; margin-top:14px; font-size:9px; color:var(--dim); letter-spacing:1px; }
-.bottom span { color:var(--accent); }
-
-/* ===== TOAST ===== */
-#toast {
-  position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(10px);
-  background:#1a0028; border:1px solid var(--accent); color:var(--accent);
-  font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:2px;
-  padding:8px 18px; border-radius:3px; opacity:0; transition:all 0.25s;
-  box-shadow:0 0 20px rgba(180,0,255,0.3); pointer-events:none; z-index:1000;
-  white-space:nowrap;
-}
-#toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-
-/* ===== SCROLLBAR ===== */
-::-webkit-scrollbar { width:4px; height:4px; }
-::-webkit-scrollbar-track { background:#050810; }
-::-webkit-scrollbar-thumb { background:#2a1a3a; border-radius:2px; }
-
-/* drag handle */
-.drag-handle { cursor:grab; color:var(--dim); font-size:12px; padding:0 4px; user-select:none; }
-.drag-handle:active { cursor:grabbing; }
-.clip.dragging { opacity:0.4; }
-.clip.drag-over { border-top:2px solid var(--accent); }
 </style>
 </head>
 <body>
@@ -249,164 +172,135 @@ body {
   <div class="splash-by">A tool by <strong>Leon Dudhill</strong></div>
 </div>
 
-  <div class="s-name">LEON DUDHILL</div>
-  <div class="s-bar"></div>
+<div id="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-logo">Clip<span>stack</span></div>
+    <div class="topbar-sep"></div>
+    <div class="topbar-sub">Clipboard manager</div>
+    <div class="topbar-right">
+      <div class="topbar-count" id="clip-count-pill">0 clips</div>
+    </div>
+  </div>
 </div>
 
-<div class="app" id="app">
-<div class="shell">
+<div id="main">
 
-  <div class="header">
-    <div>
-      <div class="logo">CLIPSTACK<span>CLIPBOARD MANAGER</span></div>
-    </div>
-    <div class="hdr-stats">
-      <strong id="clipCount">0</strong>
-      <span>clips stored</span>
-    </div>
-  </div>
-
-  <!-- ACTIVE CLIP BAR -->
-  <div class="active-bar" id="activeBar">
-    <div class="active-label"><div class="active-dot"></div>ACTIVE</div>
-    <div class="active-bar-text" id="activeBarText">no clip selected — click one below</div>
-    <button class="paste-btn" id="pasteBtn" onclick="copyActive()">COPY</button>
-  </div>
-
-  <!-- ADD NEW -->
-  <div class="add-section">
+  <!-- ADD CARD -->
+  <div class="add-card">
+    <div class="add-card-title">New clip</div>
     <div class="add-row">
-      <textarea class="add-input" id="addInput" placeholder="paste or type something to save..." rows="2"></textarea>
-      <button class="add-btn" onclick="addClip()">+ ADD</button>
+      <textarea class="add-textarea" id="addInput" placeholder="Paste or type something to save…" rows="2"></textarea>
+      <button class="btn btn-primary" onclick="addClip()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add
+      </button>
     </div>
     <div class="label-row">
-      <input class="label-inp" id="labelInp" placeholder="label (optional)..." maxlength="30">
+      <input class="label-input" id="labelInp" placeholder="Label (optional)…" maxlength="30">
       <div class="color-dots" id="colorDots"></div>
     </div>
   </div>
 
-  <!-- SEARCH + SORT -->
-  <div class="search-row">
-    <input class="search-inp" id="searchInp" placeholder="search clips..." oninput="render()">
-    <button class="sort-btn" id="sortBtn" onclick="toggleSort()">DATE ↓</button>
-    <span class="count-badge" id="countBadge"></span>
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="search-input" id="searchInp" placeholder="Search clips…" oninput="render()">
+    </div>
+    <button class="sort-btn" id="sortBtn" onclick="toggleSort()">Date ↓</button>
+    <span class="count-chip" id="countBadge"></span>
   </div>
 
-  <!-- CATEGORY FILTER -->
-  <div class="cat-filter" id="catFilter"></div>
+  <!-- CAT FILTER -->
+  <div class="cat-bar" id="catFilter" style="display:none"></div>
 
-  <!-- STACK -->
-  <div class="stack" id="stack">
-    <div class="empty-msg">NO CLIPS YET · ADD ONE ABOVE</div>
+  <!-- ACTIVE BAR -->
+  <div class="active-bar" id="activeBar">
+    <div class="active-pill"><div class="active-dot"></div>Active</div>
+    <div class="active-text empty" id="activeBarText">No clip selected — click one below</div>
+    <button class="copy-active-btn" id="copyActiveBtn" onclick="copyActive()">Copy</button>
   </div>
 
-  <div class="bottom">
-    <span id="storageInfo">localStorage</span>
-    <div>CLIPSTACK · LEON DUDHILL</div>
+  <!-- GRID -->
+  <div class="clips-grid" id="stack">
+    <div class="empty-state">
+      <div class="big">📋</div>
+      <h2>No clips yet</h2>
+      <p>Add your first clip above to get started</p>
+    </div>
   </div>
 
-</div>
+  <div class="page-footer">Clipstack · A tool by Leon Dudhill · Saved locally in your browser</div>
 </div>
 
 <div id="toast"></div>
 
 <script>
-// =====================================================================
+// ═══════════════════════════════
 // CONSTANTS
-// =====================================================================
+// ═══════════════════════════════
 const STORAGE_KEY = 'clipstack_v1';
-const COLORS = ['#cc44ff','#00d4ff','#39ff14','#ff6b35','#ffd700','#ff3355','#ff44aa','#8888ff'];
-const COLOR_NAMES = ['purple','cyan','green','orange','yellow','red','pink','blue'];
+const COLORS = ['#1a73e8','#1e8e3e','#d93025','#f9ab00','#7c4dff','#e91e8c','#00897b','#f57c00'];
+const COLOR_NAMES = ['Blue','Green','Red','Yellow','Purple','Pink','Teal','Orange'];
 
-// =====================================================================
+// ═══════════════════════════════
 // STATE
-// =====================================================================
-let clips = [];        // array of clip objects
-let activeId = null;   // currently selected clip id
-let sortMode = 'date'; // 'date' | 'alpha' | 'uses'
+// ═══════════════════════════════
+let clips = [];
+let activeId = null;
+let sortMode = 'date';
 let selectedColor = COLORS[0];
-let dragId = null;
 let filterLabel = null;
+let dragId = null;
 
-// =====================================================================
+// ═══════════════════════════════
 // SPLASH
-// =====================================================================
+// ═══════════════════════════════
 window.addEventListener('load', () => {
   setTimeout(() => {
-    document.getElementById('splash').classList.add('out');
-    setTimeout(() => {
-      document.getElementById('splash').style.display = 'none';
-      document.getElementById('app').classList.add('in');
-      initColorDots();
-      load();
-      render();
-    }, 400);
-  }, 1400);
+    document.getElementById('splash').style.display = 'none';
+    initColorDots();
+    load();
+    render();
+  }, 1800);
 });
 
-// =====================================================================
+// ═══════════════════════════════
 // STORAGE
-// =====================================================================
+// ═══════════════════════════════
 function save() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(clips));
-    updateStorageInfo();
-  } catch(e) {
-    toast('⚠ Storage full');
-  }
+  } catch(e) { toast('⚠️ Storage full'); }
 }
-
 function load() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       clips = JSON.parse(raw);
-      // migrate old clips missing fields
       clips = clips.map(c => ({
-        id: c.id || uid(),
-        text: c.text || '',
-        label: c.label || '',
-        color: c.color || COLORS[0],
-        pinned: c.pinned || false,
-        uses: c.uses || 0,
-        created: c.created || Date.now(),
-        expanded: false,
+        id: c.id || uid(), text: c.text || '', label: c.label || '',
+        color: c.color || COLORS[0], pinned: c.pinned || false,
+        uses: c.uses || 0, created: c.created || Date.now(), expanded: false,
       }));
     }
-    // restore active
     if (clips.length > 0) {
       const saved = localStorage.getItem('clipstack_active');
       activeId = saved && clips.find(c => c.id === saved) ? saved : clips[0].id;
     }
-  } catch(e) {
-    clips = [];
-  }
+  } catch(e) { clips = []; }
 }
 
-function updateStorageInfo() {
-  try {
-    const bytes = new Blob([localStorage.getItem(STORAGE_KEY)||'']).size;
-    const kb = (bytes/1024).toFixed(1);
-    document.getElementById('storageInfo').textContent = `${kb} KB used`;
-  } catch(e) {}
-}
-
-// =====================================================================
-// CLIP OPERATIONS
-// =====================================================================
-function uid() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2,6);
-}
+// ═══════════════════════════════
+// CLIP OPS
+// ═══════════════════════════════
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
 function addClip() {
   const text = document.getElementById('addInput').value.trim();
-  if (!text) { toast('nothing to add'); return; }
+  if (!text) { toast('Nothing to add'); return; }
   const label = document.getElementById('labelInp').value.trim();
-  const clip = {
-    id: uid(), text, label,
-    color: selectedColor, pinned: false,
-    uses: 0, created: Date.now(), expanded: false,
-  };
+  const clip = { id: uid(), text, label, color: selectedColor, pinned: false, uses: 0, created: Date.now(), expanded: false };
   clips.unshift(clip);
   activeId = clip.id;
   localStorage.setItem('clipstack_active', activeId);
@@ -414,16 +308,14 @@ function addClip() {
   document.getElementById('addInput').value = '';
   document.getElementById('labelInp').value = '';
   render();
-  toast('clip added');
+  toast('Clip added');
 }
 
 function deleteClip(id) {
   clips = clips.filter(c => c.id !== id);
   if (activeId === id) activeId = clips[0]?.id || null;
   localStorage.setItem('clipstack_active', activeId || '');
-  save();
-  render();
-  toast('deleted');
+  save(); render(); toast('Deleted');
 }
 
 function pinClip(id) {
@@ -442,26 +334,24 @@ function selectClip(id) {
 
 function copyActive() {
   const c = clips.find(c => c.id === activeId);
-  if (!c) { toast('no active clip'); return; }
+  if (!c) { toast('No active clip'); return; }
   copyToClipboard(c.text, true);
-  // Flash paste btn
-  const btn = document.getElementById('pasteBtn');
+  const btn = document.getElementById('copyActiveBtn');
   btn.classList.add('flash');
-  btn.textContent = 'COPIED!';
-  setTimeout(() => { btn.classList.remove('flash'); btn.textContent = 'COPY'; }, 900);
+  btn.textContent = '✓ Copied';
+  setTimeout(() => { btn.classList.remove('flash'); btn.textContent = 'Copy'; }, 1000);
 }
 
 function copyToClipboard(text, showToast) {
   navigator.clipboard.writeText(text).then(() => {
-    if (showToast) toast('📋 copied to clipboard');
+    if (showToast) toast('📋 Copied to clipboard');
   }).catch(() => {
-    // fallback
     const ta = document.createElement('textarea');
-    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
     document.body.appendChild(ta); ta.select();
     document.execCommand('copy');
     document.body.removeChild(ta);
-    if (showToast) toast('📋 copied to clipboard');
+    if (showToast) toast('📋 Copied to clipboard');
   });
 }
 
@@ -472,14 +362,14 @@ function toggleExpand(id) {
 
 function editClip(id) {
   const c = clips.find(c => c.id === id);
-  if (!c) return;
-  const el = document.getElementById('text-'+id);
-  if (!el) return;
+  const el = document.getElementById('text-' + id);
+  if (!c || !el) return;
   el.contentEditable = 'true';
   el.style.maxHeight = 'none';
   el.style.maskImage = 'none';
+  el.style.outline = '2px solid var(--blue)';
+  el.style.borderRadius = '4px';
   el.focus();
-  // select all
   const range = document.createRange();
   range.selectNodeContents(el);
   window.getSelection().removeAllRanges();
@@ -487,20 +377,21 @@ function editClip(id) {
   el.onblur = () => {
     c.text = el.innerText;
     el.contentEditable = 'false';
-    save();
-    render();
-    toast('saved');
+    el.style.outline = '';
+    save(); render(); toast('Saved');
   };
 }
 
-// =====================================================================
+// ═══════════════════════════════
 // SORT / FILTER
-// =====================================================================
+// ═══════════════════════════════
 function toggleSort() {
-  const modes = ['date','alpha','uses'];
-  sortMode = modes[(modes.indexOf(sortMode)+1)%modes.length];
-  const labels = {date:'DATE ↓', alpha:'A → Z', uses:'MOST USED'};
-  document.getElementById('sortBtn').textContent = labels[sortMode];
+  const modes = ['date', 'alpha', 'uses'];
+  sortMode = modes[(modes.indexOf(sortMode) + 1) % modes.length];
+  const labels = { date: 'Date ↓', alpha: 'A → Z', uses: 'Most used' };
+  const btn = document.getElementById('sortBtn');
+  btn.textContent = labels[sortMode];
+  btn.classList.toggle('active', sortMode !== 'date');
   render();
 }
 
@@ -509,24 +400,25 @@ function getFiltered() {
   let list = [...clips];
   if (filterLabel) list = list.filter(c => c.label === filterLabel);
   if (q) list = list.filter(c => c.text.toLowerCase().includes(q) || c.label.toLowerCase().includes(q));
-  // pinned first
   const pinned = list.filter(c => c.pinned);
-  const rest   = list.filter(c => !c.pinned);
+  const rest = list.filter(c => !c.pinned);
   const sort = arr => {
-    if (sortMode === 'alpha') return arr.sort((a,b) => a.text.localeCompare(b.text));
-    if (sortMode === 'uses')  return arr.sort((a,b) => b.uses - a.uses);
-    return arr.sort((a,b) => b.created - a.created);
+    if (sortMode === 'alpha') return arr.sort((a, b) => a.text.localeCompare(b.text));
+    if (sortMode === 'uses') return arr.sort((a, b) => b.uses - a.uses);
+    return arr.sort((a, b) => b.created - a.created);
   };
   return [...pinned, ...sort(rest)];
 }
 
-// =====================================================================
+function setFilter(label) { filterLabel = label; render(); }
+
+// ═══════════════════════════════
 // COLOR DOTS
-// =====================================================================
+// ═══════════════════════════════
 function initColorDots() {
   const el = document.getElementById('colorDots');
-  el.innerHTML = COLORS.map((c,i) =>
-    `<div class="cdot${c===selectedColor?' sel':''}" style="background:${c};" onclick="selectColor('${c}',this)" title="${COLOR_NAMES[i]}"></div>`
+  el.innerHTML = COLORS.map((c, i) =>
+    `<div class="cdot${c === selectedColor ? ' sel' : ''}" style="background:${c}" onclick="selectColor('${c}',this)" title="${COLOR_NAMES[i]}"></div>`
   ).join('');
 }
 
@@ -536,163 +428,142 @@ function selectColor(c, el) {
   el.classList.add('sel');
 }
 
-// =====================================================================
+// ═══════════════════════════════
 // RENDER
-// =====================================================================
+// ═══════════════════════════════
 function render() {
   const filtered = getFiltered();
   const stack = document.getElementById('stack');
+
+  // Count pill
+  document.getElementById('clip-count-pill').textContent = clips.length + ' clip' + (clips.length !== 1 ? 's' : '');
 
   // Active bar
   const active = clips.find(c => c.id === activeId);
   const abt = document.getElementById('activeBarText');
   if (active) {
-    abt.textContent = active.text.length > 80 ? active.text.slice(0,80)+'…' : active.text;
-    abt.classList.add('has-content');
+    abt.textContent = active.text.length > 90 ? active.text.slice(0, 90) + '…' : active.text;
+    abt.classList.remove('empty');
   } else {
-    abt.textContent = 'no clip selected — click one below';
-    abt.classList.remove('has-content');
+    abt.textContent = 'No clip selected — click one below';
+    abt.classList.add('empty');
   }
 
-  // Count
-  document.getElementById('clipCount').textContent = clips.length;
-  document.getElementById('countBadge').textContent = filtered.length !== clips.length ? `${filtered.length} of ${clips.length}` : `${clips.length} total`;
+  // Count badge
+  document.getElementById('countBadge').textContent =
+    filtered.length !== clips.length ? `${filtered.length} of ${clips.length}` : '';
 
-  // Category filter pills
-  const labels = [...new Set(clips.map(c=>c.label).filter(Boolean))];
+  // Category filter
+  const labels = [...new Set(clips.map(c => c.label).filter(Boolean))];
   const cf = document.getElementById('catFilter');
   if (labels.length > 0) {
-    cf.innerHTML = `<button class="cf-btn${!filterLabel?' active':''}" onclick="setFilter(null)">ALL</button>` +
-      labels.map(l => `<button class="cf-btn${filterLabel===l?' active':''}" onclick="setFilter('${l.replace(/'/g,"\\'")}')">
-        ${l.toUpperCase()}</button>`).join('');
     cf.style.display = 'flex';
+    cf.innerHTML = `<button class="cf-btn${!filterLabel ? ' active' : ''}" onclick="setFilter(null)">All</button>` +
+      labels.map(l => `<button class="cf-btn${filterLabel === l ? ' active' : ''}" onclick="setFilter('${l.replace(/'/g, "\\'")}')">${escHtml(l)}</button>`).join('');
   } else {
     cf.style.display = 'none';
   }
 
-  // Empty
+  // Empty state
   if (filtered.length === 0) {
-    stack.innerHTML = `<div class="empty-msg">${clips.length === 0 ? 'NO CLIPS YET · ADD ONE ABOVE' : 'NO MATCHES'}</div>`;
+    stack.innerHTML = clips.length === 0
+      ? `<div class="empty-state"><div class="big">📋</div><h2>No clips yet</h2><p>Add your first clip above to get started</p></div>`
+      : `<div class="empty-state"><div class="big">🔍</div><h2>No matches</h2><p>Try a different search term</p></div>`;
     return;
   }
 
-  stack.innerHTML = filtered.map(c => clipHTML(c)).join('');
+  stack.innerHTML = filtered.map((c, i) => clipHTML(c, i)).join('');
 
-  // Attach drag events
-  stack.querySelectorAll('.clip').forEach(el => {
+  // Drag events
+  stack.querySelectorAll('.clip-card').forEach(el => {
     const id = el.dataset.id;
-    el.addEventListener('dragstart', e => { dragId = id; el.classList.add('dragging'); });
-    el.addEventListener('dragend',   e => { dragId = null; el.classList.remove('dragging'); document.querySelectorAll('.clip').forEach(c=>c.classList.remove('drag-over')); });
-    el.addEventListener('dragover',  e => { e.preventDefault(); el.classList.add('drag-over'); });
-    el.addEventListener('dragleave', e => { el.classList.remove('drag-over'); });
-    el.addEventListener('drop',      e => { e.preventDefault(); el.classList.remove('drag-over'); reorder(dragId, id); });
+    el.addEventListener('dragstart', e => { dragId = id; el.style.opacity = '.4'; });
+    el.addEventListener('dragend', () => { dragId = null; el.style.opacity = ''; document.querySelectorAll('.clip-card').forEach(c => c.style.borderTopColor = ''); });
+    el.addEventListener('dragover', e => { e.preventDefault(); el.style.borderTopColor = 'var(--blue)'; });
+    el.addEventListener('dragleave', () => { el.style.borderTopColor = ''; });
+    el.addEventListener('drop', e => { e.preventDefault(); el.style.borderTopColor = ''; reorder(dragId, id); });
   });
-
-  updateStorageInfo();
 }
 
-function clipHTML(c) {
+function clipHTML(c, i) {
   const isActive = c.id === activeId;
-  const preview = c.expanded ? c.text : (c.text.length > 200 ? c.text.slice(0,200)+'…' : c.text);
   const longText = c.text.length > 200;
   const age = timeAgo(c.created);
+  const delay = Math.min(i * 40, 400);
 
-  return `<div class="clip${isActive?' active-clip':''}" data-id="${c.id}" draggable="true" onclick="selectClip('${c.id}')">
-    <div class="clip-color-bar" style="background:${c.color};"></div>
-    <div class="clip-top">
-      <span class="drag-handle" onclick="event.stopPropagation()">⠿</span>
-      <span class="clip-label${c.label?' has-label':''}">${c.label || 'CLIP'}</span>
-      <span class="clip-meta">${age}${c.uses>0?' · '+c.uses+'× used':''}</span>
+  return `<div class="clip-card${isActive ? ' active-clip' : ''}" data-id="${c.id}" draggable="true"
+    style="animation-delay:${delay}ms" onclick="selectClip('${c.id}')">
+    <div class="clip-card-top">
+      <div class="clip-color-dot" style="background:${c.color}"></div>
+      <span class="clip-label-chip${c.label ? '' : ' no-label'}">${c.label ? escHtml(c.label) : 'Clip'}</span>
+      ${c.pinned ? '<span style="font-size:13px">📌</span>' : ''}
+      <span class="clip-meta">${age}${c.uses > 0 ? ' · ' + c.uses + '×' : ''}</span>
     </div>
-    <div class="clip-text${c.expanded?' expanded':''}" id="text-${c.id}">${escHtml(preview)}</div>
-    <div class="clip-actions" onclick="event.stopPropagation()">
-      <button class="ca-btn copy-btn" onclick="selectClip('${c.id}');copyActive()">COPY</button>
-      <button class="ca-btn" onclick="editClip('${c.id}')">EDIT</button>
-      ${longText?`<button class="ca-btn" onclick="toggleExpand('${c.id}')">${c.expanded?'LESS':'MORE'}</button>`:''}
-      <button class="ca-btn pin-btn${c.pinned?' pinned':''}" onclick="pinClip('${c.id}')">${c.pinned?'📌 PINNED':'PIN'}</button>
-      <button class="ca-btn del-btn" onclick="if(confirm('delete this clip?'))deleteClip('${c.id}')">DEL</button>
-      <span class="clip-charcount">${c.text.length} chars</span>
+    <div class="clip-card-body">
+      <div class="clip-text${c.expanded ? ' expanded' : ''}" id="text-${c.id}">${escHtml(c.expanded ? c.text : c.text.slice(0, 220))}</div>
+    </div>
+    <div class="clip-card-footer" onclick="event.stopPropagation()">
+      <button class="ca-btn copy" onclick="selectClip('${c.id}');copyActive()">Copy</button>
+      <button class="ca-btn" onclick="editClip('${c.id}')">Edit</button>
+      ${longText ? `<button class="ca-btn" onclick="toggleExpand('${c.id}')">${c.expanded ? 'Less' : 'More'}</button>` : ''}
+      <button class="ca-btn pin${c.pinned ? ' pinned' : ''}" onclick="pinClip('${c.id}')">${c.pinned ? 'Pinned' : 'Pin'}</button>
+      <button class="ca-btn del" onclick="if(confirm('Delete this clip?'))deleteClip('${c.id}')">Delete</button>
+      <span class="clip-chars">${c.text.length} chars</span>
     </div>
   </div>`;
 }
 
 function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function timeAgo(ts) {
-  const s = Math.floor((Date.now()-ts)/1000);
-  if (s < 60) return 'just now';
-  if (s < 3600) return Math.floor(s/60)+'m ago';
-  if (s < 86400) return Math.floor(s/3600)+'h ago';
-  return Math.floor(s/86400)+'d ago';
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 60) return 'Just now';
+  if (s < 3600) return Math.floor(s / 60) + 'm ago';
+  if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+  return Math.floor(s / 86400) + 'd ago';
 }
 
-function setFilter(label) {
-  filterLabel = label;
-  render();
-}
-
-// =====================================================================
-// REORDER (drag and drop)
-// =====================================================================
+// ═══════════════════════════════
+// REORDER
+// ═══════════════════════════════
 function reorder(fromId, toId) {
   if (fromId === toId) return;
-  const fromIdx = clips.findIndex(c => c.id === fromId);
-  const toIdx   = clips.findIndex(c => c.id === toId);
-  if (fromIdx < 0 || toIdx < 0) return;
-  const [item] = clips.splice(fromIdx, 1);
-  clips.splice(toIdx, 0, item);
-  save();
-  render();
+  const fi = clips.findIndex(c => c.id === fromId);
+  const ti = clips.findIndex(c => c.id === toId);
+  if (fi < 0 || ti < 0) return;
+  const [item] = clips.splice(fi, 1);
+  clips.splice(ti, 0, item);
+  save(); render();
 }
 
-// =====================================================================
+// ═══════════════════════════════
 // TOAST
-// =====================================================================
+// ═══════════════════════════════
 let toastTimer;
 function toast(msg) {
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
 }
 
-// =====================================================================
+// ═══════════════════════════════
 // KEYBOARD
-// =====================================================================
+// ═══════════════════════════════
 document.addEventListener('keydown', e => {
-  // Ctrl/Cmd + Enter = add clip
-  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-    e.preventDefault(); addClip();
-  }
-  // Escape = clear search
-  if (e.key === 'Escape' && document.activeElement !== document.getElementById('addInput')) {
-    document.getElementById('searchInp').value = ''; render();
-  }
-  // Arrow keys to navigate clips (when not in input)
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); addClip(); }
+  if (e.key === 'Escape') { document.getElementById('searchInp').value = ''; render(); }
   const tag = document.activeElement.tagName;
   if (tag === 'INPUT' || tag === 'TEXTAREA') return;
   const filtered = getFiltered();
   const idx = filtered.findIndex(c => c.id === activeId);
-  if (e.key === 'ArrowDown' && idx < filtered.length-1) {
-    e.preventDefault(); selectClip(filtered[idx+1].id); render();
-  }
-  if (e.key === 'ArrowUp' && idx > 0) {
-    e.preventDefault(); selectClip(filtered[idx-1].id); render();
-  }
-  if (e.key === 'c' && (e.ctrlKey||e.metaKey)) return; // let browser handle
+  if (e.key === 'ArrowDown' && idx < filtered.length - 1) { e.preventDefault(); selectClip(filtered[idx + 1].id); }
+  if (e.key === 'ArrowUp' && idx > 0) { e.preventDefault(); selectClip(filtered[idx - 1].id); }
 });
 
-// Auto-detect paste into add input
-document.getElementById('addInput').addEventListener('paste', () => {
-  setTimeout(() => {
-    // don't auto-add, just let them review
-  }, 50);
-});
-
-// Ctrl+V anywhere (outside inputs) = paste into add field
 document.addEventListener('paste', e => {
   const tag = document.activeElement.tagName;
   if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'DIV') return;
@@ -700,7 +571,7 @@ document.addEventListener('paste', e => {
   if (text) {
     document.getElementById('addInput').value = text;
     document.getElementById('addInput').focus();
-    toast('pasted — press + ADD or Ctrl+Enter');
+    toast('Pasted — press Add or Ctrl+Enter');
   }
 });
 </script>
