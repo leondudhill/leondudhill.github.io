@@ -58,6 +58,10 @@ body.intro-active {
   animation: textReveal 1.2s ease forwards 0.3s;
 }
 
+#intro-text b {
+  font-weight: 700;
+}
+
 @keyframes textReveal {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
