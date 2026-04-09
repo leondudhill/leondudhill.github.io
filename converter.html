@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Converter</title>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600&family=Roboto:wght@300;400;500&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8f9fa;
+  --white:#fff;
+  --border:#dadce0;
+  --border-light:#e8eaed;
+  --text:#202124;
+  --muted:#5f6368;
+  --blue:#1a73e8;
+  --blue-light:#e8f0fe;
+  --blue-mid:#1557b0;
+  --green:#1e8e3e;
+  --green-light:#e6f4ea;
+  --red:#d93025;
+  --red-light:#fce8e6;
+  --yellow:#f9ab00;
+  --yellow-light:#fef7e0;
+  --purple:#7c4dff;
+  --purple-light:#ede7f6;
+  --shadow-sm:0 1px 2px rgba(60,64,67,.10),0 1px 3px rgba(60,64,67,.15);
+  --shadow:0 1px 3px rgba(60,64,67,.12),0 2px 6px rgba(60,64,67,.15);
+  --shadow-md:0 4px 12px rgba(60,64,67,.15),0 2px 4px rgba(60,64,67,.10);
+  --r:12px;
+  --r-sm:8px;
+  --accent:#1a73e8;
+  --accent-light:#e8f0fe;
+}
+body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-height:100vh;line-height:1.5}
+
+/* ── SPLASH ── */
+#splash{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#fff;animation:splashLife 1.8s ease forwards;pointer-events:none}
+@keyframes splashLife{0%{opacity:0}22%{opacity:1}78%{opacity:1}100%{opacity:0;visibility:hidden}}
+.splash-by{font-size:clamp(0.95rem,3vw,1.2rem);font-weight:400;color:#111;letter-spacing:0.01em}
+
+/* ── TOPBAR ── */
+#topbar{background:var(--white);border-bottom:1px solid var(--border-light);position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(60,64,67,.08)}
+.topbar-inner{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:14px}
+.topbar-logo{font-family:'Google Sans',sans-serif;font-size:20px;font-weight:600;color:var(--text);letter-spacing:-.01em}
+.topbar-logo span{color:var(--blue)}
+.topbar-sep{width:1px;height:20px;background:var(--border);flex-shrink:0}
+.topbar-sub{font-size:12px;color:var(--muted)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.topbar-pill{background:var(--accent-light);color:var(--accent);font-size:12px;font-weight:500;padding:4px 12px;border-radius:20px;font-family:'Google Sans',sans-serif;transition:background .2s}
+
+/* ── LAYOUT ── */
+#main{max-width:1100px;margin:0 auto;padding:24px 24px 60px;opacity:0;animation:fadeIn .4s 2s ease forwards}
+@keyframes fadeIn{to{opacity:1}}
+#layout{display:grid;grid-template-columns:260px 1fr;gap:20px;align-items:start}
+@media(max-width:780px){#layout{grid-template-columns:1fr}}
+
+/* ── SEARCH ── */
+.search-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:20px;box-shadow:var(--shadow-sm);opacity:0;transform:translateY(10px);animation:slideUp .4s 2.05s ease forwards}
+@keyframes slideUp{to{opacity:1;transform:none}}
+.search-wrap{position:relative}
+.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.search-input{width:100%;padding:10px 12px 10px 38px;border:1.5px solid var(--border);border-radius:20px;font-family:'Roboto',sans-serif;font-size:13px;color:var(--text);background:var(--white);outline:none;transition:border-color .2s,box-shadow .2s}
+.search-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,115,232,.10)}
+.search-input::placeholder{color:var(--muted)}
+
+/* ── CATEGORY SIDEBAR ── */
+.cat-sidebar{background:var(--white);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-sm);opacity:0;transform:translateY(10px);animation:slideUp .4s 2.1s ease forwards}
+.cat-sidebar-header{padding:14px 16px;border-bottom:1px solid var(--border-light);font-family:'Google Sans',sans-serif;font-size:13px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.cat-list{display:flex;flex-direction:column;max-height:520px;overflow-y:auto}
+.cat-btn{display:flex;align-items:center;gap:11px;padding:11px 16px;border:none;background:transparent;cursor:pointer;font-family:'Roboto',sans-serif;font-size:13px;color:var(--muted);text-align:left;transition:background .15s,color .15s;border-left:3px solid transparent}
+.cat-btn:hover{background:#f8f9fa;color:var(--text)}
+.cat-btn.active{background:var(--accent-light);color:var(--accent);font-weight:500;border-left-color:var(--accent)}
+.cat-btn .cat-icon{font-size:16px;width:22px;text-align:center;flex-shrink:0}
+.cat-btn .cat-label{flex:1}
+.cat-btn .cat-count{font-size:11px;color:var(--muted);background:#f1f3f4;padding:1px 7px;border-radius:10px}
+.cat-btn.active .cat-count{background:rgba(26,115,232,.12);color:var(--blue)}
+@media(max-width:780px){
+  .cat-list{flex-direction:row;flex-wrap:wrap;gap:4px;padding:8px;max-height:none}
+  .cat-btn{border-left:none;border-radius:20px;padding:6px 12px;font-size:12px;border:1.5px solid var(--border)}
+  .cat-btn.active{border-color:var(--blue)}
+  .cat-btn .cat-count{display:none}
+}
+
+/* ── RIGHT PANEL ── */
+.right-panel{display:flex;flex-direction:column;gap:16px}
+
+/* ── CONVERTER CARD ── */
+.conv-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:22px;box-shadow:var(--shadow-sm);opacity:0;transform:translateY(10px);animation:slideUp .4s 2.15s ease forwards}
+.conv-card-title{font-family:'Google Sans',sans-serif;font-size:18px;font-weight:500;color:var(--text);margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.conv-card-title .cat-icon-large{font-size:22px}
+
+/* ── INPUT ROW ── */
+.inp-row{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:end;margin-bottom:14px}
+.inp-block{display:flex;flex-direction:column;gap:7px}
+.inp-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding-left:2px}
+.unit-select{padding:10px 32px 10px 12px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:'Roboto',sans-serif;font-size:13px;color:var(--text);background:var(--white);outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235f6368'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;transition:border-color .2s,box-shadow .2s;width:100%}
+.unit-select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,115,232,.10)}
+.num-input{padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:'Roboto Mono',monospace;font-size:20px;font-weight:400;color:var(--text);background:var(--white);outline:none;transition:border-color .2s,box-shadow .2s;width:100%}
+.num-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,115,232,.10)}
+.num-input.output{background:#f8f9fa;color:var(--blue);border-color:var(--border-light);font-weight:500;cursor:default}
+.num-input::placeholder{color:#b0b8c1}
+.swap-btn{width:40px;height:40px;border-radius:50%;border:1.5px solid var(--border);background:var(--white);color:var(--muted);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;margin-bottom:1px}
+.swap-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--accent-light);transform:rotate(180deg)}
+
+/* ── FORMULA BAR ── */
+.formula-bar{background:#f8f9fa;border:1px solid var(--border-light);border-radius:var(--r-sm);padding:10px 14px;font-family:'Roboto Mono',monospace;font-size:12px;color:var(--muted);min-height:36px;margin-bottom:16px;transition:color .2s}
+.formula-bar.show{color:var(--text)}
+
+/* ── ALL RESULTS ── */
+.all-results-header{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px;max-height:280px;overflow-y:auto}
+.result-item{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:#f8f9fa;border:1.5px solid var(--border-light);border-radius:var(--r-sm);cursor:pointer;transition:all .15s}
+.result-item:hover{background:var(--accent-light);border-color:#c5d8fb;color:var(--blue)}
+.result-item:hover .r-unit{color:var(--blue)}
+.result-item.highlight{background:var(--accent-light);border-color:var(--blue)}
+.r-val{font-family:'Roboto Mono',monospace;font-size:13px;font-weight:500;color:var(--text)}
+.result-item:hover .r-val{color:var(--blue)}
+.result-item.highlight .r-val{color:var(--blue)}
+.r-unit{font-size:11px;color:var(--muted);font-family:'Roboto',sans-serif;font-weight:500;margin-left:8px}
+
+/* ── NOTE CARD (for absurd units) ── */
+.note-card{background:var(--yellow-light);border:1px solid #fde096;border-radius:var(--r-sm);padding:10px 13px;font-size:12px;color:#7d5700;line-height:1.5;display:none}
+.note-card.show{display:block}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#dadce0;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#bdc1c6}
+
+/* ── FOOTER ── */
+.page-footer{text-align:center;font-size:11px;color:var(--muted);padding:20px;margin-top:8px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:520px){
+  .inp-row{grid-template-columns:1fr auto 1fr;gap:8px}
+  .num-input{font-size:16px;padding:10px 10px}
+  #main{padding:14px 12px 40px}
+}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="splash-by">A tool by <strong>Leon Dudhill</strong></div>
+</div>
+
+<div id="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-logo">Con<span>vertor</span></div>
+    <div class="topbar-sep"></div>
+    <div class="topbar-sub">Universal unit converter</div>
+    <div class="topbar-right">
+      <div class="topbar-pill" id="unit-count-pill">— units</div>
+    </div>
+  </div>
+</div>
+
+<div id="main">
+
+  <!-- SEARCH -->
+  <div class="search-card">
+    <div class="search-wrap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="search-input" id="searchInp" placeholder="Search categories or units…" oninput="doSearch(this.value)">
+    </div>
+  </div>
+
+  <div id="layout">
+
+    <!-- SIDEBAR -->
+    <div>
+      <div class="cat-sidebar">
+        <div class="cat-sidebar-header">Categories</div>
+        <div class="cat-list" id="catList"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+
+      <!-- CONVERTER CARD -->
+      <div class="conv-card">
+        <div class="conv-card-title">
+          <span class="cat-icon-large" id="convIcon">📏</span>
+          <span id="convTitle">Length</span>
+        </div>
+
+        <div class="inp-row">
+          <div class="inp-block">
+            <div class="inp-label">From</div>
+            <select class="unit-select" id="fromUnit" onchange="convert()"></select>
+            <input class="num-input" id="fromVal" type="number" value="1" placeholder="Enter value…" oninput="convert()">
+          </div>
+          <button class="swap-btn" onclick="swapUnits()" title="Swap units (Tab)">⇄</button>
+          <div class="inp-block">
+            <div class="inp-label">To</div>
+            <select class="unit-select" id="toUnit" onchange="convert()"></select>
+            <input class="num-input output" id="toVal" readonly placeholder="Result">
+          </div>
+        </div>
+
+        <div class="formula-bar" id="formulaBar">Select a value to convert</div>
+
+        <div class="note-card" id="noteCard"></div>
+
+        <div class="all-results-header">All conversions from input value</div>
+        <div class="results-grid" id="resultsGrid"></div>
+      </div>
+
+      <div class="page-footer">Convertor · A tool by Leon Dudhill</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── CATEGORIES ──
+const CATEGORIES = [
+  { id:'length',    label:'Length',        icon:'📏' },
+  { id:'area',      label:'Area',          icon:'⬜' },
+  { id:'volume',    label:'Volume',        icon:'🧊' },
+  { id:'mass',      label:'Mass',          icon:'⚖️'  },
+  { id:'temp',      label:'Temperature',   icon:'🌡️' },
+  { id:'speed',     label:'Speed',         icon:'💨' },
+  { id:'time',      label:'Time',          icon:'⏱️' },
+  { id:'data',      label:'Data',          icon:'💾' },
+  { id:'pressure',  label:'Pressure',      icon:'🔵' },
+  { id:'energy',    label:'Energy',        icon:'⚡' },
+  { id:'power',     label:'Power',         icon:'🔋' },
+  { id:'force',     label:'Force',         icon:'💪' },
+  { id:'angle',     label:'Angle',         icon:'📐' },
+  { id:'freq',      label:'Frequency',     icon:'〰️' },
+  { id:'fuel',      label:'Fuel Economy',  icon:'⛽' },
+  { id:'current',   label:'Current',       icon:'⚡' },
+  { id:'voltage',   label:'Voltage',       icon:'🔌' },
+  { id:'luminance', label:'Luminance',     icon:'💡' },
+  { id:'density',   label:'Density',       icon:'🧱' },
+  { id:'flow',      label:'Flow Rate',     icon:'🌊' },
+  { id:'absurd',    label:'Absurd',        icon:'🍌' },
+];
+
+const UNITS = {
+  length: [
+    {n:'Metre',s:'m',b:1},{n:'Kilometre',s:'km',b:1000},{n:'Centimetre',s:'cm',b:0.01},
+    {n:'Millimetre',s:'mm',b:0.001},{n:'Micrometre',s:'μm',b:1e-6},{n:'Nanometre',s:'nm',b:1e-9},
+    {n:'Mile',s:'mi',b:1609.344},{n:'Yard',s:'yd',b:0.9144},{n:'Foot',s:'ft',b:0.3048},
+    {n:'Inch',s:'in',b:0.0254},{n:'Nautical Mile',s:'nmi',b:1852},{n:'Light Year',s:'ly',b:9.461e15},
+    {n:'Astronomical Unit',s:'AU',b:1.496e11},{n:'Parsec',s:'pc',b:3.086e16},
+    {n:'Furlong',s:'fur',b:201.168},{n:'Chain',s:'ch',b:20.1168},{n:'Fathom',s:'ftm',b:1.8288},
+    {n:'League',s:'lea',b:4828.032},{n:'Hand',s:'hh',b:0.1016},{n:'Cubit',s:'cbt',b:0.4572},
+  ],
+  area: [
+    {n:'Square Metre',s:'m²',b:1},{n:'Square Km',s:'km²',b:1e6},{n:'Square Mile',s:'mi²',b:2589988.1},
+    {n:'Square Yard',s:'yd²',b:0.836127},{n:'Square Foot',s:'ft²',b:0.092903},
+    {n:'Square Inch',s:'in²',b:0.000645},{n:'Hectare',s:'ha',b:10000},{n:'Acre',s:'ac',b:4046.856},
+    {n:'Are',s:'a',b:100},{n:'Square cm',s:'cm²',b:0.0001},{n:'Square mm',s:'mm²',b:1e-6},
+    {n:'Square Furlong',s:'fur²',b:40468.6},{n:'Barn',s:'b',b:1e-28},
+  ],
+  volume: [
+    {n:'Cubic Metre',s:'m³',b:1},{n:'Litre',s:'L',b:0.001},{n:'Millilitre',s:'mL',b:1e-6},
+    {n:'Centilitre',s:'cL',b:1e-5},{n:'Cubic cm',s:'cm³',b:1e-6},{n:'Cubic mm',s:'mm³',b:1e-9},
+    {n:'Cubic foot',s:'ft³',b:0.028317},{n:'Cubic inch',s:'in³',b:1.6387e-5},
+    {n:'Cubic yard',s:'yd³',b:0.764555},{n:'US Gallon',s:'gal',b:0.003785},
+    {n:'US Quart',s:'qt',b:0.000946},{n:'US Pint',s:'pt',b:4.732e-4},
+    {n:'US Cup',s:'cup',b:2.366e-4},{n:'US Fluid Oz',s:'fl oz',b:2.957e-5},
+    {n:'US Tablespoon',s:'tbsp',b:1.479e-5},{n:'US Teaspoon',s:'tsp',b:4.929e-6},
+    {n:'Imperial Gallon',s:'imp gal',b:0.004546},{n:'Imperial Pint',s:'imp pt',b:5.683e-4},
+    {n:'Imperial Fl Oz',s:'imp fl oz',b:2.841e-5},{n:'Barrel (oil)',s:'bbl',b:0.158987},
+  ],
+  mass: [
+    {n:'Kilogram',s:'kg',b:1},{n:'Gram',s:'g',b:0.001},{n:'Milligram',s:'mg',b:1e-6},
+    {n:'Microgram',s:'μg',b:1e-9},{n:'Tonne',s:'t',b:1000},{n:'Pound',s:'lb',b:0.453592},
+    {n:'Ounce',s:'oz',b:0.028350},{n:'Stone',s:'st',b:6.35029},{n:'US Ton',s:'ton',b:907.185},
+    {n:'Imperial Ton',s:'l ton',b:1016.05},{n:'Carat',s:'ct',b:0.0002},
+    {n:'Grain',s:'gr',b:6.48e-5},{n:'Troy Ounce',s:'tr oz',b:0.031103},
+    {n:'Atomic Mass Unit',s:'amu',b:1.661e-27},{n:'Slug',s:'slug',b:14.5939},
+  ],
+  temp: [
+    {n:'Celsius',s:'°C',sp:'C'},{n:'Fahrenheit',s:'°F',sp:'F'},{n:'Kelvin',s:'K',sp:'K'},
+    {n:'Rankine',s:'°R',sp:'R'},{n:'Delisle',s:'°De',sp:'De'},{n:'Newton',s:'°N',sp:'N'},
+    {n:'Réaumur',s:'°Ré',sp:'Re'},{n:'Rømer',s:'°Rø',sp:'Ro'},
+  ],
+  speed: [
+    {n:'Metre/second',s:'m/s',b:1},{n:'Kilometre/hour',s:'km/h',b:0.277778},
+    {n:'Mile/hour',s:'mph',b:0.44704},{n:'Foot/second',s:'ft/s',b:0.3048},
+    {n:'Knot',s:'kn',b:0.514444},{n:'Speed of Light',s:'c',b:2.998e8},
+    {n:'Mach',s:'Ma',b:340.29},{n:'Kilometre/second',s:'km/s',b:1000},
+    {n:'Mile/second',s:'mi/s',b:1609.344},{n:'Furlong/fortnight',s:'ff',b:1.663e-4},
+  ],
+  time: [
+    {n:'Second',s:'s',b:1},{n:'Millisecond',s:'ms',b:0.001},{n:'Microsecond',s:'μs',b:1e-6},
+    {n:'Nanosecond',s:'ns',b:1e-9},{n:'Minute',s:'min',b:60},{n:'Hour',s:'hr',b:3600},
+    {n:'Day',s:'day',b:86400},{n:'Week',s:'wk',b:604800},{n:'Fortnight',s:'fn',b:1209600},
+    {n:'Month (avg)',s:'mo',b:2629800},{n:'Year',s:'yr',b:31557600},
+    {n:'Decade',s:'dec',b:3.156e8},{n:'Century',s:'cent',b:3.156e9},
+    {n:'Millennium',s:'mil',b:3.156e10},{n:'Planck Time',s:'tP',b:5.391e-44},
+  ],
+  data: [
+    {n:'Byte',s:'B',b:1},{n:'Bit',s:'b',b:0.125},{n:'Kilobyte',s:'KB',b:1000},
+    {n:'Megabyte',s:'MB',b:1e6},{n:'Gigabyte',s:'GB',b:1e9},{n:'Terabyte',s:'TB',b:1e12},
+    {n:'Petabyte',s:'PB',b:1e15},{n:'Exabyte',s:'EB',b:1e18},
+    {n:'Kibibyte',s:'KiB',b:1024},{n:'Mebibyte',s:'MiB',b:1048576},
+    {n:'Gibibyte',s:'GiB',b:1073741824},{n:'Tebibyte',s:'TiB',b:1.0995e12},
+    {n:'Kilobit',s:'Kbit',b:125},{n:'Megabit',s:'Mbit',b:125000},{n:'Gigabit',s:'Gbit',b:1.25e8},
+  ],
+  pressure: [
+    {n:'Pascal',s:'Pa',b:1},{n:'Kilopascal',s:'kPa',b:1000},{n:'Megapascal',s:'MPa',b:1e6},
+    {n:'Bar',s:'bar',b:100000},{n:'Millibar',s:'mbar',b:100},{n:'Atmosphere',s:'atm',b:101325},
+    {n:'Torr',s:'Torr',b:133.322},{n:'mmHg',s:'mmHg',b:133.322},{n:'PSI',s:'psi',b:6894.757},
+    {n:'inHg',s:'inHg',b:3386.389},{n:'kgf/cm²',s:'kgf/cm²',b:98066.5},
+  ],
+  energy: [
+    {n:'Joule',s:'J',b:1},{n:'Kilojoule',s:'kJ',b:1000},{n:'Megajoule',s:'MJ',b:1e6},
+    {n:'Calorie',s:'cal',b:4.184},{n:'Kilocalorie',s:'kcal',b:4184},
+    {n:'Watt-hour',s:'Wh',b:3600},{n:'Kilowatt-hour',s:'kWh',b:3.6e6},
+    {n:'Megawatt-hour',s:'MWh',b:3.6e9},{n:'Electron Volt',s:'eV',b:1.602e-19},
+    {n:'BTU',s:'BTU',b:1055.06},{n:'Therm',s:'thm',b:1.055e8},
+    {n:'Foot-pound',s:'ft·lb',b:1.35582},{n:'Erg',s:'erg',b:1e-7},
+    {n:'TNT (tonne)',s:'tTNT',b:4.184e9},
+  ],
+  power: [
+    {n:'Watt',s:'W',b:1},{n:'Kilowatt',s:'kW',b:1000},{n:'Megawatt',s:'MW',b:1e6},
+    {n:'Gigawatt',s:'GW',b:1e9},{n:'Horsepower (mech)',s:'hp',b:745.7},
+    {n:'Horsepower (metric)',s:'PS',b:735.499},{n:'BTU/hour',s:'BTU/h',b:0.293071},
+    {n:'Calorie/second',s:'cal/s',b:4.184},{n:'Foot-lb/second',s:'ft·lb/s',b:1.35582},
+    {n:'Milliwatt',s:'mW',b:0.001},{n:'Erg/second',s:'erg/s',b:1e-7},
+  ],
+  force: [
+    {n:'Newton',s:'N',b:1},{n:'Kilonewton',s:'kN',b:1000},{n:'Meganewton',s:'MN',b:1e6},
+    {n:'Dyne',s:'dyn',b:1e-5},{n:'Pound-force',s:'lbf',b:4.44822},
+    {n:'Ounce-force',s:'ozf',b:0.278014},{n:'Kilogram-force',s:'kgf',b:9.80665},
+    {n:'Ton-force',s:'tonf',b:9964.02},{n:'Poundal',s:'pdl',b:0.138255},
+  ],
+  angle: [
+    {n:'Degree',s:'°',b:1},{n:'Radian',s:'rad',b:180/Math.PI},{n:'Gradian',s:'gon',b:0.9},
+    {n:'Arcminute',s:"'",b:1/60},{n:'Arcsecond',s:'"',b:1/3600},
+    {n:'Milliradian',s:'mrad',b:180/Math.PI/1000},{n:'Turn',s:'tr',b:360},
+    {n:'Quadrant',s:'quad',b:90},{n:'Sextant',s:'sext',b:60},
+  ],
+  freq: [
+    {n:'Hertz',s:'Hz',b:1},{n:'Kilohertz',s:'kHz',b:1000},{n:'Megahertz',s:'MHz',b:1e6},
+    {n:'Gigahertz',s:'GHz',b:1e9},{n:'Terahertz',s:'THz',b:1e12},
+    {n:'RPM',s:'rpm',b:1/60},{n:'Radian/second',s:'rad/s',b:1/(2*Math.PI)},
+    {n:'Cycle/minute',s:'cpm',b:1/60},{n:'Cycle/hour',s:'cph',b:1/3600},
+  ],
+  fuel: [
+    {n:'Litre/100km',s:'L/100km',b:1},{n:'MPG (UK)',s:'mpg UK',b:282.481},
+    {n:'MPG (US)',s:'mpg US',b:235.214},{n:'km/Litre',s:'km/L',b:null,inv:true},
+    {n:'Miles/Litre',s:'mi/L',b:null,inv2:true},
+  ],
+  current: [
+    {n:'Ampere',s:'A',b:1},{n:'Milliampere',s:'mA',b:0.001},{n:'Microampere',s:'μA',b:1e-6},
+    {n:'Kiloampere',s:'kA',b:1000},{n:'Biot',s:'Bi',b:10},{n:'Statampere',s:'statA',b:3.336e-10},
+  ],
+  voltage: [
+    {n:'Volt',s:'V',b:1},{n:'Millivolt',s:'mV',b:0.001},{n:'Microvolt',s:'μV',b:1e-6},
+    {n:'Kilovolt',s:'kV',b:1000},{n:'Megavolt',s:'MV',b:1e6},
+    {n:'Statvolt',s:'statV',b:299.792},{n:'Abvolt',s:'abV',b:1e-8},
+  ],
+  luminance: [
+    {n:'Candela/m²',s:'cd/m²',b:1},{n:'Lux',s:'lx',b:1},{n:'Foot-candle',s:'fc',b:10.7639},
+    {n:'Lumen/m²',s:'lm/m²',b:1},{n:'Nit',s:'nt',b:1},{n:'Stilb',s:'sb',b:10000},
+    {n:'Lambert',s:'L',b:3183.1},{n:'Foot-lambert',s:'fL',b:3.42626},{n:'Millinit',s:'mnt',b:0.001},
+  ],
+  density: [
+    {n:'kg/m³',s:'kg/m³',b:1},{n:'g/cm³',s:'g/cm³',b:1000},{n:'g/mL',s:'g/mL',b:1000},
+    {n:'kg/L',s:'kg/L',b:1000},{n:'lb/ft³',s:'lb/ft³',b:16.0185},{n:'lb/in³',s:'lb/in³',b:27679.9},
+    {n:'lb/gal (US)',s:'lb/gal',b:119.826},{n:'oz/in³',s:'oz/in³',b:1729.99},{n:'t/m³',s:'t/m³',b:1000},
+  ],
+  flow: [
+    {n:'m³/second',s:'m³/s',b:1},{n:'m³/minute',s:'m³/min',b:1/60},{n:'m³/hour',s:'m³/hr',b:1/3600},
+    {n:'Litre/second',s:'L/s',b:0.001},{n:'Litre/minute',s:'L/min',b:1/60000},
+    {n:'Litre/hour',s:'L/hr',b:1/3600000},{n:'US gal/min',s:'GPM',b:6.309e-5},
+    {n:'US gal/hour',s:'GPH',b:1.051e-6},{n:'ft³/second',s:'ft³/s',b:0.028317},
+    {n:'ft³/minute',s:'CFM',b:4.719e-4},
+  ],
+  absurd: [
+    {n:'Banana 🍌',s:'banana',b:0.1778,note:'Average banana ≈ 17.78 cm'},
+    {n:'Smoot 🌉',s:'smoot',b:1.7018,note:"Oliver Smoot's height, 1958. Harvard Bridge = 364.4 smoots ± one ear"},
+    {n:'Sheppey 🐑',s:'sheppey',b:1400,note:'Closest distance sheep remain picturesque. Douglas Adams & John Lloyd'},
+    {n:'Wiffle Ball 🎾',s:'wiffle',b:0.089,note:'89mm diameter. Used by marine biologists to measure corals underwater'},
+    {n:'Mickey 🖱️',s:'mickey',b:0.000127,note:'Smallest resolvable mouse movement. Also Canadian for 375mL of spirits'},
+    {n:'Muggeseggele 🪰',s:'müggl',b:0.000001,note:"A housefly's scrotum. Alemannic German. Approximately 1 micrometre"},
+    {n:'Barleycorn 🌾',s:'barley',b:0.008467,note:'1/3 of an inch. Basis of UK shoe sizes'},
+    {n:'Beard-second ✂️',s:'beard-s',b:5e-9,note:'Distance a beard grows in one second ≈ 5 nanometres'},
+    {n:'Attoparsec 🔭',s:'apc',b:0.030857,note:'10⁻¹⁸ parsecs ≈ 3.086 cm. One attoparsec per microfortnight ≈ 1 inch/sec'},
+    {n:"Foot (King's) 👑",s:'kft',b:0.3048,note:'Originally the length of the ruling monarch\'s foot. Standardised eventually'},
+    {n:'Rod / Perch 🎣',s:'rod',b:5.0292,note:'"the total length of the left feet of 16 men as they leave church"'},
+    {n:'Ångström ⚛️',s:'Å',b:1e-10,note:'Used in atomic physics. Named after Anders Jonas Ångström'},
+    {n:'Potrzebie 📖',s:'ptz',b:0.002263,note:'Defined by Donald Knuth aged 19 as thickness of MAD Magazine issue 26'},
+    {n:'Friedman ⏳',s:'friedman',b:15780000,note:"6 months. Named after Thomas Friedman's repeated 'next 6 months will be decisive'"},
+    {n:'Microcentury 🎓',s:'μcent',b:3156,note:"52 min 35.7 sec. John von Neumann's maximum lecture length"},
+    {n:'Nanocentury 💻',s:'ncent',b:3.156,note:'≈ π seconds. IBM coined it in 1969 as max acceptable user wait time'},
+    {n:'Scaramucci 🦅',s:'mooch',b:950400,note:"11 days. Anthony Scaramucci's tenure as White House Comms Director"},
+    {n:'Shake ☢️',s:'shake',b:1e-8,note:'10 nanoseconds. Time for one nuclear chain reaction generation'},
+    {n:'Jiffy ⚡',s:'jiffy',b:0.01,note:'1/100th second (physics). Also used loosely in computing for timer interrupts'},
+    {n:'New York Second 🗽',s:'nys',b:0.5,note:'Time between traffic light turning green and cab honking. Terry Pratchett'},
+    {n:'Ohnosecond 😱',s:'ohno',b:1,note:"The second after you realise you've sent that text to the wrong person"},
+    {n:'Donkey Power 🫏',s:'dp',b:250,note:'Exactly 250 watts ≈ ⅓ horsepower. Facetious engineering unit'},
+    {n:'Barn (nuclear) ☢️',s:'barn',b:1e-28,note:'"As big as a barn" — to nuclear physicists. 10⁻²⁸ m²'},
+    {n:'Banana Equivalent Dose 🍌',s:'BED',b:1,note:'Radiation from eating one banana. 0.1 µSv. Negligible. But now you know'},
+  ],
+};
+
+// ── TEMPERATURE ──
+function tempToC(val,sp){
+  switch(sp){
+    case 'C':return val;case 'F':return(val-32)*5/9;case 'K':return val-273.15;
+    case 'R':return(val-491.67)*5/9;case 'De':return 100-val*2/3;
+    case 'N':return val*100/33;case 'Re':return val*5/4;case 'Ro':return(val-7.5)*40/21;
+  }
+}
+function tempFromC(c,sp){
+  switch(sp){
+    case 'C':return c;case 'F':return c*9/5+32;case 'K':return c+273.15;
+    case 'R':return(c+273.15)*9/5;case 'De':return(100-c)*3/2;
+    case 'N':return c*33/100;case 'Re':return c*4/5;case 'Ro':return c*21/40+7.5;
+  }
+}
+
+// ── STATE ──
+let curCat = 'length';
+
+// ── INIT ──
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    buildCatList();
+    loadCategory('length');
+  },1800);
+});
+
+function buildCatList(filter=''){
+  const list = document.getElementById('catList');
+  const q = filter.toLowerCase();
+  const visible = CATEGORIES.filter(c=>{
+    if(!q) return true;
+    if(c.label.toLowerCase().includes(q)) return true;
+    return (UNITS[c.id]||[]).some(u=>u.n.toLowerCase().includes(q)||u.s.toLowerCase().includes(q));
+  });
+  list.innerHTML = visible.map(c=>{
+    const count = (UNITS[c.id]||[]).length;
+    return `<button class="cat-btn${c.id===curCat?' active':''}" onclick="loadCategory('${c.id}')" id="cat-${c.id}">
+      <span class="cat-icon">${c.icon}</span>
+      <span class="cat-label">${c.label}</span>
+      <span class="cat-count">${count}</span>
+    </button>`;
+  }).join('') || `<div style="padding:16px;font-size:13px;color:var(--muted)">No matches for "${filter}"</div>`;
+}
+
+function loadCategory(id){
+  curCat = id;
+  buildCatList(document.getElementById('searchInp').value);
+
+  const cat   = CATEGORIES.find(c=>c.id===id);
+  const units = UNITS[id];
+
+  document.getElementById('convIcon').textContent  = cat.icon;
+  document.getElementById('convTitle').textContent = cat.label;
+  document.getElementById('unit-count-pill').textContent = units.length + ' units';
+
+  const fromSel = document.getElementById('fromUnit');
+  const toSel   = document.getElementById('toUnit');
+  const opts = units.map((u,i)=>`<option value="${i}">${u.n} (${u.s})</option>`).join('');
+  fromSel.innerHTML = opts;
+  toSel.innerHTML   = opts;
+  toSel.value = '1';
+
+  convert();
+}
+
+// ── CONVERT ──
+function convert(){
+  const units   = UNITS[curCat];
+  const fromIdx = parseInt(document.getElementById('fromUnit').value);
+  const toIdx   = parseInt(document.getElementById('toUnit').value);
+  const raw     = parseFloat(document.getElementById('fromVal').value);
+
+  if(isNaN(raw)){document.getElementById('toVal').value='';return;}
+
+  const fromUnit = units[fromIdx];
+  const toUnit   = units[toIdx];
+  const result   = doConvert(raw,fromUnit,toUnit,curCat);
+
+  document.getElementById('toVal').value = fmtResult(result);
+
+  // Formula bar
+  const fb = document.getElementById('formulaBar');
+  fb.textContent = buildFormula(raw,fromUnit,toUnit,result);
+  fb.classList.add('show');
+
+  // Note card (absurd units)
+  const nc = document.getElementById('noteCard');
+  const note = fromUnit.note || toUnit.note;
+  if(note){ nc.textContent = '💡 ' + note; nc.classList.add('show'); }
+  else { nc.classList.remove('show'); }
+
+  buildAllResults(raw,fromUnit,units);
+}
+
+function doConvert(val,from,to,cat){
+  if(cat==='temp'){ const c=tempToC(val,from.sp); return tempFromC(c,to.sp); }
+  if(cat==='fuel'){ return fuelConvert(val,from,to); }
+  return val*from.b/to.b;
+}
+
+function fuelConvert(val,from,to){
+  let l100;
+  if(from.s==='L/100km')l100=val;
+  else if(from.s==='mpg UK')l100=282.481/val;
+  else if(from.s==='mpg US')l100=235.214/val;
+  else if(from.s==='km/L')l100=100/val;
+  else if(from.s==='mi/L')l100=62.1371/val;
+  else l100=val;
+  if(to.s==='L/100km')return l100;
+  if(to.s==='mpg UK')return 282.481/l100;
+  if(to.s==='mpg US')return 235.214/l100;
+  if(to.s==='km/L')return 100/l100;
+  if(to.s==='mi/L')return 62.1371/l100;
+  return l100;
+}
+
+function fmtResult(v){
+  if(!isFinite(v)||isNaN(v))return 'Error';
+  if(v===0)return '0';
+  const abs=Math.abs(v);
+  if(abs>=1e15||(abs<1e-10&&abs>0))return v.toExponential(6);
+  if(abs>=1000)return parseFloat(v.toPrecision(10)).toLocaleString('en-GB',{maximumFractionDigits:6});
+  return parseFloat(v.toPrecision(10)).toString();
+}
+
+function buildFormula(val,from,to,result){
+  if(curCat==='temp')return`${val}${from.s} = ${fmtResult(result)}${to.s}`;
+  const factor=from.b/to.b;
+  return`${val} × ${parseFloat(factor.toPrecision(8))} = ${fmtResult(result)} ${to.s}`;
+}
+
+function buildAllResults(val,fromUnit,units){
+  const grid=document.getElementById('resultsGrid');
+  const toIdx=parseInt(document.getElementById('toUnit').value);
+  grid.innerHTML=units.map((u,i)=>{
+    const r=doConvert(val,fromUnit,u,curCat);
+    return`<div class="result-item${i===toIdx?' highlight':''}" onclick="selectTo(${i})" title="${u.note||u.n}">
+      <span class="r-val">${fmtResult(r)}</span>
+      <span class="r-unit">${u.s}</span>
+    </div>`;
+  }).join('');
+}
+
+function selectTo(idx){
+  document.getElementById('toUnit').value=idx;
+  convert();
+}
+
+function swapUnits(){
+  const fs=document.getElementById('fromUnit');
+  const ts=document.getElementById('toUnit');
+  const fv=document.getElementById('fromVal');
+  const tv=document.getElementById('toVal');
+  const tmp=fs.value; fs.value=ts.value; ts.value=tmp;
+  const cur=tv.value;
+  if(cur&&cur!=='Error')fv.value=cur;
+  convert();
+}
+
+function doSearch(q){
+  buildCatList(q);
+  if(!q)return;
+  const units=UNITS[curCat];
+  if(units){
+    const idx=units.findIndex(u=>u.n.toLowerCase().includes(q.toLowerCase())||u.s.toLowerCase().includes(q.toLowerCase()));
+    if(idx!==-1){document.getElementById('fromUnit').value=idx;convert();}
+  }
+}
+
+document.addEventListener('keydown',e=>{
+  if(document.activeElement===document.getElementById('searchInp'))return;
+  if(e.key==='Enter')convert();
+  if(e.key==='Tab'){e.preventDefault();swapUnits();}
+});
+</script>
+</body>
+</html>
