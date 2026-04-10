@@ -3,27 +3,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculon</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<title>Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600&family=Roboto:wght@300;400;500&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #080c10;
-  --surface: #0d1117;
-  --border: #1e2030;
-  --border2: #243040;
-  --orange: #ff6b35;
-  --orange2: #ff4500;
-  --orange-dim: #2a1f14;
-  --cyan: #00d4ff;
-  --cyan2: #0066ff;
-  --green: #39ff14;
-  --yellow: #ffd700;
-  --red: #ff3355;
-  --text: #c8d8e8;
-  --dim: #3a4a5a;
-  --screen-bg: #001a0a;
-  --screen-text: #00ff88;
-  --screen-grid: #003318;
+  --bg: #f8f9fa;
+  --surface: #fff;
+  --border: #dadce0;
+  --border2: #e8eaed;
+  --blue: #1a73e8;
+  --blue2: #1557b0;
+  --blue-light: #e8f0fe;
+  --green: #1e8e3e;
+  --green-light: #e6f4ea;
+  --red: #d93025;
+  --red-light: #fce8e6;
+  --yellow: #f9ab00;
+  --yellow-light: #fef7e0;
+  --purple: #7c4dff;
+  --purple-light: #ede7f6;
+  --text: #202124;
+  --muted: #5f6368;
+  --dim: #9aa0a6;
+  --screen-bg: #e8f0fe;
+  --screen-text: #1a73e8;
+  --screen-grid: #c5d8fb;
+  --shadow-sm: 0 1px 2px rgba(60,64,67,.10),0 1px 3px rgba(60,64,67,.15);
+  --shadow: 0 1px 3px rgba(60,64,67,.12),0 2px 6px rgba(60,64,67,.15);
+  --shadow-md: 0 4px 12px rgba(60,64,67,.15),0 2px 4px rgba(60,64,67,.10);
+  --r: 12px;
+  --r-sm: 8px;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -40,28 +49,19 @@
 #splash.fade-out { animation: splashOut 0.4s ease forwards; }
 @keyframes splashOut { to { opacity: 0; pointer-events: none; } }
 .splash-by { font-size: clamp(0.95rem, 3vw, 1.2rem); font-weight: 400; color: #111; letter-spacing: 0.01em; }
-@keyframes barSweep {
-  from { width: 0; }
-  to   { width: 100%; }
-}
 
 /* ===== BODY ===== */
 body {
   min-height: 100vh;
   display: flex; align-items: flex-start; justify-content: center;
   background: var(--bg);
-  background-image:
-    radial-gradient(ellipse at 15% 40%, rgba(255,69,0,0.04) 0%, transparent 55%),
-    radial-gradient(ellipse at 85% 20%, rgba(0,212,255,0.03) 0%, transparent 50%),
-    repeating-linear-gradient(0deg, transparent, transparent 47px, rgba(255,255,255,0.012) 47px, rgba(255,255,255,0.012) 48px),
-    repeating-linear-gradient(90deg, transparent, transparent 47px, rgba(255,255,255,0.012) 47px, rgba(255,255,255,0.012) 48px);
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'Roboto', sans-serif;
   padding: 24px 10px 60px;
 }
 
 /* ===== WRAPPER ===== */
 .app-wrapper {
-  width: 460px;
+  width: 480px;
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 0.5s ease, transform 0.5s ease;
@@ -70,260 +70,285 @@ body {
 
 /* ===== SHELL ===== */
 .shell {
-  background: linear-gradient(160deg, #0f1520 0%, #080c12 100%);
-  border: 1px solid var(--border2);
-  border-radius: 8px;
-  padding: 18px 16px 22px;
-  box-shadow:
-    0 0 0 1px #000,
-    0 60px 120px rgba(0,0,0,0.9),
-    inset 0 1px 0 rgba(255,107,53,0.06);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 20px 18px 24px;
+  box-shadow: var(--shadow-md);
   position: relative;
+  overflow: hidden;
 }
 .shell::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  border-radius: 8px 8px 0 0;
-  background: linear-gradient(90deg, transparent, var(--orange2), var(--orange), var(--orange2), transparent);
-  animation: topbar 4s ease-in-out infinite;
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--blue2), var(--blue), #4285f4, var(--blue));
 }
-@keyframes topbar { 0%,100%{opacity:.5;} 50%{opacity:1;} }
 
 /* ===== HEADER ===== */
 .header {
   display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 .logo {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 22px; font-weight: 900;
-  letter-spacing: 4px;
-  color: var(--orange);
-  text-shadow: 0 0 20px rgba(255,107,53,0.4);
+  font-family: 'Google Sans', sans-serif;
+  font-size: 22px; font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
 }
-.logo span { font-size: 10px; font-weight: 400; color: var(--dim); display: block; letter-spacing: 3px; margin-top: 1px; }
+.logo span { font-size: 10px; font-weight: 400; color: var(--muted); display: block; letter-spacing: 0.04em; margin-top: 1px; }
 .hdr-inds { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 .ind {
-  font-size: 9px; letter-spacing: 1px; color: var(--dim);
-  padding: 2px 5px; border: 1px solid #1a2030; border-radius: 2px;
-  transition: color 0.2s, border-color 0.2s, box-shadow 0.2s;
+  font-size: 9px; letter-spacing: 0.06em; font-weight: 500; font-family: 'Google Sans', sans-serif;
+  color: var(--dim); padding: 2px 7px; border: 1.5px solid var(--border2);
+  border-radius: 20px; transition: color 0.2s, border-color 0.2s, background 0.2s;
 }
-.ind.on-orange { color: var(--orange); border-color: var(--orange); box-shadow: 0 0 6px rgba(255,107,53,0.3); }
-.ind.on-cyan   { color: var(--cyan);   border-color: var(--cyan);   box-shadow: 0 0 6px rgba(0,212,255,0.3); }
-.ind.on-yellow { color: var(--yellow); border-color: var(--yellow); box-shadow: 0 0 6px rgba(255,215,0,0.3); }
-.ind.on-green  { color: var(--green);  border-color: var(--green);  box-shadow: 0 0 6px rgba(57,255,20,0.3); }
+.ind.on-orange { color: var(--blue); border-color: var(--blue); background: var(--blue-light); }
+.ind.on-cyan   { color: var(--blue); border-color: var(--blue); background: var(--blue-light); }
+.ind.on-yellow { color: var(--yellow); border-color: var(--yellow); background: var(--yellow-light); }
+.ind.on-green  { color: var(--green); border-color: var(--green); background: var(--green-light); }
 
-/* ===== MODE SWITCHER (top, 3 big buttons) ===== */
+/* ===== MODE SWITCHER ===== */
 .top-mode-bar {
   display: grid; grid-template-columns: 1fr 1fr 1fr;
-  gap: 6px; margin-bottom: 14px;
+  gap: 6px; margin-bottom: 16px;
 }
 .top-mode-btn {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 11px; font-weight: 700;
-  letter-spacing: 2px; padding: 9px 4px;
-  background: #0d1117; border: 1px solid var(--border);
-  color: var(--dim); cursor: pointer; border-radius: 3px;
+  font-family: 'Google Sans', sans-serif;
+  font-size: 12px; font-weight: 500;
+  letter-spacing: 0.02em; padding: 10px 4px;
+  background: var(--bg); border: 1.5px solid var(--border);
+  color: var(--muted); cursor: pointer; border-radius: 20px;
   transition: all 0.2s; text-align: center;
 }
-.top-mode-btn:hover:not(.active) { color: #688; border-color: var(--border2); }
-.top-mode-btn.tm-std.active  { background: #1e1008; color: var(--orange); border-color: var(--orange2); box-shadow: 0 0 12px rgba(255,69,0,0.2); }
-.top-mode-btn.tm-gcse.active { background: #0e1808; color: #88ff44; border-color: #446622; box-shadow: 0 0 12px rgba(100,255,50,0.15); }
-.top-mode-btn.tm-alv.active  { background: #001828; color: var(--cyan); border-color: var(--cyan2); box-shadow: 0 0 12px rgba(0,212,255,0.2); }
-.top-mode-btn .sub { font-family: 'Share Tech Mono',monospace; font-size: 8px; font-weight: 400; letter-spacing: 1px; opacity: 0.5; display: block; margin-top: 2px; }
+.top-mode-btn:hover:not(.active) { color: var(--text); border-color: #bdc1c6; background: #fff; }
+.top-mode-btn.tm-std.active  { background: var(--blue); color: #fff; border-color: var(--blue); box-shadow: var(--shadow-sm); }
+.top-mode-btn.tm-gcse.active { background: var(--green); color: #fff; border-color: var(--green); box-shadow: var(--shadow-sm); }
+.top-mode-btn.tm-alv.active  { background: var(--purple); color: #fff; border-color: var(--purple); box-shadow: var(--shadow-sm); }
+.top-mode-btn .sub { font-family: 'Roboto', sans-serif; font-size: 9px; font-weight: 400; letter-spacing: 0.03em; opacity: 0.75; display: block; margin-top: 2px; }
 
 /* ===== DISPLAY ===== */
 .display-bezel {
-  background: #000; border: 1px solid #0a0a0a;
-  border-radius: 4px; padding: 3px; margin-bottom: 12px;
-  box-shadow: inset 0 0 20px rgba(0,0,0,0.8), 0 0 0 1px var(--border2);
+  background: #fff; border: 1.5px solid var(--border);
+  border-radius: var(--r-sm); padding: 2px; margin-bottom: 14px;
+  box-shadow: var(--shadow-sm);
 }
-/* Standard & GCSE share this text display */
 .text-display {
-  background: #0d0d0d;
-  border-radius: 2px; padding: 10px 14px;
-  min-height: 88px; position: relative; overflow: hidden;
+  background: linear-gradient(135deg, var(--blue2) 0%, var(--blue) 100%);
+  border-radius: 6px; padding: 14px 16px;
+  min-height: 90px; position: relative; overflow: hidden;
   display: flex; flex-direction: column; justify-content: flex-end; gap: 3px;
 }
-.text-display::after {
-  content:''; position:absolute; inset:0; pointer-events:none;
-  background: repeating-linear-gradient(0deg,rgba(0,0,0,0) 0,rgba(0,0,0,0) 3px,rgba(0,0,0,0.08) 3px,rgba(0,0,0,0.08) 4px);
-}
-.d-inds { display: flex; justify-content: space-between; font-size: 9px; letter-spacing:1px; margin-bottom: 4px; }
-.d-ind  { color: var(--dim); transition: color 0.2s; }
-.d-ind.on { color: var(--orange); }
-.d-expr { font-size: 11px; color: #444; text-align: right; min-height: 15px; word-break: break-all; }
+.text-display::after { display: none; }
+.d-inds { display: flex; justify-content: space-between; font-size: 9px; letter-spacing: 0.06em; margin-bottom: 4px; }
+.d-ind  { color: rgba(255,255,255,0.45); transition: color 0.2s; font-family: 'Google Sans', sans-serif; font-weight: 500; }
+.d-ind.on { color: rgba(255,255,255,0.9); }
+.d-expr { font-size: 11px; color: rgba(255,255,255,0.55); text-align: right; min-height: 15px; word-break: break-all; font-family: 'Roboto Mono', monospace; }
 .d-main {
-  font-size: 30px; color: var(--orange); letter-spacing: 2px;
+  font-size: 32px; color: #fff; letter-spacing: 0.01em;
   text-align: right; line-height: 1; word-break: break-all;
-  text-shadow: 0 0 18px rgba(255,107,53,0.4); transition: color 0.1s;
-  min-height: 36px;
+  font-family: 'Roboto Mono', monospace; font-weight: 400;
+  transition: color 0.1s; min-height: 38px;
 }
-.d-main.flash { color: #fff !important; text-shadow: 0 0 24px #fff; }
-.d-main.error { color: var(--red) !important; font-size: 16px !important; text-shadow: 0 0 16px rgba(255,51,85,0.5) !important; }
-.d-alt  { font-size: 11px; color: #2a4a3a; text-align: right; min-height: 13px; }
+.d-main.flash { color: rgba(255,255,255,0.6) !important; }
+.d-main.error { color: #ffcdd2 !important; font-size: 16px !important; }
+.d-alt  { font-size: 11px; color: rgba(255,255,255,0.4); text-align: right; min-height: 13px; font-family: 'Roboto Mono', monospace; }
 
-/* A-Level graphing canvas display */
+/* Graph canvas */
 #graphCanvas {
-  display: block; width: 100%; border-radius: 2px;
+  display: block; width: 100%; border-radius: 6px;
   background: var(--screen-bg); cursor: crosshair;
 }
 
 /* ===== STATUS BAR ===== */
 .status-bar {
   display: flex; justify-content: space-between;
-  font-size: 9px; color: var(--dim); margin-bottom: 8px; letter-spacing: 1px;
+  font-size: 10px; color: var(--muted); margin-bottom: 10px;
+  letter-spacing: 0.04em; font-family: 'Google Sans', sans-serif; font-weight: 500;
 }
-.s-mode  { color: var(--orange); }
+.s-mode  { color: var(--blue); }
 .s-angle { color: var(--yellow); }
 .s-mem   { color: var(--green); }
 
-/* ===== BUTTONS — shared base ===== */
+/* ===== BUTTONS ===== */
 button {
-  font-family: 'Share Tech Mono', monospace;
-  border: none; border-radius: 3px; cursor: pointer;
-  transition: transform 0.07s, box-shadow 0.07s, background 0.07s;
+  font-family: 'Roboto', sans-serif;
+  border: none; border-radius: var(--r-sm); cursor: pointer;
+  transition: background 0.12s, box-shadow 0.12s, transform 0.07s;
   position: relative; overflow: hidden;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   padding: 2px 1px;
 }
-button::after { content:''; position:absolute; inset:0; opacity:0; background:rgba(255,255,255,0.1); transition:opacity 0.08s; }
+button::after { content:''; position:absolute; inset:0; opacity:0; background:rgba(0,0,0,0.06); transition:opacity 0.08s; border-radius: inherit; }
 button:active::after { opacity: 1; }
-button:active { transform: scale(0.92); }
+button:active { transform: scale(0.94); }
 
-/* Standard calc button grid */
+/* Grid layouts */
 .std-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
-
-/* GCSE / A-Level grids */
 .sci-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 5px; }
 .alv-grid { display: grid; grid-template-columns: repeat(6,1fr); gap: 5px; }
 
-/* Button type classes */
-.bn  { background:#111822; color:#b0c0d0; border:1px solid #1a2535; box-shadow:0 3px 0 #000; }
-.bn:hover { background:#182030; color:#e0f0ff; }
-.bo  { background:#1e1008; color:var(--orange); border:1px solid var(--orange-dim); box-shadow:0 3px 0 #000; }
-.bo:hover { background:#281808; }
-.ba  { background:#0e1018; color:#7a8a9a; border:1px solid #141a22; box-shadow:0 3px 0 #000; font-size:11px; }
-.ba:hover { background:#141820; color:#aab0bb; }
-.beq { background:var(--orange2); color:#fff; border:1px solid #cc3700; box-shadow:0 3px 0 #7a2100; font-size:16px; }
-.beq:hover { background:#ff5500; box-shadow:0 3px 0 #7a2100, 0 0 18px rgba(255,69,0,0.35); }
-.bsci { background:#111418; color:#99aabb; border:1px solid #1a2028; box-shadow:0 3px 0 #000; font-size:10px; }
-.bsci:hover { background:#18202a; color:#ccdde8; }
-.bshift { background:#1a1200; color:var(--yellow); border:1px solid #2a2000; box-shadow:0 3px 0 #000; }
-.bshift.mod-on { background:var(--yellow); color:#000; }
-.balpha { background:#001a00; color:var(--green);  border:1px solid #002a00; box-shadow:0 3px 0 #000; }
-.balpha.mod-on { background:var(--green); color:#000; }
-.bcyan { background:#001828; color:var(--cyan); border:1px solid #003366; box-shadow:0 3px 0 #000; font-size:10px; }
-.bcyan:hover { background:#001e34; }
-.beqcyan { background:linear-gradient(135deg,#001a40,#002060); color:#fff; border:1px solid #003080; box-shadow:0 3px 0 #000a20; font-size:16px; }
-.beqcyan:hover { box-shadow:0 3px 0 #000a20,0 0 20px rgba(0,100,255,0.3); }
-.bgraph { background:linear-gradient(135deg,#001830,#002244); color:var(--cyan); border:1px solid #003366; box-shadow:0 3px 0 #000; font-size:10px; }
-.bgraph:hover { box-shadow:0 3px 0 #000,0 0 14px rgba(0,212,255,0.2); }
-.bfn { background:#0d1118; color:#8899aa; border:1px solid #141c24; box-shadow:0 3px 0 #000; font-size:10px; }
-.bfn:hover { background:#141e28; color:#aabbc8; }
+/* Button types */
+.bn  { background: var(--surface); color: var(--text); border: 1px solid var(--border); box-shadow: var(--shadow-sm); font-weight: 400; }
+.bn:hover { background: #f8f9fa; border-color: #c0c8d0; }
+.bo  { background: var(--blue-light); color: var(--blue); border: 1px solid #c5d8fb; box-shadow: var(--shadow-sm); font-weight: 500; }
+.bo:hover { background: #d2e4fd; }
+.ba  { background: #f1f3f4; color: var(--muted); border: 1px solid var(--border2); box-shadow: var(--shadow-sm); font-size: 12px; }
+.ba:hover { background: #e8eaed; color: var(--text); }
+.beq { background: var(--blue); color: #fff; border: 1px solid var(--blue2); box-shadow: 0 2px 6px rgba(26,115,232,0.3); font-size: 18px; font-weight: 500; }
+.beq:hover { background: var(--blue2); box-shadow: 0 4px 12px rgba(26,115,232,0.4); }
+.bsci { background: var(--surface); color: var(--muted); border: 1px solid var(--border); box-shadow: var(--shadow-sm); font-size: 11px; }
+.bsci:hover { background: #f8f9fa; color: var(--text); }
+.bshift { background: var(--yellow-light); color: var(--yellow); border: 1px solid #fde096; box-shadow: var(--shadow-sm); }
+.bshift.mod-on { background: var(--yellow); color: #fff; }
+.balpha { background: var(--green-light); color: var(--green); border: 1px solid #b7dfbf; box-shadow: var(--shadow-sm); }
+.balpha.mod-on { background: var(--green); color: #fff; }
+.bcyan { background: var(--blue-light); color: var(--blue); border: 1px solid #c5d8fb; box-shadow: var(--shadow-sm); font-size: 11px; }
+.bcyan:hover { background: #d2e4fd; }
+.beqcyan { background: var(--purple); color: #fff; border: 1px solid #6200ea; box-shadow: 0 2px 6px rgba(124,77,255,0.3); font-size: 18px; font-weight: 500; }
+.beqcyan:hover { background: #6200ea; box-shadow: 0 4px 12px rgba(124,77,255,0.4); }
+.bgraph { background: var(--purple-light); color: var(--purple); border: 1px solid #d1c4e9; box-shadow: var(--shadow-sm); font-size: 11px; }
+.bgraph:hover { background: #e1d5f7; }
+.bfn { background: var(--surface); color: var(--muted); border: 1px solid var(--border2); box-shadow: var(--shadow-sm); font-size: 11px; }
+.bfn:hover { background: #f8f9fa; color: var(--text); }
 
-/* heights */
+/* Heights */
 .h56 { height: 56px; }
 .h44 { height: 44px; }
 .h38 { height: 38px; }
 .h30 { height: 30px; }
 
-/* small label above key text */
-.sl { font-size: 7px; color: var(--yellow); line-height: 1; height: 9px; }
-.al { font-size: 7px; color: var(--green);  line-height: 1; height: 9px; }
-.cl { font-size: 7px; color: var(--cyan);   line-height: 1; height: 9px; }
+/* Small labels above key text */
+.sl { font-size: 7px; color: var(--yellow); line-height: 1; height: 9px; font-family: 'Google Sans', sans-serif; }
+.al { font-size: 7px; color: var(--green);  line-height: 1; height: 9px; font-family: 'Google Sans', sans-serif; }
+.cl { font-size: 7px; color: var(--purple); line-height: 1; height: 9px; font-family: 'Google Sans', sans-serif; }
 
 .span2 { grid-column: span 2; }
 .span3 { grid-column: span 3; }
 
 /* ===== GCSE sub-mode tabs ===== */
-.sub-tabs { display: flex; gap: 4px; margin-bottom: 10px; flex-wrap: wrap; }
+.sub-tabs { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
 .sub-tab {
-  flex: 1; min-width: 50px; padding: 5px 3px;
-  font-family: 'Share Tech Mono',monospace; font-size: 9px; letter-spacing: 1px;
-  background: #0d1117; border: 1px solid var(--border); color: var(--dim);
-  cursor: pointer; border-radius: 2px; transition: all 0.2s; text-align: center;
+  flex: 1; min-width: 50px; padding: 6px 3px;
+  font-family: 'Google Sans', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.02em;
+  background: var(--surface); border: 1.5px solid var(--border); color: var(--muted);
+  cursor: pointer; border-radius: 20px; transition: all 0.2s; text-align: center;
 }
-.sub-tab.active { background: #1e1008; color: var(--orange); border-color: var(--orange2); }
+.sub-tab.active { background: var(--green); color: #fff; border-color: var(--green); }
 
 /* ===== A-Level sub tabs ===== */
-.alv-tabs { display: flex; gap: 4px; margin-bottom: 10px; flex-wrap: wrap; }
+.alv-tabs { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
 .alv-tab {
-  flex: 1; padding: 5px 3px;
-  font-family: 'Share Tech Mono',monospace; font-size: 9px; letter-spacing: 1px;
-  background: #0d1117; border: 1px solid var(--border); color: var(--dim);
-  cursor: pointer; border-radius: 2px; transition: all 0.2s; text-align: center;
+  flex: 1; padding: 6px 3px;
+  font-family: 'Google Sans', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.02em;
+  background: var(--surface); border: 1.5px solid var(--border); color: var(--muted);
+  cursor: pointer; border-radius: 20px; transition: all 0.2s; text-align: center;
 }
-.alv-tab.active { background: #001828; color: var(--cyan); border-color: var(--cyan2); }
+.alv-tab.active { background: var(--purple); color: #fff; border-color: var(--purple); }
 
-/* ===== panels ===== */
+/* ===== PANELS ===== */
 .panel { display: none; }
 .panel.active { display: block; }
-.panel-inner { border: 1px solid var(--border); border-radius: 3px; padding: 10px; }
-.panel-title { font-family:'Orbitron',sans-serif; font-size:11px; color:var(--cyan); letter-spacing:2px; margin-bottom:10px; text-align:center; }
+.panel-inner {
+  border: 1px solid var(--border); border-radius: var(--r-sm); padding: 14px;
+  background: var(--surface); box-shadow: var(--shadow-sm);
+}
+.panel-title { font-family: 'Google Sans', sans-serif; font-size: 13px; font-weight: 500; color: var(--text); letter-spacing: 0.02em; margin-bottom: 12px; text-align: center; }
 
-/* shared input style */
-.pi { background:#050a10; border:1px solid var(--border); color:var(--text); font-family:'Share Tech Mono',monospace; font-size:12px; padding:4px 7px; border-radius:2px; }
-.pi:focus { outline:none; border-color:var(--cyan); }
-.pil { color:var(--dim); font-size:9px; letter-spacing:1px; display:block; margin-bottom:3px; }
+/* Shared inputs */
+.pi {
+  background: #f8f9fa; border: 1.5px solid var(--border); color: var(--text);
+  font-family: 'Roboto Mono', monospace; font-size: 12px; padding: 6px 9px;
+  border-radius: var(--r-sm); transition: border-color 0.2s, box-shadow 0.2s;
+}
+.pi:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(26,115,232,.10); background: #fff; }
+.pil { color: var(--muted); font-size: 10px; font-family: 'Google Sans', sans-serif; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; display: block; margin-bottom: 4px; }
 
-/* stat grid */
-.sg { display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px; margin-top:8px; }
-.sg button { height:32px; font-size:10px; }
-textarea.pi { width:100%; resize:none; height:50px; }
+/* Stat grid */
+.sg { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-top: 8px; }
+.sg button { height: 32px; font-size: 11px; }
+textarea.pi { width: 100%; resize: none; height: 50px; }
 
-/* graph controls */
-.graph-ctrl { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; }
-.gc-col { display:flex; flex-direction:column; gap:3px; }
-.fn-row { display:flex; align-items:center; gap:5px; margin-bottom:5px; }
-.fn-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-.fn-inp { flex:1; background:#050a10; border:1px solid var(--border); color:var(--screen-text); font-family:'Share Tech Mono',monospace; font-size:12px; padding:4px 7px; border-radius:2px; }
-.fn-inp:focus { outline:none; border-color:var(--screen-text); }
-.fn-tog { background:#0d1117; border:1px solid var(--border); color:var(--dim); font-family:'Share Tech Mono',monospace; font-size:9px; padding:3px 6px; border-radius:2px; cursor:pointer; }
-.fn-tog.on { color:var(--screen-text); border-color:var(--screen-text); }
+/* Graph controls */
+.graph-ctrl { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.gc-col { display: flex; flex-direction: column; gap: 3px; }
+.fn-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.fn-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; border: 2px solid rgba(0,0,0,0.1); }
+.fn-inp {
+  flex: 1; background: #f8f9fa; border: 1.5px solid var(--border); color: var(--text);
+  font-family: 'Roboto Mono', monospace; font-size: 12px; padding: 5px 9px; border-radius: var(--r-sm);
+}
+.fn-inp:focus { outline: none; border-color: var(--blue); background: #fff; }
+.fn-tog {
+  background: var(--bg); border: 1.5px solid var(--border); color: var(--muted);
+  font-family: 'Google Sans', monospace; font-size: 10px; padding: 4px 8px;
+  border-radius: 20px; cursor: pointer; transition: all 0.15s; font-weight: 500;
+}
+.fn-tog.on { color: var(--blue); border-color: var(--blue); background: var(--blue-light); }
 
-/* matrix inputs */
-.mat-g2 { display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-bottom:8px; }
-.mat-g3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px; margin-bottom:8px; }
-.mi { background:#050a10; border:1px solid var(--border); color:var(--text); font-family:'Share Tech Mono',monospace; font-size:11px; padding:3px 5px; border-radius:2px; text-align:center; width:100%; }
-.mi:focus { outline:none; border-color:var(--cyan); }
+/* Matrix inputs */
+.mat-g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 8px; }
+.mat-g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 8px; }
+.mi {
+  background: #f8f9fa; border: 1.5px solid var(--border); color: var(--text);
+  font-family: 'Roboto Mono', monospace; font-size: 12px; padding: 5px 6px;
+  border-radius: var(--r-sm); text-align: center; width: 100%; transition: border-color 0.2s;
+}
+.mi:focus { outline: none; border-color: var(--blue); background: #fff; }
 
-/* eqn inputs */
-.ec { width:48px; background:#050a10; border:1px solid var(--border); color:var(--text); font-family:'Share Tech Mono',monospace; font-size:12px; padding:4px 5px; border-radius:2px; text-align:center; }
-.ec:focus { outline:none; border-color:var(--cyan); }
+/* Equation inputs */
+.ec {
+  width: 52px; background: #f8f9fa; border: 1.5px solid var(--border); color: var(--text);
+  font-family: 'Roboto Mono', monospace; font-size: 13px; padding: 5px 6px;
+  border-radius: var(--r-sm); text-align: center; transition: border-color 0.2s;
+}
+.ec:focus { outline: none; border-color: var(--blue); background: #fff; }
 
-/* calctools */
-.ct-box { border:1px solid var(--border); border-radius:3px; padding:8px; margin-bottom:8px; }
-.ct-title { font-size:9px; color:var(--dim); letter-spacing:1px; margin-bottom:6px; }
-.ct-row { display:flex; gap:5px; align-items:center; margin-bottom:5px; font-size:10px; color:var(--dim); flex-wrap:wrap; }
-.ct-r { color:var(--cyan); font-size:12px; min-height:18px; margin-top:4px; }
+/* Calc tools */
+.ct-box {
+  border: 1px solid var(--border); border-radius: var(--r-sm); padding: 10px 12px;
+  margin-bottom: 10px; background: var(--surface); box-shadow: var(--shadow-sm);
+}
+.ct-title { font-size: 10px; color: var(--muted); font-family: 'Google Sans', sans-serif; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 8px; }
+.ct-row { display: flex; gap: 6px; align-items: center; margin-bottom: 5px; font-size: 11px; color: var(--muted); flex-wrap: wrap; font-family: 'Google Sans', sans-serif; }
+.ct-r { color: var(--blue); font-size: 13px; font-family: 'Roboto Mono', monospace; min-height: 20px; margin-top: 5px; }
 
-/* history */
-.hist-wrap { max-height:0; overflow:hidden; transition:max-height 0.3s; border-top:1px solid var(--border); }
-.hist-wrap.open { max-height:120px; }
-.hist-inner { padding-top:8px; }
-.hist-title { font-size:9px; color:var(--dim); letter-spacing:2px; margin-bottom:5px; }
-.hist-list { max-height:90px; overflow-y:auto; display:flex; flex-direction:column; gap:2px; }
-.hist-item { display:flex; justify-content:space-between; font-size:10px; color:#3a4a5a; cursor:pointer; padding:2px 5px; border-radius:2px; }
-.hist-item:hover { background:#0d1117; color:#6a8a9a; }
-.hist-item span:last-child { color:var(--orange); }
+/* History */
+.hist-wrap { max-height: 0; overflow: hidden; transition: max-height 0.3s; border-top: 1px solid var(--border); }
+.hist-wrap.open { max-height: 130px; }
+.hist-inner { padding-top: 10px; }
+.hist-title { font-size: 10px; color: var(--muted); font-family: 'Google Sans', sans-serif; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; }
+.hist-list { max-height: 90px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+.hist-item {
+  display: flex; justify-content: space-between; font-size: 11px; color: var(--muted);
+  cursor: pointer; padding: 4px 8px; border-radius: var(--r-sm); font-family: 'Roboto Mono', monospace;
+  transition: background 0.15s;
+}
+.hist-item:hover { background: var(--blue-light); color: var(--blue); }
+.hist-item span:last-child { color: var(--blue); font-weight: 500; }
 
-/* bottom bar */
-.bottom { display:flex; justify-content:space-between; align-items:center; margin-top:10px; }
-.bb { display:flex; gap:4px; }
-.bico { height:22px; font-size:8px; padding:0 7px; letter-spacing:1px; display:inline-flex; align-items:center; }
+/* Bottom bar */
+.bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+.bb { display: flex; gap: 5px; }
+.bico { height: 26px; font-size: 10px; padding: 0 10px; letter-spacing: 0.04em; display: inline-flex; align-items: center; font-family: 'Google Sans', sans-serif; font-weight: 500; }
 
-/* trace info */
-#traceInfo { font-size:10px; color:var(--cyan); min-height:14px; text-align:right; margin-top:3px; }
+/* Trace info */
+#traceInfo { font-size: 11px; color: var(--purple); font-family: 'Roboto Mono', monospace; min-height: 16px; text-align: right; margin-top: 4px; }
 
-/* tbl */
-.tbl { width:100%; border-collapse:collapse; font-size:11px; }
-.tbl th { color:var(--cyan); padding:2px 8px; border-bottom:1px solid var(--border); }
-.tbl td { color:var(--text); padding:2px 8px; border-bottom:1px solid #0d1117; }
-.tbl-wrap { max-height:150px; overflow-y:auto; margin-top:6px; }
+/* Table */
+.tbl { width: 100%; border-collapse: collapse; font-size: 12px; font-family: 'Roboto Mono', monospace; }
+.tbl th { color: var(--blue); padding: 4px 10px; border-bottom: 1px solid var(--border); font-family: 'Google Sans', sans-serif; font-weight: 500; font-size: 11px; }
+.tbl td { color: var(--text); padding: 4px 10px; border-bottom: 1px solid var(--border2); }
+.tbl tr:hover td { background: var(--blue-light); }
+.tbl-wrap { max-height: 160px; overflow-y: auto; margin-top: 8px; border: 1px solid var(--border); border-radius: var(--r-sm); }
 
-/* result text */
-.res-txt { color:var(--cyan); font-size:12px; min-height:18px; margin-top:6px; white-space:pre-line; }
-.res-txt-orange { color:var(--orange); font-size:12px; min-height:18px; margin-top:6px; white-space:pre-line; }
+/* Result text */
+.res-txt { color: var(--blue); font-size: 12px; font-family: 'Roboto Mono', monospace; min-height: 20px; margin-top: 8px; white-space: pre-line; }
+.res-txt-orange { color: var(--blue); font-size: 12px; font-family: 'Roboto Mono', monospace; min-height: 20px; margin-top: 8px; white-space: pre-line; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #bdc1c6; }
 </style>
 </head>
 <body>
@@ -333,10 +358,7 @@ textarea.pi { width:100%; resize:none; height:50px; }
   <div class="splash-by">A tool by <strong>Leon Dudhill</strong></div>
 </div>
 
-  <div class="s-by">AN APP BY</div>
-  <div class="s-name">LEON DUDHILL</div>
-  <div class="s-bar"></div>
-</div>
+
 
 <!-- ===== APP ===== -->
 <div class="app-wrapper" id="appWrapper">
@@ -344,39 +366,26 @@ textarea.pi { width:100%; resize:none; height:50px; }
 
   <!-- HEADER -->
   <div class="header">
-    <div>
-      <div class="logo">CALCULON<span>PRECISION CALCULATOR</span></div>
-    </div>
-    <div class="hdr-inds">
-      <span class="ind" id="ind-shift">SHFT</span>
-      <span class="ind" id="ind-alpha">ALPH</span>
-      <span class="ind" id="ind-angle">DEG</span>
-      <span class="ind" id="ind-mem">MEM</span>
+    <div class="logo">Calculator</div>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <span class="ind" id="ind-shift" style="display:none"></span>
+      <span class="ind" id="ind-alpha" style="display:none"></span>
+      <span class="ind" id="ind-angle" style="display:none"></span>
+      <span class="ind" id="ind-mem" style="display:none"></span>
     </div>
   </div>
 
   <!-- TOP MODE SWITCHER -->
   <div class="top-mode-bar">
-    <button class="top-mode-btn tm-std active"  onclick="switchTopMode('std')">STANDARD<span class="sub">basic</span></button>
+    <button class="top-mode-btn tm-std active"  onclick="switchTopMode('std')">Standard<span class="sub">basic</span></button>
     <button class="top-mode-btn tm-gcse"         onclick="switchTopMode('gcse')">GCSE<span class="sub">scientific</span></button>
-    <button class="top-mode-btn tm-alv"          onclick="switchTopMode('alv')">A-LEVEL<span class="sub">graphing</span></button>
+    <button class="top-mode-btn tm-alv"          onclick="switchTopMode('alv')">A-Level<span class="sub">graphing</span></button>
   </div>
 
   <!-- DISPLAY BEZEL -->
   <div class="display-bezel">
     <!-- Text display (STD + GCSE) -->
     <div class="text-display" id="textDisplay">
-      <div class="d-inds">
-        <div style="display:flex;gap:8px;">
-          <span class="d-ind" id="dind-s">S</span>
-          <span class="d-ind" id="dind-a">A</span>
-          <span class="d-ind" id="dind-d" style="color:var(--orange);">D</span>
-        </div>
-        <div style="display:flex;gap:8px;">
-          <span class="d-ind" id="dind-r">R</span>
-          <span class="d-ind" id="dind-fix">NORM</span>
-        </div>
-      </div>
       <div class="d-expr" id="dExpr"></div>
       <div class="d-main" id="dMain">0</div>
       <div class="d-alt"  id="dAlt"></div>
@@ -423,7 +432,6 @@ textarea.pi { width:100%; resize:none; height:50px; }
   <!--  GCSE MODE                                                       -->
   <!-- =============================================================== -->
   <div id="mode-gcse" class="mode-section" style="display:none;">
-    <!-- Sub-mode tabs -->
     <div class="sub-tabs">
       <button class="sub-tab active" onclick="gSubMode('comp','this')">COMP</button>
       <button class="sub-tab" onclick="gSubMode('stat','this')">STAT</button>
@@ -481,8 +489,8 @@ textarea.pi { width:100%; resize:none; height:50px; }
     <!-- STAT -->
     <div id="gsub-stat" class="gsub" style="display:none;">
       <div class="panel-inner">
-        <div class="panel-title" style="color:var(--orange);">STATISTICS</div>
-        <div style="font-size:10px;color:var(--dim);margin-bottom:4px;">Data (comma separated):</div>
+        <div class="panel-title">Statistics</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-family:'Google Sans',sans-serif;">Data (comma separated):</div>
         <textarea class="pi" id="gStatInput" placeholder="e.g. 2, 4, 6, 8, 10"></textarea>
         <div class="sg">
           <button class="bsci" onclick="gStat('mean')">Mean x̄</button>
@@ -504,13 +512,13 @@ textarea.pi { width:100%; resize:none; height:50px; }
     <!-- TABLE -->
     <div id="gsub-table" class="gsub" style="display:none;">
       <div class="panel-inner">
-        <div class="panel-title" style="color:var(--orange);">TABLE</div>
-        <div style="font-size:11px;color:var(--dim);margin-bottom:6px;">f(x) = <input id="gTblFn" class="pi" style="width:200px;display:inline;" value="x^2 + 1"></div>
-        <div style="display:flex;gap:6px;font-size:11px;margin-bottom:8px;align-items:center;flex-wrap:wrap;">
-          <span style="color:var(--dim)">Start:</span><input id="gTblS" class="pi" style="width:50px;" value="-5">
-          <span style="color:var(--dim)">End:</span><input id="gTblE" class="pi" style="width:50px;" value="5">
-          <span style="color:var(--dim)">Step:</span><input id="gTblSt" class="pi" style="width:50px;" value="1">
-          <button class="beq" style="height:28px;font-size:10px;padding:0 10px;" onclick="gGenTable()">GO</button>
+        <div class="panel-title">Table</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-family:'Google Sans',sans-serif;">f(x) = <input id="gTblFn" class="pi" style="width:200px;display:inline;" value="x^2 + 1"></div>
+        <div style="display:flex;gap:6px;font-size:11px;margin-bottom:10px;align-items:center;flex-wrap:wrap;color:var(--muted);font-family:'Google Sans',sans-serif;">
+          <span>Start:</span><input id="gTblS" class="pi" style="width:52px;" value="-5">
+          <span>End:</span><input id="gTblE" class="pi" style="width:52px;" value="5">
+          <span>Step:</span><input id="gTblSt" class="pi" style="width:52px;" value="1">
+          <button class="beq" style="height:30px;font-size:11px;padding:0 12px;border-radius:20px;" onclick="gGenTable()">Go</button>
         </div>
         <div class="tbl-wrap" id="gTblResult"></div>
       </div>
@@ -519,17 +527,17 @@ textarea.pi { width:100%; resize:none; height:50px; }
     <!-- MATRIX (2×2) -->
     <div id="gsub-matrix" class="gsub" style="display:none;">
       <div class="panel-inner">
-        <div class="panel-title" style="color:var(--orange);">MATRIX (2×2)</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;">
+        <div class="panel-title">Matrix (2×2)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px;">
           <div>
-            <div style="font-size:10px;color:var(--dim);margin-bottom:4px;">Matrix A</div>
+            <div style="font-size:11px;color:var(--muted);font-family:'Google Sans',sans-serif;font-weight:500;margin-bottom:6px;">Matrix A</div>
             <div class="mat-g2">
               <input class="mi" id="gm00" value="1"><input class="mi" id="gm01" value="2">
               <input class="mi" id="gm10" value="3"><input class="mi" id="gm11" value="4">
             </div>
           </div>
           <div>
-            <div style="font-size:10px;color:var(--dim);margin-bottom:4px;">Matrix B</div>
+            <div style="font-size:11px;color:var(--muted);font-family:'Google Sans',sans-serif;font-weight:500;margin-bottom:6px;">Matrix B</div>
             <div class="mat-g2">
               <input class="mi" id="gn00" value="5"><input class="mi" id="gn01" value="6">
               <input class="mi" id="gn10" value="7"><input class="mi" id="gn11" value="8">
@@ -551,34 +559,26 @@ textarea.pi { width:100%; resize:none; height:50px; }
     <!-- EQN -->
     <div id="gsub-eqn" class="gsub" style="display:none;">
       <div class="panel-inner">
-        <div class="panel-title" style="color:var(--orange);">EQUATION SOLVER</div>
-        <div style="font-size:10px;color:var(--dim);margin-bottom:5px;">ax² + bx + c = 0</div>
-        <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;font-size:11px;color:var(--dim);">
+        <div class="panel-title">Equation Solver</div>
+        <div style="font-size:11px;color:var(--muted);font-family:'Google Sans',sans-serif;margin-bottom:7px;">ax² + bx + c = 0</div>
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;font-size:12px;color:var(--muted);font-family:'Google Sans',sans-serif;">
           a:<input class="ec" id="geqA" value="1"> b:<input class="ec" id="geqB" value="-5"> c:<input class="ec" id="geqC" value="6">
         </div>
-        <button class="beq" style="width:100%;height:32px;font-size:12px;" onclick="gSolveQuad()">SOLVE QUADRATIC</button>
+        <button class="beq" style="width:100%;height:34px;font-size:13px;border-radius:20px;" onclick="gSolveQuad()">Solve Quadratic</button>
         <div class="res-txt-orange" id="gEqnResult"></div>
-        <div style="margin-top:10px;font-size:10px;color:var(--dim);border-top:1px solid var(--border);padding-top:8px;margin-bottom:5px;">ax + by = c &nbsp;&nbsp; dx + ey = f</div>
-        <div style="display:flex;gap:5px;flex-wrap:wrap;font-size:11px;color:var(--dim);margin-bottom:6px;">
+        <div style="margin-top:12px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);padding-top:10px;margin-bottom:7px;font-family:'Google Sans',sans-serif;">ax + by = c &nbsp;&nbsp; dx + ey = f</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:6px;font-family:'Google Sans',sans-serif;">
           a:<input class="ec" id="glA" value="2"> b:<input class="ec" id="glB" value="3"> c:<input class="ec" id="glC" value="7">
         </div>
-        <div style="display:flex;gap:5px;flex-wrap:wrap;font-size:11px;color:var(--dim);margin-bottom:6px;">
+        <div style="display:flex;gap:5px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:8px;font-family:'Google Sans',sans-serif;">
           d:<input class="ec" id="glD" value="1"> e:<input class="ec" id="glE" value="-1"> f:<input class="ec" id="glF" value="0">
         </div>
-        <button class="bsci" style="width:100%;height:32px;" onclick="gSolveLin()">SOLVE SIMULTANEOUS</button>
+        <button class="bcyan" style="width:100%;height:34px;border-radius:20px;font-size:13px;" onclick="gSolveLin()">Solve Simultaneous</button>
         <div class="res-txt-orange" id="gLinResult"></div>
       </div>
     </div>
 
-    <!-- bottom controls -->
-    <div style="text-align:right;margin-top:8px;">
-      <button class="ba bico" onclick="toggleHist()">HIST</button>
-      <button class="ba bico" style="margin-left:4px;" onclick="toggleAngle()">DEG/RAD</button>
-    </div>
-  </div>
-
-  <!-- =============================================================== -->
-  <!--  A-LEVEL MODE                                                    -->
+  </div>                                                    -->
   <!-- =============================================================== -->
   <div id="mode-alv" class="mode-section" style="display:none;">
     <div class="alv-tabs">
@@ -652,18 +652,18 @@ textarea.pi { width:100%; resize:none; height:50px; }
 
     <!-- GRAPH -->
     <div id="asub-graph" class="asub" style="display:none;">
-      <div id="aFnRows" style="margin-bottom:8px;"></div>
+      <div id="aFnRows" style="margin-bottom:10px;"></div>
       <div class="graph-ctrl">
-        <div class="gc-col"><span class="pil">X MIN</span><input class="pi" id="axmin" value="-10"></div>
-        <div class="gc-col"><span class="pil">X MAX</span><input class="pi" id="axmax" value="10"></div>
-        <div class="gc-col"><span class="pil">Y MIN</span><input class="pi" id="aymin" value="-8"></div>
-        <div class="gc-col"><span class="pil">Y MAX</span><input class="pi" id="aymax" value="8"></div>
+        <div class="gc-col"><span class="pil">X Min</span><input class="pi" id="axmin" value="-10"></div>
+        <div class="gc-col"><span class="pil">X Max</span><input class="pi" id="axmax" value="10"></div>
+        <div class="gc-col"><span class="pil">Y Min</span><input class="pi" id="aymin" value="-8"></div>
+        <div class="gc-col"><span class="pil">Y Max</span><input class="pi" id="aymax" value="8"></div>
       </div>
-      <div style="display:flex;gap:5px;margin-bottom:5px;">
-        <button class="bgraph h30 span3" style="flex:2;" onclick="drawGraph()">▶ DRAW</button>
-        <button class="ba h30" style="flex:1;" onclick="resetView()">RESET</button>
-        <button class="ba h30" style="flex:1;" onclick="addFn()">+Y=</button>
-        <button class="ba h30" style="flex:1;" onclick="traceMode()">TRACE</button>
+      <div style="display:flex;gap:6px;margin-bottom:6px;">
+        <button class="bgraph h30 span3" style="flex:2;border-radius:20px;" onclick="drawGraph()">▶ Draw</button>
+        <button class="ba h30" style="flex:1;border-radius:20px;" onclick="resetView()">Reset</button>
+        <button class="ba h30" style="flex:1;border-radius:20px;" onclick="addFn()">+ Y=</button>
+        <button class="ba h30" style="flex:1;border-radius:20px;" onclick="traceMode()">Trace</button>
       </div>
       <div id="traceInfo"></div>
     </div>
@@ -671,13 +671,13 @@ textarea.pi { width:100%; resize:none; height:50px; }
     <!-- TABLE (a-level) -->
     <div id="asub-table" class="asub" style="display:none;">
       <div class="panel-inner">
-        <div class="panel-title">TABLE</div>
-        <div style="font-size:11px;color:var(--dim);margin-bottom:6px;">f(x) = <input id="aTblFn" class="pi" style="width:200px;display:inline;" value="x^2 - 3*x + 2"></div>
-        <div style="display:flex;gap:6px;font-size:11px;margin-bottom:8px;align-items:center;flex-wrap:wrap;">
-          <span style="color:var(--dim)">Start:</span><input id="aTblS" class="pi" style="width:50px;" value="-5">
-          <span style="color:var(--dim)">End:</span><input id="aTblE" class="pi" style="width:50px;" value="5">
-          <span style="color:var(--dim)">Step:</span><input id="aTblSt" class="pi" style="width:50px;" value="1">
-          <button class="bgraph" style="height:28px;font-size:10px;padding:0 10px;" onclick="aGenTable()">GO</button>
+        <div class="panel-title">Table</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-family:'Google Sans',sans-serif;">f(x) = <input id="aTblFn" class="pi" style="width:200px;display:inline;" value="x^2 - 3*x + 2"></div>
+        <div style="display:flex;gap:6px;font-size:11px;margin-bottom:10px;align-items:center;flex-wrap:wrap;color:var(--muted);font-family:'Google Sans',sans-serif;">
+          <span>Start:</span><input id="aTblS" class="pi" style="width:52px;" value="-5">
+          <span>End:</span><input id="aTblE" class="pi" style="width:52px;" value="5">
+          <span>Step:</span><input id="aTblSt" class="pi" style="width:52px;" value="1">
+          <button class="bgraph" style="height:30px;font-size:11px;padding:0 12px;border-radius:20px;" onclick="aGenTable()">Go</button>
         </div>
         <div class="tbl-wrap" id="aTblResult"></div>
       </div>
@@ -686,10 +686,10 @@ textarea.pi { width:100%; resize:none; height:50px; }
     <!-- STAT (a-level) -->
     <div id="asub-stat" class="asub" style="display:none;">
       <div class="panel-inner">
-        <div class="panel-title">STATISTICS</div>
-        <div style="font-size:10px;color:var(--dim);margin-bottom:4px;">X data:</div>
+        <div class="panel-title">Statistics</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:5px;font-family:'Google Sans',sans-serif;">X data:</div>
         <textarea class="pi" id="aStatX" placeholder="1, 2, 3, 4, 5"></textarea>
-        <div style="font-size:10px;color:var(--dim);margin:6px 0 4px;">Y data (for regression):</div>
+        <div style="font-size:11px;color:var(--muted);margin:8px 0 5px;font-family:'Google Sans',sans-serif;">Y data (for regression):</div>
         <textarea class="pi" id="aStatY" placeholder="2, 4, 5, 4, 5"></textarea>
         <div class="sg">
           <button class="bcyan" onclick="aStat('n')">n</button>
@@ -704,8 +704,8 @@ textarea.pi { width:100%; resize:none; height:50px; }
           <button class="bcyan" onclick="aStat('q1')">Q1</button>
           <button class="bcyan" onclick="aStat('q3')">Q3</button>
           <button class="bcyan" onclick="aStat('iqr')">IQR</button>
-          <button class="bgraph" style="grid-column:span 3;height:30px;" onclick="aStat('linreg')">Linear Reg y=ax+b</button>
-          <button class="bgraph" style="grid-column:span 3;height:30px;" onclick="aStat('quadreg')">Quadratic Regression</button>
+          <button class="bgraph" style="grid-column:span 3;height:30px;border-radius:20px;" onclick="aStat('linreg')">Linear Reg y=ax+b</button>
+          <button class="bgraph" style="grid-column:span 3;height:30px;border-radius:20px;" onclick="aStat('quadreg')">Quadratic Regression</button>
         </div>
         <div class="res-txt" id="aStatResult"></div>
       </div>
@@ -714,33 +714,33 @@ textarea.pi { width:100%; resize:none; height:50px; }
     <!-- EQN (a-level) -->
     <div id="asub-eqn" class="asub" style="display:none;">
       <div class="panel-inner">
-        <div class="panel-title">EQUATION SOLVER</div>
-        <div style="font-size:10px;color:var(--dim);margin-bottom:4px;">ax³+bx²+cx+d=0</div>
-        <div style="display:flex;gap:5px;align-items:center;margin-bottom:6px;font-size:11px;color:var(--dim);flex-wrap:wrap;">
+        <div class="panel-title">Equation Solver</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-family:'Google Sans',sans-serif;">ax³+bx²+cx+d=0</div>
+        <div style="display:flex;gap:5px;align-items:center;margin-bottom:8px;font-size:12px;color:var(--muted);flex-wrap:wrap;font-family:'Google Sans',sans-serif;">
           a:<input class="ec" id="apa" value="0"> b:<input class="ec" id="apb" value="1"> c:<input class="ec" id="apc" value="-5"> d:<input class="ec" id="apd" value="6">
         </div>
-        <button class="bgraph" style="width:100%;height:30px;font-size:11px;" onclick="aSolvePoly()">SOLVE POLYNOMIAL</button>
+        <button class="bgraph" style="width:100%;height:32px;font-size:12px;border-radius:20px;" onclick="aSolvePoly()">Solve Polynomial</button>
         <div class="res-txt" id="aPolyResult"></div>
-        <div style="margin-top:10px;font-size:10px;color:var(--dim);border-top:1px solid var(--border);padding-top:8px;margin-bottom:6px;">2×2 Simultaneous: ax+by=c, dx+ey=f</div>
-        <div style="display:flex;gap:5px;flex-wrap:wrap;font-size:11px;color:var(--dim);margin-bottom:5px;">
+        <div style="margin-top:12px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);padding-top:10px;margin-bottom:7px;font-family:'Google Sans',sans-serif;">2×2 Simultaneous: ax+by=c, dx+ey=f</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:6px;font-family:'Google Sans',sans-serif;">
           a:<input class="ec" id="as2a" value="2"> b:<input class="ec" id="as2b" value="3"> c:<input class="ec" id="as2c" value="7">
         </div>
-        <div style="display:flex;gap:5px;flex-wrap:wrap;font-size:11px;color:var(--dim);margin-bottom:5px;">
+        <div style="display:flex;gap:5px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:6px;font-family:'Google Sans',sans-serif;">
           d:<input class="ec" id="as2d" value="1"> e:<input class="ec" id="as2e" value="-1"> f:<input class="ec" id="as2f" value="0">
         </div>
-        <button class="bcyan" style="width:100%;height:30px;font-size:11px;" onclick="aSim2()">SOLVE 2×2</button>
+        <button class="bcyan" style="width:100%;height:32px;font-size:12px;border-radius:20px;" onclick="aSim2()">Solve 2×2</button>
         <div class="res-txt" id="aSim2Result"></div>
-        <div style="margin-top:10px;font-size:10px;color:var(--dim);border-top:1px solid var(--border);padding-top:8px;margin-bottom:6px;">3×3 Simultaneous</div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:4px;">
+        <div style="margin-top:12px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);padding-top:10px;margin-bottom:7px;font-family:'Google Sans',sans-serif;">3×3 Simultaneous</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:5px;">
           <input class="mi" id="as3a1" value="1"><input class="mi" id="as3b1" value="1"><input class="mi" id="as3c1" value="1"><input class="mi" id="as3d1" value="6">
         </div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:4px;">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:5px;">
           <input class="mi" id="as3a2" value="2"><input class="mi" id="as3b2" value="-1"><input class="mi" id="as3c2" value="1"><input class="mi" id="as3d2" value="7">
         </div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:6px;">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:8px;">
           <input class="mi" id="as3a3" value="1"><input class="mi" id="as3b3" value="3"><input class="mi" id="as3c3" value="-1"><input class="mi" id="as3d3" value="4">
         </div>
-        <button class="bcyan" style="width:100%;height:30px;font-size:11px;" onclick="aSim3()">SOLVE 3×3</button>
+        <button class="bcyan" style="width:100%;height:32px;font-size:12px;border-radius:20px;" onclick="aSim3()">Solve 3×3</button>
         <div class="res-txt" id="aSim3Result"></div>
       </div>
     </div>
@@ -748,10 +748,10 @@ textarea.pi { width:100%; resize:none; height:50px; }
     <!-- MATRIX (3×3) -->
     <div id="asub-matrix" class="asub" style="display:none;">
       <div class="panel-inner">
-        <div class="panel-title">MATRIX (3×3)</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;">
+        <div class="panel-title">Matrix (3×3)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px;">
           <div>
-            <div style="font-size:10px;color:var(--dim);margin-bottom:4px;">Matrix A</div>
+            <div style="font-size:11px;color:var(--muted);font-family:'Google Sans',sans-serif;font-weight:500;margin-bottom:6px;">Matrix A</div>
             <div class="mat-g3">
               <input class="mi" id="aa00" value="1"><input class="mi" id="aa01" value="2"><input class="mi" id="aa02" value="3">
               <input class="mi" id="aa10" value="0"><input class="mi" id="aa11" value="1"><input class="mi" id="aa12" value="4">
@@ -759,7 +759,7 @@ textarea.pi { width:100%; resize:none; height:50px; }
             </div>
           </div>
           <div>
-            <div style="font-size:10px;color:var(--dim);margin-bottom:4px;">Matrix B</div>
+            <div style="font-size:11px;color:var(--muted);font-family:'Google Sans',sans-serif;font-weight:500;margin-bottom:6px;">Matrix B</div>
             <div class="mat-g3">
               <input class="mi" id="ab00" value="1"><input class="mi" id="ab01" value="0"><input class="mi" id="ab02" value="0">
               <input class="mi" id="ab10" value="0"><input class="mi" id="ab11" value="1"><input class="mi" id="ab12" value="0">
@@ -767,7 +767,7 @@ textarea.pi { width:100%; resize:none; height:50px; }
             </div>
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;">
           <button class="bcyan h30" onclick="aMat('add')">A+B</button>
           <button class="bcyan h30" onclick="aMat('sub')">A−B</button>
           <button class="bcyan h30" onclick="aMat('mul')">A×B</button>
@@ -784,76 +784,70 @@ textarea.pi { width:100%; resize:none; height:50px; }
     <!-- CALC TOOLS -->
     <div id="asub-calc" class="asub" style="display:none;">
       <div class="ct-box">
-        <div class="ct-title">NUMERICAL INTEGRAL ∫f(x)dx</div>
+        <div class="ct-title">Numerical Integral ∫f(x)dx</div>
         <div class="ct-row">f(x)= <input class="pi ct-in" id="aIntFn" value="x^2" style="flex:1;"></div>
-        <div class="ct-row">a= <input class="pi" id="aIntA" value="0" style="width:50px;"> b= <input class="pi" id="aIntB" value="3" style="width:50px;"></div>
-        <button class="bgraph" style="width:100%;height:26px;font-size:10px;margin-top:4px;" onclick="aDoInt()">CALCULATE ∫</button>
+        <div class="ct-row">a= <input class="pi" id="aIntA" value="0" style="width:52px;"> b= <input class="pi" id="aIntB" value="3" style="width:52px;"></div>
+        <button class="bgraph" style="width:100%;height:28px;font-size:11px;margin-top:5px;border-radius:20px;" onclick="aDoInt()">Calculate ∫</button>
         <div class="ct-r" id="aIntResult"></div>
       </div>
       <div class="ct-box">
-        <div class="ct-title">DERIVATIVE d/dx at x</div>
+        <div class="ct-title">Derivative d/dx at x</div>
         <div class="ct-row">f(x)= <input class="pi" id="aDerFn" value="x^3 - 2*x" style="flex:1;"></div>
-        <div class="ct-row">x= <input class="pi" id="aDerX" value="2" style="width:60px;"></div>
-        <button class="bgraph" style="width:100%;height:26px;font-size:10px;margin-top:4px;" onclick="aDoDeriv()">CALCULATE d/dx</button>
+        <div class="ct-row">x= <input class="pi" id="aDerX" value="2" style="width:64px;"></div>
+        <button class="bgraph" style="width:100%;height:28px;font-size:11px;margin-top:5px;border-radius:20px;" onclick="aDoDeriv()">Calculate d/dx</button>
         <div class="ct-r" id="aDerResult"></div>
       </div>
       <div class="ct-box">
-        <div class="ct-title">SUMMATION Σf(n)</div>
-        <div class="ct-row">f(n)= <input class="pi" id="aSumFn" value="n^2" style="flex:1;"> from n= <input class="pi" id="aSumA" value="1" style="width:40px;"> to <input class="pi" id="aSumB" value="10" style="width:40px;"></div>
-        <button class="bgraph" style="width:100%;height:26px;font-size:10px;margin-top:4px;" onclick="aDoSum()">CALCULATE Σ</button>
+        <div class="ct-title">Summation Σf(n)</div>
+        <div class="ct-row">f(n)= <input class="pi" id="aSumFn" value="n^2" style="flex:1;"> from n= <input class="pi" id="aSumA" value="1" style="width:42px;"> to <input class="pi" id="aSumB" value="10" style="width:42px;"></div>
+        <button class="bgraph" style="width:100%;height:28px;font-size:11px;margin-top:5px;border-radius:20px;" onclick="aDoSum()">Calculate Σ</button>
         <div class="ct-r" id="aSumResult"></div>
       </div>
       <div class="ct-box">
-        <div class="ct-title">COMPLEX NUMBERS  (a+bi) op (c+di)</div>
-        <div class="ct-row">a= <input class="pi" id="cA" value="3" style="width:45px;"> b= <input class="pi" id="cB" value="4" style="width:45px;"> c= <input class="pi" id="cC" value="1" style="width:45px;"> d= <input class="pi" id="cD" value="-2" style="width:45px;"></div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:4px;">
+        <div class="ct-title">Complex Numbers  (a+bi) op (c+di)</div>
+        <div class="ct-row">a= <input class="pi" id="cA" value="3" style="width:46px;"> b= <input class="pi" id="cB" value="4" style="width:46px;"> c= <input class="pi" id="cC" value="1" style="width:46px;"> d= <input class="pi" id="cD" value="-2" style="width:46px;"></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:5px;">
           <button class="bn h30" onclick="aCpx('+')">+</button><button class="bn h30" onclick="aCpx('-')">−</button>
           <button class="bn h30" onclick="aCpx('*')">×</button><button class="bn h30" onclick="aCpx('/')">÷</button>
-          <button class="bn h30" style="font-size:9px;" onclick="aCpx('mod')">|z|</button>
-          <button class="bn h30" style="font-size:9px;" onclick="aCpx('arg')">arg</button>
-          <button class="bn h30" style="font-size:9px;" onclick="aCpx('conj')">z*</button>
-          <button class="bn h30" style="font-size:9px;" onclick="aCpx('sq')">z²</button>
+          <button class="bn h30" style="font-size:10px;" onclick="aCpx('mod')">|z|</button>
+          <button class="bn h30" style="font-size:10px;" onclick="aCpx('arg')">arg</button>
+          <button class="bn h30" style="font-size:10px;" onclick="aCpx('conj')">z*</button>
+          <button class="bn h30" style="font-size:10px;" onclick="aCpx('sq')">z²</button>
         </div>
         <div class="ct-r" id="aCpxResult"></div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
         <div class="ct-box">
-          <div class="ct-title">BINOMIAL P(X=k)</div>
-          <div class="ct-row" style="flex-wrap:wrap;">n= <input class="pi" id="aBinN" value="10" style="width:38px;"> p= <input class="pi" id="aBinP" value="0.3" style="width:42px;"> k= <input class="pi" id="aBinK" value="3" style="width:38px;"></div>
-          <button class="bgraph" style="width:100%;height:24px;font-size:9px;margin-top:4px;" onclick="aBinom()">CALC</button>
-          <div class="ct-r" id="aBinResult" style="font-size:11px;"></div>
+          <div class="ct-title">Binomial P(X=k)</div>
+          <div class="ct-row" style="flex-wrap:wrap;">n= <input class="pi" id="aBinN" value="10" style="width:40px;"> p= <input class="pi" id="aBinP" value="0.3" style="width:44px;"> k= <input class="pi" id="aBinK" value="3" style="width:40px;"></div>
+          <button class="bgraph" style="width:100%;height:26px;font-size:10px;margin-top:5px;border-radius:20px;" onclick="aBinom()">Calc</button>
+          <div class="ct-r" id="aBinResult" style="font-size:12px;"></div>
         </div>
         <div class="ct-box">
-          <div class="ct-title">NORMAL N(μ,σ²)</div>
-          <div class="ct-row" style="flex-wrap:wrap;">μ= <input class="pi" id="aNorMu" value="0" style="width:38px;"> σ= <input class="pi" id="aNorSig" value="1" style="width:38px;"> x= <input class="pi" id="aNorX" value="1.96" style="width:42px;"></div>
-          <button class="bgraph" style="width:100%;height:24px;font-size:9px;margin-top:4px;" onclick="aNormal()">P(X≤x)</button>
-          <div class="ct-r" id="aNorResult" style="font-size:11px;"></div>
+          <div class="ct-title">Normal N(μ,σ²)</div>
+          <div class="ct-row" style="flex-wrap:wrap;">μ= <input class="pi" id="aNorMu" value="0" style="width:40px;"> σ= <input class="pi" id="aNorSig" value="1" style="width:40px;"> x= <input class="pi" id="aNorX" value="1.96" style="width:44px;"></div>
+          <button class="bgraph" style="width:100%;height:26px;font-size:10px;margin-top:5px;border-radius:20px;" onclick="aNormal()">P(X≤x)</button>
+          <div class="ct-r" id="aNorResult" style="font-size:12px;"></div>
         </div>
       </div>
     </div>
 
-    <div style="text-align:right;margin-top:8px;">
-      <button class="ba bico" onclick="toggleHist()">HIST</button>
-      <button class="ba bico" style="margin-left:4px;" onclick="toggleAngle()">DEG/RAD</button>
-      <button class="ba bico" style="margin-left:4px;" onclick="clearAll()">CLR</button>
-    </div>
   </div>
 
   <!-- HISTORY (shared) -->
   <div class="hist-wrap" id="histWrap">
     <div class="hist-inner">
-      <div class="hist-title">HISTORY</div>
+      <div class="hist-title">History</div>
       <div class="hist-list" id="histList"></div>
     </div>
   </div>
 
   <div class="bottom">
     <div class="bb">
-      <button class="ba bico" onclick="toggleHist()">HIST</button>
+      <button class="ba bico" onclick="toggleHist()">History</button>
       <button class="ba bico" onclick="toggleAngle()">DEG/RAD</button>
-      <button class="ba bico" onclick="clearAll()">CLR ALL</button>
+      <button class="ba bico" onclick="clearAll()">Clear All</button>
     </div>
-    <div style="font-size:9px;color:var(--dim);">CALCULON · LEON DUDHILL</div>
   </div>
 
 </div><!-- /shell -->
@@ -977,30 +971,30 @@ function toggleAngle() {
   angleMode = angleMode === 'DEG' ? 'RAD' : 'DEG';
   document.getElementById('sAngle').textContent   = angleMode;
   document.getElementById('ind-angle').textContent = angleMode;
-  document.getElementById('dind-d').style.color = angleMode==='DEG' ? 'var(--orange)' : 'var(--dim)';
-  document.getElementById('dind-r').classList.toggle('on', angleMode==='RAD');
 }
 function updateMemLabel() {
   document.getElementById('sMem').textContent = 'M='+r6(memory);
-  document.getElementById('ind-mem').classList.toggle('on-green', memory !== 0);
+  document.getElementById('ind-mem')?.classList.toggle('on-green', memory !== 0);
 }
 function clearAll() {
-  dExpr=''; dVal='0'; dAltVal=''; lastAns=0; memory=0;
-  stdPrev=null; stdOper=null; stdWait=false; stdJust=false;
-  gExpr=''; gCur='0'; gShift=false; gAlpha=false;
-  aExpr=''; aCur='0'; aShift=false; aAlpha=false;
-  updDisplay(); updateMemLabel();
+  history = [];
+  renderHist();
+  document.getElementById('histWrap').classList.remove('open');
 }
 function toggleHist() { document.getElementById('histWrap').classList.toggle('open'); }
 function renderHist() {
-  document.getElementById('histList').innerHTML = history.slice(0,15).map(h =>
-    `<div class="hist-item" onclick="recallHist('${h.result}')"><span>${h.expr.slice(0,28)}</span><span>${h.result}</span></div>`
+  const list = document.getElementById('histList');
+  if (!history.length) { list.innerHTML = '<div style="padding:10px 8px;font-size:12px;color:var(--muted);font-family:\'Google Sans\',sans-serif;">No history yet</div>'; return; }
+  list.innerHTML = history.slice(0,15).map((h, i) =>
+    `<div class="hist-item" onclick="recallHist(${i})"><span>${h.expr.slice(0,28)}</span><span>${h.result}</span></div>`
   ).join('');
 }
-function recallHist(v) {
-  dVal = v; updDisplay();
-  if (topMode==='gcse') gCur = v;
-  if (topMode==='alv')  aCur = v;
+function recallHist(i) {
+  const h = history[i];
+  if (!h) return;
+  dVal = h.result; updDisplay();
+  if (topMode==='gcse') gCur = h.result;
+  if (topMode==='alv')  aCur = h.result;
 }
 
 // =====================================================================
@@ -1060,14 +1054,15 @@ function stdOp(op) {
 function stdEval() {
   if (!stdOper||!stdPrev) return;
   const b = stdJust ? stdPrev : dVal;
-  dExpr = stdPrev+' '+stdOper+' '+b+' =';
+  const exprStr = stdPrev+' '+stdOper+' '+b;
+  dExpr = exprStr+' =';
   const res = stdCalc(parseFloat(stdPrev), stdOper, parseFloat(b));
   if (res===null){showErr('ERR');return;}
   flashMain(); dVal=fmtNum(res); lastAns=res;
   document.getElementById('dMain').textContent = dVal;
   document.getElementById('dExpr').textContent = dExpr;
   stdPrev=dVal; stdJust=true; stdWait=false;
-  history.unshift({expr:stdPrev+' '+stdOper+' '+b, result:dVal});
+  history.unshift({expr:exprStr, result:dVal});
   if(history.length>30)history.pop(); renderHist();
 }
 function stdCalc(a,op,b) {
@@ -1091,8 +1086,6 @@ function updMods() {
   document.getElementById('gAlphaBtn')?.classList.toggle('mod-on',gAlpha);
   document.getElementById('aShiftBtn')?.classList.toggle('mod-on',aShift);
   document.getElementById('aAlphaBtn')?.classList.toggle('mod-on',aAlpha);
-  document.getElementById('ind-shift').classList.toggle('on-yellow',gShift||aShift);
-  document.getElementById('ind-alpha').classList.toggle('on-green',gAlpha||aAlpha);
 }
 function clrMods(){gShift=false;gAlpha=false;aShift=false;aAlpha=false;updMods();}
 
@@ -1100,7 +1093,6 @@ function gSubMode(m, btn) {
   document.querySelectorAll('.gsub').forEach(e=>e.style.display='none');
   document.getElementById('gsub-'+m).style.display='block';
   document.querySelectorAll('.sub-tab').forEach(b=>b.classList.remove('active'));
-  // find the button
   document.querySelectorAll('.sub-tab').forEach(b=>{ if(b.textContent.trim().toLowerCase().startsWith(m.slice(0,3))) b.classList.add('active'); });
   dExpr=''; dVal='0'; dAltVal=''; updDisplay();
 }
@@ -1349,8 +1341,8 @@ function aEval(){
 const canvas=document.getElementById('graphCanvas');
 const ctx=canvas.getContext('2d');
 const CW=856,CH=320;
-let fnList=[{expr:'sin(x)',color:'#00ffaa',on:true},{expr:'x^2/4',color:'#ff6b35',on:true},{expr:'',color:'#ffd700',on:false},{expr:'',color:'#44aaff',on:false}];
-const fnCols=['#00ffaa','#ff6b35','#ffd700','#44aaff','#ff44ff','#aa44ff'];
+let fnList=[{expr:'sin(x)',color:'#1a73e8',on:true},{expr:'x^2/4',color:'#d93025',on:true},{expr:'',color:'#1e8e3e',on:false},{expr:'',color:'#7c4dff',on:false}];
+const fnCols=['#1a73e8','#d93025','#1e8e3e','#7c4dff','#f9ab00','#00bcd4'];
 let tracing=false, traceX=0;
 
 function buildFnRows(){
@@ -1373,20 +1365,20 @@ function drawGraph(){
   const xmn=parseFloat(document.getElementById('axmin').value),xmx=parseFloat(document.getElementById('axmax').value);
   const ymn=parseFloat(document.getElementById('aymin').value),ymx=parseFloat(document.getElementById('aymax').value);
   if([xmn,xmx,ymn,ymx].some(isNaN))return;
-  ctx.fillStyle='#001408';ctx.fillRect(0,0,CW,CH);
+  ctx.fillStyle='#f8f9fa';ctx.fillRect(0,0,CW,CH);
   const gsx=niceStep((xmx-xmn)/8),gsy=niceStep((ymx-ymn)/6);
-  ctx.strokeStyle='#002814';ctx.lineWidth=1;
+  ctx.strokeStyle='#e8eaed';ctx.lineWidth=1;
   for(let gx=Math.ceil(xmn/gsx)*gsx;gx<=xmx;gx+=gsx){ctx.beginPath();ctx.moveTo(xToP(gx,xmn,xmx),0);ctx.lineTo(xToP(gx,xmn,xmx),CH);ctx.stroke();}
   for(let gy=Math.ceil(ymn/gsy)*gsy;gy<=ymx;gy+=gsy){ctx.beginPath();ctx.moveTo(0,yToP(gy,ymn,ymx));ctx.lineTo(CW,yToP(gy,ymn,ymx));ctx.stroke();}
-  ctx.strokeStyle='#006633';ctx.lineWidth=1.5;
+  ctx.strokeStyle='#dadce0';ctx.lineWidth=1.5;
   const ax=xToP(0,xmn,xmx),ay=yToP(0,ymn,ymx);
   ctx.beginPath();ctx.moveTo(ax,0);ctx.lineTo(ax,CH);ctx.stroke();
   ctx.beginPath();ctx.moveTo(0,ay);ctx.lineTo(CW,ay);ctx.stroke();
-  ctx.fillStyle='#005522';ctx.font='20px Share Tech Mono';
+  ctx.fillStyle='#9aa0a6';ctx.font='11px Google Sans,sans-serif';
   ctx.textAlign='center';
-  for(let gx=Math.ceil(xmn/gsx)*gsx;gx<=xmx;gx+=gsx){if(Math.abs(gx)<1e-10)continue;ctx.fillText(parseFloat(gx.toPrecision(3)),xToP(gx,xmn,xmx),Math.min(ay+18,CH-4));}
+  for(let gx=Math.ceil(xmn/gsx)*gsx;gx<=xmx;gx+=gsx){if(Math.abs(gx)<1e-10)continue;ctx.fillText(parseFloat(gx.toPrecision(3)),xToP(gx,xmn,xmx),Math.min(ay+16,CH-4));}
   ctx.textAlign='right';
-  for(let gy=Math.ceil(ymn/gsy)*gsy;gy<=ymx;gy+=gsy){if(Math.abs(gy)<1e-10)continue;ctx.fillText(parseFloat(gy.toPrecision(3)),Math.max(ax-4,30),yToP(gy,ymn,ymx)+5);}
+  for(let gy=Math.ceil(ymn/gsy)*gsy;gy<=ymx;gy+=gsy){if(Math.abs(gy)<1e-10)continue;ctx.fillText(parseFloat(gy.toPrecision(3)),Math.max(ax-4,30),yToP(gy,ymn,ymx)+4);}
   fnList.forEach(fn=>{
     if(!fn.on||!fn.expr.trim())return;
     ctx.strokeStyle=fn.color;ctx.lineWidth=2.5;ctx.setLineDash([]);ctx.beginPath();
@@ -1401,7 +1393,7 @@ function drawGraph(){
       prevPy=py;
     }
     ctx.stroke();
-    ctx.fillStyle=fn.color;ctx.font='18px Share Tech Mono';ctx.textAlign='left';
+    ctx.fillStyle=fn.color;ctx.font='11px Google Sans,sans-serif';ctx.textAlign='left';
     const mx=(xmn+xmx)/2;let my;try{my=evalFnX(fn.expr,mx);}catch(e){my=null;}
     if(my!==null&&isFinite(my)){const py2=yToP(my,ymn,ymx);if(py2>10&&py2<CH-10)ctx.fillText('y='+fn.expr.slice(0,12),xToP(mx,xmn,xmx)+4,py2-6);}
   });
@@ -1409,7 +1401,7 @@ function drawGraph(){
 }
 function drawTrace(xmn,xmx,ymn,ymx){
   const px=xToP(traceX,xmn,xmx);
-  ctx.strokeStyle='rgba(255,255,255,0.3)';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+  ctx.strokeStyle='rgba(26,115,232,0.3)';ctx.lineWidth=1;ctx.setLineDash([4,4]);
   ctx.beginPath();ctx.moveTo(px,0);ctx.lineTo(px,CH);ctx.stroke();ctx.setLineDash([]);
   fnList.forEach(fn=>{
     if(!fn.on||!fn.expr)return;
@@ -1623,7 +1615,6 @@ function aNormal(){
 function scrollHist(dir, mode) {
   const h = history;
   if(!h.length)return;
-  // simple: recall last result
   const item = dir < 0 ? h[0] : h[Math.min(1,h.length-1)];
   if(mode==='g'){gCur=item.result;dVal=gCur;updDisplay();}
   else{aCur=item.result;dVal=aCur;updDisplay();}
