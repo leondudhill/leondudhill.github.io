@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>TETRIS</title>
+<title>Block Drop</title>
 <link rel="icon" href="favicon.png" type="image/png" />
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
@@ -67,13 +67,11 @@
       align-items:center;
       gap:4px;
       width:100vw;
-      /* Leave room for back button top, hint bottom */
       padding-top:48px;
       padding-bottom:28px;
       height:100dvh;
     }
 
-    /* Score strip above board */
     #side-left {
       flex-direction:row; width:auto; gap:18px;
       padding:0; order:1; flex-shrink:0;
@@ -81,7 +79,6 @@
     .panel-value { font-size:18px; }
     .panel-label { font-size:9px; }
 
-    /* Board fills remaining space */
     #game-wrapper {
       order:2;
       flex:1;
@@ -91,15 +88,12 @@
       width:100%;
       min-height:0;
     }
-    /* Size canvas to fit the available height */
     #c {
-      /* 2:1 ratio (300x600). Fit within viewport minus chrome */
       height:min(calc(100dvh - 130px), 480px) !important;
       width:auto !important;
       aspect-ratio:1/2;
     }
 
-    /* Next + Best row */
     #side-right {
       flex-direction:row; width:auto; gap:18px;
       order:3; align-items:center; flex-shrink:0;
@@ -107,7 +101,6 @@
     }
     #next-canvas { width:50px !important; height:50px !important; }
 
-    /* Hide keyboard hint, show gesture hint */
     #controls { display:none; }
     #gesture-hint { display:block; }
   }
@@ -128,7 +121,7 @@
   <div id="game-wrapper">
     <canvas id="c" width="300" height="600"></canvas>
     <div id="overlay">
-      <h1>TETRIS</h1>
+      <h1>BLOCK DROP</h1>
       <div class="ov-detail" id="ov-hint1">← → Move &nbsp;·&nbsp; ↑ Rotate</div>
       <div class="ov-detail" id="ov-hint2">↓ Soft drop &nbsp;·&nbsp; SPACE Hard drop</div>
       <div class="ov-sub" id="ov-start">Press SPACE to start</div>
@@ -171,19 +164,15 @@ let dropTimer=0, dropInterval=48;
 let particles=[], floaters=[], lineClearAnim=[];
 let tick=0;
 
-// ── LOCK DELAY — real-time based, not tick-based ──────────────────────────────
-// 0.2 s after the piece can no longer move down, it locks.
-// Reset whenever the piece successfully moves (slide/rotate resets the clock).
 let lockTimeout = null;
 
 function scheduleLock() {
-  if (lockTimeout) return;          // already scheduled
+  if (lockTimeout) return;
   lockTimeout = setTimeout(() => {
     lockTimeout = null;
-    // Double-check it still can't move down (player may have moved it)
     const down = current.cells.map(([c,r])=>[c,r+1]);
     if (!isValid(down)) lockPiece();
-  }, 200);                          // 0.2 seconds
+  }, 200);
 }
 function cancelLock() {
   if (lockTimeout) { clearTimeout(lockTimeout); lockTimeout = null; }
@@ -203,7 +192,6 @@ if (isMobile) {
   document.getElementById('ov-start').textContent  = 'Tap to start';
 }
 
-// ── KEYBOARD ─────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   if (KEYS[e.key]) return;
   KEYS[e.key] = true;
@@ -224,17 +212,9 @@ document.addEventListener('keydown', e => {
 });
 document.addEventListener('keyup', e=>{ KEYS[e.key]=false; });
 
-// ── TOUCH GESTURE SYSTEM ─────────────────────────────────────────────────────
-// Behaviour:
-//   Short tap (< 200ms, < 10px move)  → rotate
-//   Swipe UP  (dy < -40, |dy|>|dx|)   → hard drop
-//   Drag LEFT/RIGHT: every CELL pixels of horizontal movement → moveH
-//   Drag DOWN: every CELL pixels of downward movement → softDrop
+const DRAG_CELL = CELL;
+let touch = null;
 
-const DRAG_CELL = CELL;   // pixels per cell of movement
-let touch = null;         // active touch state
-
-// Tap overlay to start — overlay sits on top of canvas so canvas never sees the touch
 document.getElementById('overlay').addEventListener('touchstart', e => {
   e.preventDefault();
   if (state==='idle'||state==='gameover') startGame();
@@ -260,13 +240,9 @@ canvas.addEventListener('touchmove', e => {
   touch.movedH += dx;
   touch.movedV += dy;
 
-  // Horizontal drag — step every DRAG_CELL pixels
   while (touch.movedH <= -DRAG_CELL) { moveH(-1); touch.movedH += DRAG_CELL; touch.didAction=true; }
   while (touch.movedH >=  DRAG_CELL) { moveH(1);  touch.movedH -= DRAG_CELL; touch.didAction=true; }
-
-  // Downward drag — soft drop each cell
   while (touch.movedV >=  DRAG_CELL) { softDrop(); touch.movedV -= DRAG_CELL; touch.didAction=true; }
-  // Ignore upward drag accumulation here — handle on touchend as swipe
   if (touch.movedV < 0) touch.movedV = 0;
 
 }, { passive:false });
@@ -281,12 +257,9 @@ canvas.addEventListener('touchend', e => {
   const elapsed = Date.now() - touch.t0;
   const dist = Math.sqrt(totalDx*totalDx + totalDy*totalDy);
 
-  // Swipe UP → hard drop
   if (totalDy < -40 && Math.abs(totalDy) > Math.abs(totalDx)) {
     hardDrop();
-  }
-  // Tap (quick, barely moved) → rotate
-  else if (!touch.didAction && elapsed < 250 && dist < 12) {
+  } else if (!touch.didAction && elapsed < 250 && dist < 12) {
     rotate();
   }
 
@@ -295,7 +268,6 @@ canvas.addEventListener('touchend', e => {
 
 canvas.addEventListener('touchcancel', () => { touch=null; }, { passive:true });
 
-// ── GAME FLOW ─────────────────────────────────────────────────────────────────
 function startGame() {
   board = Array.from({length:ROWS},()=>Array(COLS).fill(null));
   score=0; level=1; lines=0;
@@ -335,13 +307,11 @@ function gameOver() {
   setTimeout(()=>showOverlay('GAME OVER','Score: '+score+'  ·  Best: '+best, hint), 600);
 }
 
-// ── MOVEMENT ─────────────────────────────────────────────────────────────────
 function moveH(dx) {
   if (!current) return;
   const moved=current.cells.map(([c,r])=>[c+dx,r]);
   if (isValid(moved)) {
     current.cells=moved;
-    // If resting on something, reset lock timer on successful move
     const down=current.cells.map(([c,r])=>[c,r+1]);
     if (!isValid(down)) { cancelLock(); scheduleLock(); }
   }
@@ -379,7 +349,6 @@ function rotate() {
     const kicked=rotated.map(([c,r])=>[c+dx,r]);
     if (isValid(kicked)) {
       current.cells=kicked;
-      // Reset lock timer on successful rotate while resting
       const down=current.cells.map(([c,r])=>[c,r+1]);
       if (!isValid(down)) { cancelLock(); scheduleLock(); }
       return;
@@ -413,26 +382,23 @@ function clearLines() {
   updateHUD(); addFloater(W/2,H/2,'+'+pts); spawnLineClearParticles(cleared.length);
 }
 
-// ── UPDATE LOOP ───────────────────────────────────────────────────────────────
 function update() {
   tick++;
   if (state!=='playing') { updateParticles(); updateFloaters(); return; }
 
-  // Keyboard held repeat
   if (KEYS['ArrowLeft'])  { if(tick%6===0) moveH(-1); }
   if (KEYS['ArrowRight']) { if(tick%6===0) moveH(1); }
   if (KEYS['ArrowDown'])  { if(tick%2===0) softDrop(); }
 
-  // Gravity
   dropTimer++;
   if (dropTimer>=dropInterval) {
     dropTimer=0;
     const moved=current.cells.map(([c,r])=>[c,r+1]);
     if (isValid(moved)) {
       current.cells=moved;
-      cancelLock(); // still falling freely — cancel any pending lock
+      cancelLock();
     } else {
-      scheduleLock(); // hit bottom — start the 0.2s countdown
+      scheduleLock();
     }
   }
 
@@ -441,7 +407,6 @@ function update() {
   updateParticles(); updateFloaters();
 }
 
-// ── PARTICLES ─────────────────────────────────────────────────────────────────
 function spawnLockParticles() {
   current.cells.forEach(([c,r])=>{
     for(let i=0;i<2;i++){
@@ -467,7 +432,6 @@ function updateParticles(){ particles=particles.filter(p=>p.life>0); particles.f
 function addFloater(x,y,val){ floaters.push({x,y,val,life:1}); }
 function updateFloaters(){ floaters=floaters.filter(f=>f.life>0); floaters.forEach(f=>{f.y-=0.6;f.life-=0.02;}); }
 
-// ── HUD ───────────────────────────────────────────────────────────────────────
 function updateHUD(){
   document.getElementById('score-el').textContent=score;
   document.getElementById('level-el').textContent=level;
@@ -482,7 +446,6 @@ function drawNext(){
   next.cells.forEach(([c,r])=>drawCell(nctx,offX+c*NC,offY+r*NC,NC,next.color));
 }
 
-// ── DRAW ─────────────────────────────────────────────────────────────────────
 function drawCell(c2,x,y,size,color){
   c2.fillStyle=color; c2.shadowColor=color; c2.shadowBlur=10;
   c2.fillRect(x+1,y+1,size-2,size-2);
