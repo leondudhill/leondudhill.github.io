@@ -452,6 +452,23 @@ footer {
   transform: translateY(-4px);
 }
 
+.games-hero-overlay .games-hero-award {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #ffffff;
+      background: rgba(0,0,0,0.55);
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      backdrop-filter: blur(4px);
+      transition: opacity 0.3s ease;
+    }
+
+    .games-hero-card:hover .games-hero-award {
+      opacity: 0;
+    }
+
 .game-preview {
   height: 160px;
   background: #020a0a;
