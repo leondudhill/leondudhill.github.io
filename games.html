@@ -70,10 +70,12 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: #ffffff;
-      background: rgba(0,0,0,0.55);
-      padding: 0.4rem 0.9rem;
-      border-radius: 999px;
-      backdrop-filter: blur(4px);
+      text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+      transition: opacity 0.3s ease;
+    }
+
+    .games-hero-card:hover .games-hero-award {
+      opacity: 0;
     }
 
     @media (max-width: 640px) {
