@@ -64,37 +64,18 @@
       text-align: right;
     }
 
-    .games-hero-overlay h2 {
-      font-family: var(--font-display);
-      font-size: 7rem;
-      letter-spacing: 0.05em;
-      line-height: 1;
-      color: #fff;
-      text-shadow: 0 2px 12px rgba(0,0,0,0.8);
-      opacity: 0;
-      transform: translateY(10px);
-      transition: opacity 0.3s ease, transform 0.3s ease;
-    }
-
-    .games-hero-card:hover .games-hero-overlay h2,
-    .games-hero-card:active .games-hero-overlay h2 {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
     .games-hero-overlay .games-hero-award {
-      font-size: 0.75rem;
+      font-size: 1.5rem;
+      font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: rgba(255,255,255,0.75);
       text-shadow: 0 1px 6px rgba(0,0,0,0.9);
-      margin-top: 0.3rem;
     }
 
     @media (max-width: 640px) {
       .games-hero-card { height: 220px; }
-      .games-hero-overlay h2 { font-size: 4rem; }
-      .games-hero-overlay .games-hero-award { font-size: 0.65rem; }
+      .games-hero-overlay .games-hero-award { font-size: 1rem; }
     }
   </style>
 </head>
@@ -120,7 +101,7 @@
   <div class="page-header">
     <span class="tag">🎮 Play</span>
     <h1>Games</h1>
-    <p>My original games built from scratch by me. Pick one and play.</p>
+    <p>Games built from scratch. Pick one and play.</p>
   </div>
 
   <div class="page-content">
@@ -129,16 +110,12 @@
       <a href="crushendo.html" class="games-hero-card">
         <img src="images/crushendo.jpg" alt="Crushendo" class="games-hero-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
         <div class="games-hero-emoji" style="display:none;">💥</div>
-        <div class="games-hero-overlay">
-          <h2>Crushendo</h2>
-        </div>
       </a>
 
       <a href="clay-verse.html" class="games-hero-card">
         <img src="images/clay-verse.jpg" alt="Clay-Verse" class="games-hero-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
         <div class="games-hero-emoji" style="display:none;">🌍</div>
         <div class="games-hero-overlay">
-          <h2>Clay-Verse</h2>
           <div class="games-hero-award">BAFTA Young Game Designer 2025 – Game Concept Finalist</div>
         </div>
       </a>
@@ -147,7 +124,6 @@
         <img src="images/trash.jpg" alt="Trash" class="games-hero-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
         <div class="games-hero-emoji" style="display:none;">🗑️</div>
         <div class="games-hero-overlay">
-          <h2>Trash</h2>
           <div class="games-hero-award">BAFTA Young Game Designer 2024 – Game Concept Finalist</div>
         </div>
       </a>
