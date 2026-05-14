@@ -68,9 +68,7 @@ body::before{
   content:'';position:absolute;width:30%;height:30%;border-radius:50%;
   background:rgba(0,255,200,0.28);box-shadow:0 0 10px rgba(0,255,200,0.5);pointer-events:none;
 }
-#piece-layer{
-  position:absolute;inset:0;pointer-events:none;z-index:10;
-}
+#piece-layer{position:absolute;inset:0;pointer-events:none;z-index:10;}
 #drag-ghost{
   position:fixed;pointer-events:none;z-index:9000;border-radius:50%;
   display:none;align-items:center;justify-content:center;
@@ -223,9 +221,8 @@ function updateMemoryUI(){
   if(el) el.textContent=`CPU memory: ${count} pattern${count!==1?'s':''} · game ${cpuGamesPlayed}`;
 }
 
-/* Skill ramp: depth = min(games played, MAX_DEPTH), min 1 */
 function getAIDepth(){
-  return Math.max(1, Math.min(cpuGamesPlayed, MAX_DEPTH));
+  return Math.max(1,Math.min(cpuGamesPlayed,MAX_DEPTH));
 }
 
 function hashBoard(g){
@@ -287,13 +284,13 @@ function getMemoryPenalty(g,m){
 
 /* ═══════════════════════ STATE ═══════════════════════════ */
 let G=[];
-let turn=RED, selected=null, validMoves=[], mustCap=false;
-let gameState='idle', scores={r:0,c:0}, caps={r:0,c:0};
-let vsPC=false, cpuBusy=false, chain=null;
-let dragging=false, dragFrom=null, dragPiece=EMPTY;
+let turn=RED,selected=null,validMoves=[],mustCap=false;
+let gameState='idle',scores={r:0,c:0},caps={r:0,c:0};
+let vsPC=false,cpuBusy=false,chain=null;
+let dragging=false,dragFrom=null,dragPiece=EMPTY;
 
 /* ═══════════════════════ SIZING ══════════════════════════ */
-let BS=480, CELL=60, PRAD=22;
+let BS=480,CELL=60,PRAD=22;
 function resize(){
   BS=Math.floor(Math.min(window.innerWidth*.96,window.innerHeight-200,480)/8)*8;
   CELL=BS/8; PRAD=CELL*.36;
@@ -343,7 +340,7 @@ function render(){
 }
 
 function drawPiece(ctx,cx,cy,rad,piece,sel){
-  const isR=piece===RED||piece===RK, isK=piece===RK||piece===CK;
+  const isR=piece===RED||piece===RK,isK=piece===RK||piece===CK;
   ctx.save();
   if(sel){ctx.shadowColor='rgba(255,255,80,.9)';ctx.shadowBlur=24;cy-=rad*.1;}
   ctx.beginPath(); ctx.arc(cx,cy,rad+5,0,Math.PI*2);
@@ -384,7 +381,7 @@ function hideGhost(){ghost.style.display='none';}
 /* ═══════════════════════ HIT TEST ═══════════════════════ */
 function toCell(px,py){
   const rect=document.getElementById('board').getBoundingClientRect();
-  const c=Math.floor((px-rect.left)/CELL), r=Math.floor((py-rect.top)/CELL);
+  const c=Math.floor((px-rect.left)/CELL),r=Math.floor((py-rect.top)/CELL);
   return (r>=0&&r<8&&c>=0&&c<8)?{r,c}:null;
 }
 function xy(e){return e.touches?{x:e.touches[0].clientX,y:e.touches[0].clientY}:{x:e.clientX,y:e.clientY};}
@@ -405,22 +402,12 @@ function pDown(e){
   const {x,y}=xy(e); const cell=toCell(x,y); if(!cell) return;
   const {r,c}=cell; const p=G[r][c];
   const mine=(turn===RED&&(p===RED||p===RK))||(turn===CYAN&&(p===CYAN||p===CK));
-
-  // During a chain capture, only allow selecting the chaining piece
   if(chain){
-    if(r===chain.r&&c===chain.c&&mine){
-      selectPiece(r,c);
-      startDrag(r,c,p,x,y);
-    }
+    if(r===chain.r&&c===chain.c&&mine){ selectPiece(r,c); startDrag(r,c,p,x,y); }
     return;
   }
-
-  if(mine){
-    selectPiece(r,c);
-    startDrag(r,c,p,x,y);
-  } else if(selected){
-    tryMove(r,c);
-  }
+  if(mine){ selectPiece(r,c); startDrag(r,c,p,x,y); }
+  else if(selected){ tryMove(r,c); }
 }
 
 function pMove(e){
@@ -444,15 +431,12 @@ function pUp(e){
     const m=validMoves.find(v=>v.row===cell.r&&v.col===cell.c);
     if(m){ doMove(m); return; }
   }
-  // Drop on invalid square — keep piece selected, show hints
-  showHighlights(false);
-  render();
+  showHighlights(false); render();
 }
 
 function selectPiece(r,c){
   selected={r,c};
   let moves=movesFor(r,c);
-  // Enforce must-capture: if any capture available globally, only capture moves allowed
   if(mustCap) moves=moves.filter(m=>m.captures.length>0);
   validMoves=moves;
 }
@@ -465,24 +449,23 @@ function startDrag(r,c,p,x,y){
 function tryMove(r,c){
   const m=validMoves.find(v=>v.row===r&&v.col===c);
   if(m){ doMove(m); }
-  else { selected=null; validMoves=[]; showHighlights(false); render(); }
+  else{ selected=null; validMoves=[]; showHighlights(false); render(); }
 }
 
 /* ═══════════════════════ MOVE EXECUTION ════════════════════ */
 function doMove(mv){
-  // Safety check — piece must still be at source
+  // Safety: piece must exist at source
   const p=G[selected.r][selected.c];
   if(!p){
-    // Something went wrong — reset state cleanly
     selected=null; validMoves=[]; chain=null; dragging=false;
-    hideGhost(); render(); return;
+    cpuBusy=false; hideGhost(); render(); return;
   }
 
   // Apply move
   G[mv.row][mv.col]=p;
   G[selected.r][selected.c]=EMPTY;
 
-  // Remove captured pieces and update capture counter
+  // Remove captured pieces
   mv.captures.forEach(cap=>{
     if(G[cap.r][cap.c]!==EMPTY){
       G[cap.r][cap.c]=EMPTY;
@@ -497,7 +480,7 @@ function doMove(mv){
 
   updateCapsUI();
 
-  // Chain capture — only if not promoted and further captures exist
+  // Chain capture check
   if(mv.captures.length>0&&!promoted){
     const further=movesFor(mv.row,mv.col).filter(m=>m.captures.length>0);
     if(further.length){
@@ -506,16 +489,42 @@ function doMove(mv){
       validMoves=further;
       showHighlights(false);
       render();
+
+      // CPU continues chain automatically
+      if(vsPC&&turn===CYAN&&cpuBusy){
+        requestAnimationFrame(()=>{
+          requestAnimationFrame(()=>{
+            if(gameState!=='playing'){ cpuBusy=false; return; }
+            // Pick best chain capture from current board
+            const chainMoves=movesFor(chain.r,chain.c).filter(m=>m.captures.length>0);
+            if(!chainMoves.length){ cpuBusy=false; return; }
+            // Score chain moves and pick best
+            chainMoves.forEach(m=>{
+              const g=cloneG(G);
+              // fromR/fromC for chain move is the chain piece position
+              m.fromR=chain.r; m.fromC=chain.c;
+              const u=applyG(g,m);
+              m._score=evalG(g);
+              undoG(g,m,u);
+            });
+            chainMoves.sort((a,b)=>b._score-a._score);
+            const best=chainMoves[0];
+            selected={r:chain.r,c:chain.c};
+            doMove(best);
+          });
+        });
+      }
       return;
     }
   }
 
-  // End of move — clean up chain and selection
+  // Full move complete — reset everything
+  cpuBusy=false;
   chain=null;
   selected=null;
   validMoves=[];
 
-  // Check win before switching turn
+  // Win check before switching turn
   const w=checkWin();
   if(w){ showHighlights(false); render(); endGame(w); return; }
 
@@ -526,7 +535,7 @@ function doMove(mv){
   showHighlights(false);
   render();
 
-  // CPU goes — only trigger once, only if it's now CPU's turn
+  // Trigger CPU if it's now CYAN's turn
   if(vsPC&&turn===CYAN&&!cpuBusy){
     cpuBusy=true;
     cpuGo();
@@ -536,17 +545,15 @@ function doMove(mv){
 /* ═══════════════════════ MOVE GEN ══════════════════════════ */
 function movesFor(r,c){
   const p=G[r][c]; if(!p) return [];
-  const isR=p===RED||p===RK, isK=p===RK||p===CK;
+  const isR=p===RED||p===RK,isK=p===RK||p===CK;
   const dirs=[];
   if(isR||isK) dirs.push([-1,-1],[-1,1]);
   if(!isR||isK) dirs.push([1,-1],[1,1]);
   const out=[];
-  // Regular moves
   dirs.forEach(([dr,dc])=>{
     const nr=r+dr,nc=c+dc;
     if(ok(nr,nc)&&!G[nr][nc]) out.push({row:nr,col:nc,captures:[]});
   });
-  // Capture moves
   dirs.forEach(([dr,dc])=>{
     const mr=r+dr,mc=c+dc,lr=r+2*dr,lc=c+2*dc;
     if(ok(lr,lc)&&!G[lr][lc]){
@@ -562,9 +569,8 @@ function allMovesForPlayer(t){
   const out=[];
   for(let r=0;r<8;r++) for(let c=0;c<8;c++){
     const p=G[r][c];
-    if((t===RED&&(p===RED||p===RK))||(t===CYAN&&(p===CYAN||p===CK))){
+    if((t===RED&&(p===RED||p===RK))||(t===CYAN&&(p===CYAN||p===CK)))
       movesFor(r,c).forEach(m=>out.push({...m,fromR:r,fromC:c}));
-    }
   }
   return out;
 }
@@ -584,7 +590,7 @@ function checkWin(){
   }
   if(!cc) return RED;
   if(!rc) return CYAN;
-  // Current player has no moves — they lose
+  // No moves available — current player loses
   if(!allMovesForPlayer(turn).length) return turn===RED?CYAN:RED;
   return null;
 }
@@ -621,7 +627,7 @@ function countG(g,t){
 
 function movesOnG(g,r,c){
   const p=g[r][c]; if(!p) return [];
-  const isR=p===RED||p===RK, isK=p===RK||p===CK;
+  const isR=p===RED||p===RK,isK=p===RK||p===CK;
   const dirs=[];
   if(isR||isK) dirs.push([-1,-1],[-1,1]);
   if(!isR||isK) dirs.push([1,-1],[1,1]);
@@ -669,7 +675,7 @@ function undoG(g,m,u){
 }
 
 function evalG(g){
-  let score=0, cP=0, rP=0;
+  let score=0,cP=0,rP=0;
   for(let r=0;r<8;r++) for(let c=0;c<8;c++){
     const p=g[r][c]; if(!p) continue;
     const ct=CENTRE[r][c];
@@ -697,12 +703,8 @@ function evalG(g){
       if(c===0||c===7) score+=5;
     }
   }
-
-  // Flat material bonus — no self-sabotage amplifier
   const matDiff=cP-rP;
   score+=matDiff*20;
-
-  // When losing, prioritise mobility for comeback attempts
   const cMoves=allMovesG(g,CYAN).length;
   const rMoves=allMovesG(g,RED).length;
   if(matDiff<0){
@@ -711,8 +713,6 @@ function evalG(g){
   } else {
     score+=(cMoves-rMoves)*3;
   }
-
-  // Endgame king hunt
   if(rP<=4&&cP>0){
     for(let r=0;r<8;r++) for(let c=0;c<8;c++){
       if(g[r][c]===CK){
@@ -748,7 +748,7 @@ function quiesce(g,alpha,beta,t){
 
 function nm(g,depth,alpha,beta,t){
   if(Date.now()>aiDeadline) throw 'timeout';
-  const rc=countG(g,RED), cc=countG(g,CYAN);
+  const rc=countG(g,RED),cc=countG(g,CYAN);
   if(!cc) return t===CYAN?INF:-INF;
   if(!rc) return t===CYAN?-INF:INF;
   const moves=allMovesG(g,t);
@@ -775,21 +775,17 @@ function aiPickMove(g){
     recordMoveToHistory(g,moves[0]);
     return moves[0];
   }
-
-  // Skill ramp: depth grows with games played
   const maxDepth=getAIDepth();
   aiDeadline=Date.now()+TIME_LIMIT;
   let bestMove=moves[0];
-
   for(let depth=1;depth<=maxDepth;depth++){
     moves.sort((a,b)=>((b._score||0)-(a._score||0)));
-    let alpha=-INF, iterBest=null, timedOut=false;
+    let alpha=-INF,iterBest=null,timedOut=false;
     try{
       for(const m of moves){
         const u=applyG(g,m);
         let s=-nm(g,depth-1,-INF,-alpha,RED);
         undoG(g,m,u);
-        // Apply memory penalty
         s-=getMemoryPenalty(g,m);
         m._score=s;
         if(s>alpha){ alpha=s; iterBest=m; }
@@ -799,14 +795,14 @@ function aiPickMove(g){
     if(timedOut) break;
     if(alpha>=INF*0.9) break;
   }
-
   recordMoveToHistory(g,bestMove);
   return bestMove;
 }
 
+/* cpuBusy stays TRUE through the entire CPU turn including chains.
+   It is only set false inside doMove once the full move is done. */
 function cpuGo(){
   if(gameState!=='playing'){ cpuBusy=false; return; }
-  // Two rAF yields so the turn UI text paints before we block
   requestAnimationFrame(()=>{
     requestAnimationFrame(()=>{
       if(gameState!=='playing'){ cpuBusy=false; return; }
@@ -814,8 +810,8 @@ function cpuGo(){
       const mv=aiPickMove(g);
       if(!mv||gameState!=='playing'){ cpuBusy=false; return; }
       selected={r:mv.fromR,c:mv.fromC};
-      cpuBusy=false; // reset BEFORE doMove to prevent re-entry
       doMove(mv);
+      // cpuBusy is reset inside doMove when move fully completes
     });
   });
 }
@@ -866,6 +862,7 @@ function startGame(){
 
 function endGame(w){
   gameState='over';
+  cpuBusy=false;
   if(w===RED) scores.r++; else scores.c++;
   updateScoreUI();
   if(vsPC){
@@ -890,15 +887,14 @@ function showEnd(w){
       :'CPU wins this round')
     :(w===RED?'Red takes it':'Cyan takes it');
   const s=document.createElement('div');
-  s.className='sub';
-  s.textContent='Tap to play again';
+  s.className='sub'; s.textContent='Tap to play again';
   ov.appendChild(h); ov.appendChild(r); ov.appendChild(s);
   ov.style.display='flex';
 }
 
 const ov=document.getElementById('overlay');
-ov.addEventListener('click',()=>{if(gameState==='idle'||gameState==='over') startGame();});
-ov.addEventListener('touchend',e=>{e.preventDefault();if(gameState==='idle'||gameState==='over') startGame();},{passive:false});
+ov.addEventListener('click',()=>{ if(gameState==='idle'||gameState==='over') startGame(); });
+ov.addEventListener('touchend',e=>{ e.preventDefault(); if(gameState==='idle'||gameState==='over') startGame(); },{passive:false});
 
 document.getElementById('btn-2p').addEventListener('click',()=>setMode(false));
 document.getElementById('btn-cpu').addEventListener('click',()=>setMode(true));
@@ -923,7 +919,7 @@ resize();
   const s=document.getElementById('leon-splash');
   setTimeout(()=>s.style.opacity='1',50);
   setTimeout(()=>s.style.opacity='0',2800);
-  setTimeout(()=>{s.style.display='none';s.style.pointerEvents='none';},3700);
+  setTimeout(()=>{ s.style.display='none'; s.style.pointerEvents='none'; },3700);
 })();
 </script>
 </body>
