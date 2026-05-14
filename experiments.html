@@ -52,6 +52,15 @@
       opacity: 0.95;
     }
 
+    .ep-image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
     .exp-info {
       padding: 1.4rem 1.6rem;
       display: flex;
@@ -99,7 +108,6 @@
       font-weight: 500;
     }
 
-    /* Locked cards */
     .exp-card.locked {
       opacity: 0.4;
       pointer-events: none;
@@ -152,10 +160,10 @@
   <div class="page-content">
     <div class="experiments-grid">
 
-      <!-- Particle v0.1 -->
       <a href="particle-system.html" class="exp-card" target="_blank">
         <div class="exp-preview" style="background: radial-gradient(ellipse at 50% 50%, rgba(120,80,255,0.2) 0%, rgba(255,80,160,0.08) 50%, #000 70%);">
-          <div class="ep-emoji">✦</div>
+          <img src="images/particle-system.jpg" alt="Particle v0.1" class="ep-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <div class="ep-emoji" style="display:none;">✦</div>
         </div>
         <div class="exp-info">
           <div class="exp-meta">
@@ -168,10 +176,10 @@
         </div>
       </a>
 
-      <!-- Gravity v0.1 -->
       <a href="gravity-v01.html" class="exp-card" target="_blank">
         <div class="exp-preview" style="background: radial-gradient(ellipse at 50% 80%, rgba(255,255,255,0.06) 0%, #000 65%);">
-          <div class="ep-emoji">🟥</div>
+          <img src="images/gravity-v01.jpg" alt="Gravity 0.1" class="ep-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <div class="ep-emoji" style="display:none;">🟥</div>
         </div>
         <div class="exp-info">
           <div class="exp-meta">
@@ -184,10 +192,10 @@
         </div>
       </a>
 
-      <!-- Gravity v0.2 -->
       <a href="gravity-v02.html" class="exp-card" target="_blank">
         <div class="exp-preview" style="background: radial-gradient(ellipse at 50% 80%, rgba(255,255,255,0.07) 0%, #000 65%);">
-          <div class="ep-emoji">🔷</div>
+          <img src="images/gravity-v02.jpg" alt="Gravity 0.2" class="ep-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <div class="ep-emoji" style="display:none;">🔷</div>
         </div>
         <div class="exp-info">
           <div class="exp-meta">
@@ -200,10 +208,10 @@
         </div>
       </a>
 
-      <!-- Gravity v0.3 -->
       <a href="gravity-v03.html" class="exp-card" target="_blank">
         <div class="exp-preview" style="background: radial-gradient(ellipse at 50% 80%, rgba(255,255,255,0.08) 0%, #000 65%);">
-          <div class="ep-emoji">⬡</div>
+          <img src="images/gravity-v03.jpg" alt="Gravity 0.3" class="ep-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <div class="ep-emoji" style="display:none;">⬡</div>
         </div>
         <div class="exp-info">
           <div class="exp-meta">
@@ -216,10 +224,10 @@
         </div>
       </a>
 
-      <!-- Gravity v0.4 -->
       <a href="gravity-v04.html" class="exp-card" target="_blank">
         <div class="exp-preview" style="background: radial-gradient(ellipse at 50% 80%, rgba(255,255,255,0.09) 0%, #000 65%);">
-          <div class="ep-emoji">◆</div>
+          <img src="images/gravity-v04.jpg" alt="Gravity 0.4" class="ep-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <div class="ep-emoji" style="display:none;">◆</div>
         </div>
         <div class="exp-info">
           <div class="exp-meta">
@@ -232,10 +240,10 @@
         </div>
       </a>
 
-      <!-- Gravity v0.5 -->
       <a href="gravity-v05.html" class="exp-card" target="_blank">
         <div class="exp-preview" style="background: radial-gradient(ellipse at 50% 80%, rgba(255,255,255,0.1) 0%, #000 65%);">
-          <div class="ep-emoji">▲</div>
+          <img src="images/gravity-v05.jpg" alt="Gravity 0.5" class="ep-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <div class="ep-emoji" style="display:none;">▲</div>
         </div>
         <div class="exp-info">
           <div class="exp-meta">
@@ -248,10 +256,10 @@
         </div>
       </a>
 
-      <!-- Gravity v0.6 -->
       <a href="gravity-v06.html" class="exp-card" target="_blank">
         <div class="exp-preview" style="background: radial-gradient(ellipse at 50% 80%, rgba(232,255,71,0.07) 0%, #000 65%);">
-          <div class="ep-emoji">●</div>
+          <img src="images/gravity-v06.jpg" alt="Gravity 0.6" class="ep-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <div class="ep-emoji" style="display:none;">●</div>
         </div>
         <div class="exp-info">
           <div class="exp-meta">
@@ -264,10 +272,10 @@
         </div>
       </a>
 
-      <!-- Smart TV Takeover -->
       <div class="exp-card">
         <div class="exp-preview" style="background: radial-gradient(ellipse at 50% 80%, rgba(232,255,71,0.07) 0%, #000 65%);">
-          <div class="ep-emoji" style="opacity:0.3;">🔒</div>
+          <img src="images/smarttv-takeover.jpg" alt="Smart TV Takeover" class="ep-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <div class="ep-emoji" style="display:none; opacity:0.3;">🔒</div>
         </div>
         <div class="exp-info">
           <div class="exp-meta">
@@ -276,15 +284,15 @@
             <span class="exp-tag locked-tag">.Exe</span>
           </div>
           <h2>Smart TV Takeover</h2>
-          <p>Remote access and control your smart TV’s mic, camera, motion, and sensors.</p>
+          <p>Remote access and control your smart TV's mic, camera, motion, and sensors.</p>
           <span class="open-btn" style="color: red;">No Public Aceess</span>
         </div>
       </div>
 
-      <!-- Roomba Takeover -->
       <div class="exp-card">
         <div class="exp-preview" style="background: radial-gradient(ellipse at 50% 80%, rgba(232,255,71,0.07) 0%, #000 65%);">
-          <div class="ep-emoji" style="opacity:0.3;">🔒</div>
+          <img src="images/roomba-takeover.jpg" alt="Roomba Takeover" class="ep-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <div class="ep-emoji" style="display:none; opacity:0.3;">🔒</div>
         </div>
         <div class="exp-info">
           <div class="exp-meta">
@@ -293,15 +301,15 @@
             <span class="exp-tag locked-tag">.Exe</span>
           </div>
           <h2>Roomba Takeover</h2>
-          <p>Remote access and control your Roomba’s camera and sensors. Use a game controller to drive it.</p>
+          <p>Remote access and control your Roomba's camera and sensors. Use a game controller to drive it.</p>
           <span class="open-btn" style="color: red;">No Public Aceess</span>
         </div>
       </div>
 
-      <!-- Alexa Takeover -->
       <div class="exp-card">
-         <div class="exp-preview" style="background: radial-gradient(ellipse at 50% 80%, rgba(232,255,71,0.07) 0%, #000 65%);">
-          <div class="ep-emoji" style="opacity:0.3;">🔒</div>
+        <div class="exp-preview" style="background: radial-gradient(ellipse at 50% 80%, rgba(232,255,71,0.07) 0%, #000 65%);">
+          <img src="images/alexa-takeover.jpg" alt="Alexa Takeover" class="ep-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <div class="ep-emoji" style="display:none; opacity:0.3;">🔒</div>
         </div>
         <div class="exp-info">
           <div class="exp-meta">
@@ -315,10 +323,10 @@
         </div>
       </div>
 
-      <!-- Speaker-as-mic -->
       <div class="exp-card">
-         <div class="exp-preview" style="background: radial-gradient(ellipse at 50% 80%, rgba(232,255,71,0.07) 0%, #000 65%);">
-          <div class="ep-emoji" style="opacity:0.3;">🔒</div>
+        <div class="exp-preview" style="background: radial-gradient(ellipse at 50% 80%, rgba(232,255,71,0.07) 0%, #000 65%);">
+          <img src="images/speaker-as-mic.jpg" alt="Speaker-as-mic" class="ep-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <div class="ep-emoji" style="display:none; opacity:0.3;">🔒</div>
         </div>
         <div class="exp-info">
           <div class="exp-meta">
@@ -332,10 +340,10 @@
         </div>
       </div>
 
-          <!-- MusicSync for Games -->
       <div class="exp-card">
-         <div class="exp-preview" style="background: radial-gradient(ellipse at 50% 80%, rgba(232,255,71,0.07) 0%, #000 65%);">
-          <div class="ep-emoji" style="opacity:0.3;">🔒</div>
+        <div class="exp-preview" style="background: radial-gradient(ellipse at 50% 80%, rgba(232,255,71,0.07) 0%, #000 65%);">
+          <img src="images/musicsync-games.jpg" alt="MusicSync for Games" class="ep-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <div class="ep-emoji" style="display:none; opacity:0.3;">🔒</div>
         </div>
         <div class="exp-info">
           <div class="exp-meta">
@@ -348,7 +356,7 @@
           <span class="open-btn" style="color: red;">No Public Aceess</span>
         </div>
       </div>
-      
+
     </div>
   </div>
 
