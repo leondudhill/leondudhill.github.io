@@ -174,56 +174,63 @@ body::before{
 /* ═══════════════════════ CONSTANTS ═══════════════════════ */
 const EMPTY=0,RED=1,CYAN=2,RK=3,CK=4;
 const MEMORY_KEY='checkers_cpu_memory';
+const GAMES_KEY='checkers_cpu_games';
 const MAX_MEMORY=500;
+const MAX_DEPTH=16;
 
-/* ═══════════════════════ LEARNING MEMORY ════════════════════
-   Stores hashed board states + moves that led to bad outcomes.
-   Key = board hash, Value = { move hash: penalty score }
-   Penalty grows each time the same pattern leads to a loss.
-══════════════════════════════════════════════════════════════ */
-let cpuMemory = {};
-let gameHistory = []; // [{boardHash, moveHash, movesBeforeEnd}]
+/* ═══════════════════════ LEARNING MEMORY ════════════════════ */
+let cpuMemory={};
+let cpuGamesPlayed=0;
+let gameHistory=[];
 
 function loadMemory(){
   try{
-    const raw = localStorage.getItem(MEMORY_KEY);
-    if(raw) cpuMemory = JSON.parse(raw);
-  } catch(e){ cpuMemory = {}; }
+    const raw=localStorage.getItem(MEMORY_KEY);
+    if(raw) cpuMemory=JSON.parse(raw);
+    cpuGamesPlayed=parseInt(localStorage.getItem(GAMES_KEY)||'0',10);
+  } catch(e){ cpuMemory={}; cpuGamesPlayed=0; }
   updateMemoryUI();
 }
 
 function saveMemory(){
   try{
-    // Trim to MAX_MEMORY entries by removing lowest penalty entries
-    const entries = Object.entries(cpuMemory);
-    if(entries.length > MAX_MEMORY){
-      entries.sort((a,b) => {
-        const aMax = Math.max(...Object.values(a[1]));
-        const bMax = Math.max(...Object.values(b[1]));
-        return aMax - bMax;
+    const entries=Object.entries(cpuMemory);
+    if(entries.length>MAX_MEMORY){
+      entries.sort((a,b)=>{
+        const aMax=Math.max(...Object.values(a[1]));
+        const bMax=Math.max(...Object.values(b[1]));
+        return aMax-bMax;
       });
-      cpuMemory = Object.fromEntries(entries.slice(entries.length - MAX_MEMORY));
+      cpuMemory=Object.fromEntries(entries.slice(entries.length-MAX_MEMORY));
     }
-    localStorage.setItem(MEMORY_KEY, JSON.stringify(cpuMemory));
+    localStorage.setItem(MEMORY_KEY,JSON.stringify(cpuMemory));
+    localStorage.setItem(GAMES_KEY,String(cpuGamesPlayed));
   } catch(e){}
   updateMemoryUI();
 }
 
 function wipeMemory(){
-  cpuMemory = {};
+  cpuMemory={};
+  cpuGamesPlayed=0;
   localStorage.removeItem(MEMORY_KEY);
+  localStorage.removeItem(GAMES_KEY);
   updateMemoryUI();
 }
 
 function updateMemoryUI(){
-  const count = Object.keys(cpuMemory).length;
-  const el = document.getElementById('memory-text');
-  if(el) el.textContent = `CPU memory: ${count} pattern${count!==1?'s':''}`;
+  const count=Object.keys(cpuMemory).length;
+  const el=document.getElementById('memory-text');
+  if(el) el.textContent=`CPU memory: ${count} pattern${count!==1?'s':''} · game ${cpuGamesPlayed}`;
+}
+
+/* Skill ramp: depth = min(games played, MAX_DEPTH), min 1 */
+function getAIDepth(){
+  return Math.max(1, Math.min(cpuGamesPlayed, MAX_DEPTH));
 }
 
 function hashBoard(g){
-  let h = '';
-  for(let r=0;r<8;r++) for(let c=0;c<8;c++) h += g[r][c];
+  let h='';
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++) h+=g[r][c];
   return h;
 }
 
@@ -231,56 +238,50 @@ function hashMove(m){
   return `${m.fromR}${m.fromC}${m.row}${m.col}`;
 }
 
-function recordMoveToHistory(g, m){
-  gameHistory.push({ boardHash: hashBoard(g), moveHash: hashMove(m) });
+function recordMoveToHistory(g,m){
+  gameHistory.push({boardHash:hashBoard(g),moveHash:hashMove(m)});
 }
 
 function learnFromLoss(){
-  // Penalise moves from the game history — moves closer to the end get higher penalty
-  const len = gameHistory.length;
-  gameHistory.forEach((entry, i) => {
-    const distFromEnd = len - i;
-    // Moves in last 6 = direct loss moves, penalise heavily
-    // Moves 7-15 back = contributing pattern, moderate penalty
-    // Moves 16+ back = early pattern, light penalty
+  const len=gameHistory.length;
+  gameHistory.forEach((entry,i)=>{
+    const distFromEnd=len-i;
     let penalty;
-    if(distFromEnd <= 3) penalty = 50;
-    else if(distFromEnd <= 6) penalty = 30;
-    else if(distFromEnd <= 12) penalty = 15;
-    else penalty = 5;
-
-    if(!cpuMemory[entry.boardHash]) cpuMemory[entry.boardHash] = {};
-    const current = cpuMemory[entry.boardHash][entry.moveHash] || 0;
-    // Cap individual penalty at 200 to avoid completely freezing all moves
-    cpuMemory[entry.boardHash][entry.moveHash] = Math.min(200, current + penalty);
+    if(distFromEnd<=3) penalty=50;
+    else if(distFromEnd<=6) penalty=30;
+    else if(distFromEnd<=12) penalty=15;
+    else penalty=5;
+    if(!cpuMemory[entry.boardHash]) cpuMemory[entry.boardHash]={};
+    const current=cpuMemory[entry.boardHash][entry.moveHash]||0;
+    cpuMemory[entry.boardHash][entry.moveHash]=Math.min(200,current+penalty);
   });
+  cpuGamesPlayed++;
   saveMemory();
-  gameHistory = [];
+  gameHistory=[];
 }
 
 function learnFromWin(){
-  // On a win, slightly reduce penalties for moves we made this game
-  // This allows the AI to re-discover moves it over-penalised
-  gameHistory.forEach(entry => {
-    if(cpuMemory[entry.boardHash] && cpuMemory[entry.boardHash][entry.moveHash]){
-      cpuMemory[entry.boardHash][entry.moveHash] = Math.max(0,
-        cpuMemory[entry.boardHash][entry.moveHash] - 8);
-      if(cpuMemory[entry.boardHash][entry.moveHash] === 0){
+  gameHistory.forEach(entry=>{
+    if(cpuMemory[entry.boardHash]&&cpuMemory[entry.boardHash][entry.moveHash]){
+      cpuMemory[entry.boardHash][entry.moveHash]=Math.max(0,
+        cpuMemory[entry.boardHash][entry.moveHash]-8);
+      if(cpuMemory[entry.boardHash][entry.moveHash]===0){
         delete cpuMemory[entry.boardHash][entry.moveHash];
-        if(Object.keys(cpuMemory[entry.boardHash]).length === 0){
+        if(Object.keys(cpuMemory[entry.boardHash]).length===0){
           delete cpuMemory[entry.boardHash];
         }
       }
     }
   });
+  cpuGamesPlayed++;
   saveMemory();
-  gameHistory = [];
+  gameHistory=[];
 }
 
-function getMemoryPenalty(g, m){
-  const bh = hashBoard(g);
-  const mh = hashMove(m);
-  if(cpuMemory[bh] && cpuMemory[bh][mh]) return cpuMemory[bh][mh];
+function getMemoryPenalty(g,m){
+  const bh=hashBoard(g);
+  const mh=hashMove(m);
+  if(cpuMemory[bh]&&cpuMemory[bh][mh]) return cpuMemory[bh][mh];
   return 0;
 }
 
@@ -404,12 +405,22 @@ function pDown(e){
   const {x,y}=xy(e); const cell=toCell(x,y); if(!cell) return;
   const {r,c}=cell; const p=G[r][c];
   const mine=(turn===RED&&(p===RED||p===RK))||(turn===CYAN&&(p===CYAN||p===CK));
+
+  // During a chain capture, only allow selecting the chaining piece
   if(chain){
-    if(r===chain.r&&c===chain.c&&mine){ selectPiece(r,c); startDrag(r,c,p,x,y); }
+    if(r===chain.r&&c===chain.c&&mine){
+      selectPiece(r,c);
+      startDrag(r,c,p,x,y);
+    }
     return;
   }
-  if(mine){ selectPiece(r,c); startDrag(r,c,p,x,y); }
-  else if(selected){ tryMove(r,c); }
+
+  if(mine){
+    selectPiece(r,c);
+    startDrag(r,c,p,x,y);
+  } else if(selected){
+    tryMove(r,c);
+  }
 }
 
 function pMove(e){
@@ -425,64 +436,117 @@ function pMove(e){
 
 function pUp(e){
   if(!dragging) return;
-  dragging=false; hideGhost();
-  const {x,y}=xyUp(e); const cell=toCell(x,y);
+  dragging=false;
+  const {x,y}=xyUp(e);
+  const cell=toCell(x,y);
+  hideGhost();
   if(cell){
     const m=validMoves.find(v=>v.row===cell.r&&v.col===cell.c);
-    if(m){doMove(m); return;}
+    if(m){ doMove(m); return; }
   }
-  showHighlights(false); render();
+  // Drop on invalid square — keep piece selected, show hints
+  showHighlights(false);
+  render();
 }
 
 function selectPiece(r,c){
   selected={r,c};
   let moves=movesFor(r,c);
+  // Enforce must-capture: if any capture available globally, only capture moves allowed
   if(mustCap) moves=moves.filter(m=>m.captures.length>0);
   validMoves=moves;
 }
+
 function startDrag(r,c,p,x,y){
   dragging=true; dragFrom={r,c}; dragPiece=p;
   showGhost(p,x,y); showHighlights(true); render();
 }
+
 function tryMove(r,c){
   const m=validMoves.find(v=>v.row===r&&v.col===c);
-  if(m){doMove(m);} else {selected=null;validMoves=[];showHighlights(false);render();}
+  if(m){ doMove(m); }
+  else { selected=null; validMoves=[]; showHighlights(false); render(); }
 }
 
 /* ═══════════════════════ MOVE EXECUTION ════════════════════ */
 function doMove(mv){
+  // Safety check — piece must still be at source
   const p=G[selected.r][selected.c];
-  G[mv.row][mv.col]=p; G[selected.r][selected.c]=EMPTY;
-  mv.captures.forEach(cap=>{ G[cap.r][cap.c]=EMPTY; if(turn===RED) caps.c++; else caps.r++; });
-  const promoted=(p===RED&&mv.row===0)||(p===CYAN&&mv.row===7);
-  if(p===RED&&mv.row===0) G[mv.row][mv.col]=RK;
-  if(p===CYAN&&mv.row===7) G[mv.row][mv.col]=CK;
+  if(!p){
+    // Something went wrong — reset state cleanly
+    selected=null; validMoves=[]; chain=null; dragging=false;
+    hideGhost(); render(); return;
+  }
 
+  // Apply move
+  G[mv.row][mv.col]=p;
+  G[selected.r][selected.c]=EMPTY;
+
+  // Remove captured pieces and update capture counter
+  mv.captures.forEach(cap=>{
+    if(G[cap.r][cap.c]!==EMPTY){
+      G[cap.r][cap.c]=EMPTY;
+      if(turn===RED) caps.c++; else caps.r++;
+    }
+  });
+
+  // Promotion
+  let promoted=false;
+  if(p===RED&&mv.row===0){ G[mv.row][mv.col]=RK; promoted=true; }
+  if(p===CYAN&&mv.row===7){ G[mv.row][mv.col]=CK; promoted=true; }
+
+  updateCapsUI();
+
+  // Chain capture — only if not promoted and further captures exist
   if(mv.captures.length>0&&!promoted){
     const further=movesFor(mv.row,mv.col).filter(m=>m.captures.length>0);
     if(further.length){
-      chain={r:mv.row,c:mv.col}; selected={r:mv.row,c:mv.col}; validMoves=further;
-      updateCapsUI(); showHighlights(false); render(); return;
+      chain={r:mv.row,c:mv.col};
+      selected={r:mv.row,c:mv.col};
+      validMoves=further;
+      showHighlights(false);
+      render();
+      return;
     }
   }
-  chain=null; selected=null; validMoves=[];
-  updateCapsUI();
-  const w=checkWin(); if(w){showHighlights(false);render();endGame(w);return;}
-  turn=turn===RED?CYAN:RED; computeMustCap(); updateTurnUI();
-  showHighlights(false); render();
-  if(vsPC&&turn===CYAN){cpuBusy=true;cpuGo();}
+
+  // End of move — clean up chain and selection
+  chain=null;
+  selected=null;
+  validMoves=[];
+
+  // Check win before switching turn
+  const w=checkWin();
+  if(w){ showHighlights(false); render(); endGame(w); return; }
+
+  // Switch turn
+  turn=turn===RED?CYAN:RED;
+  computeMustCap();
+  updateTurnUI();
+  showHighlights(false);
+  render();
+
+  // CPU goes — only trigger once, only if it's now CPU's turn
+  if(vsPC&&turn===CYAN&&!cpuBusy){
+    cpuBusy=true;
+    cpuGo();
+  }
 }
 
 /* ═══════════════════════ MOVE GEN ══════════════════════════ */
 function movesFor(r,c){
   const p=G[r][c]; if(!p) return [];
   const isR=p===RED||p===RK, isK=p===RK||p===CK;
-  const dirs=[]; if(isR||isK) dirs.push([-1,-1],[-1,1]); if(!isR||isK) dirs.push([1,-1],[1,1]);
+  const dirs=[];
+  if(isR||isK) dirs.push([-1,-1],[-1,1]);
+  if(!isR||isK) dirs.push([1,-1],[1,1]);
   const out=[];
+  // Regular moves
   dirs.forEach(([dr,dc])=>{
     const nr=r+dr,nc=c+dc;
     if(ok(nr,nc)&&!G[nr][nc]) out.push({row:nr,col:nc,captures:[]});
   });
+  // Capture moves
   dirs.forEach(([dr,dc])=>{
     const mr=r+dr,mc=c+dc,lr=r+2*dr,lc=c+2*dc;
     if(ok(lr,lc)&&!G[lr][lc]){
@@ -493,32 +557,39 @@ function movesFor(r,c){
   });
   return out;
 }
-function allMoves(t){
+
+function allMovesForPlayer(t){
   const out=[];
   for(let r=0;r<8;r++) for(let c=0;c<8;c++){
     const p=G[r][c];
-    if((t===RED&&(p===RED||p===RK))||(t===CYAN&&(p===CYAN||p===CK)))
+    if((t===RED&&(p===RED||p===RK))||(t===CYAN&&(p===CYAN||p===CK))){
       movesFor(r,c).forEach(m=>out.push({...m,fromR:r,fromC:c}));
+    }
   }
   return out;
 }
-function computeMustCap(){mustCap=allMoves(turn).some(m=>m.captures.length>0);}
+
+function computeMustCap(){
+  mustCap=allMovesForPlayer(turn).some(m=>m.captures.length>0);
+}
+
 function ok(r,c){return r>=0&&r<8&&c>=0&&c<8;}
 
 /* ═══════════════════════ WIN CHECK ══════════════════════════ */
 function checkWin(){
   let rc=0,cc=0;
-  for(let r=0;r<8;r++) for(let c=0;c<8;c++){if(G[r][c]===RED||G[r][c]===RK) rc++; if(G[r][c]===CYAN||G[r][c]===CK) cc++;}
-  if(!cc) return RED; if(!rc) return CYAN;
-  if(!allMoves(turn===RED?CYAN:RED).length) return turn;
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    if(G[r][c]===RED||G[r][c]===RK) rc++;
+    if(G[r][c]===CYAN||G[r][c]===CK) cc++;
+  }
+  if(!cc) return RED;
+  if(!rc) return CYAN;
+  // Current player has no moves — they lose
+  if(!allMovesForPlayer(turn).length) return turn===RED?CYAN:RED;
   return null;
 }
 
-/* ═══════════════════════ AI ══════════════════════════════════
-   Iterative deepening alpha-beta with:
-   - Memory penalty system (learned from past losses)
-   - Defensive evaluation (fights back when losing, no self-sabotage)
-══════════════════════════════════════════════════════════════ */
+/* ═══════════════════════ AI ══════════════════════════════════ */
 const INF=1e8;
 const TIME_LIMIT=2500;
 let aiDeadline=0;
@@ -536,7 +607,7 @@ const CENTRE=[
   [0,0,0,0,0,0,0,0]
 ];
 
-function clone(g){ return g.map(r=>r.slice()); }
+function cloneG(g){ return g.map(r=>r.slice()); }
 
 function countG(g,t){
   let n=0;
@@ -551,7 +622,9 @@ function countG(g,t){
 function movesOnG(g,r,c){
   const p=g[r][c]; if(!p) return [];
   const isR=p===RED||p===RK, isK=p===RK||p===CK;
-  const dirs=[]; if(isR||isK) dirs.push([-1,-1],[-1,1]); if(!isR||isK) dirs.push([1,-1],[1,1]);
+  const dirs=[];
+  if(isR||isK) dirs.push([-1,-1],[-1,1]);
+  if(!isR||isK) dirs.push([1,-1],[1,1]);
   const out=[];
   dirs.forEach(([dr,dc])=>{
     const nr=r+dr,nc=c+dc;
@@ -576,7 +649,7 @@ function allMovesG(g,t){
       movesOnG(g,r,c).forEach(m=>out.push({...m,fromR:r,fromC:c}));
   }
   const hasCap=out.some(m=>m.captures.length>0);
-  return hasCap ? out.filter(m=>m.captures.length>0) : out;
+  return hasCap?out.filter(m=>m.captures.length>0):out;
 }
 
 function applyG(g,m){
@@ -588,78 +661,77 @@ function applyG(g,m){
   if(orig===CYAN&&m.row===7) g[m.row][m.col]=CK;
   return {orig,saved};
 }
+
 function undoG(g,m,u){
-  g[m.fromR][m.fromC]=u.orig; g[m.row][m.col]=EMPTY;
+  g[m.fromR][m.fromC]=u.orig;
+  g[m.row][m.col]=EMPTY;
   u.saved.forEach(s=>g[s.r][s.c]=s.p);
 }
 
 function evalG(g){
-  let score=0;
-  let cP=0, rP=0;
+  let score=0, cP=0, rP=0;
   for(let r=0;r<8;r++) for(let c=0;c<8;c++){
     const p=g[r][c]; if(!p) continue;
     const ct=CENTRE[r][c];
     if(p===CYAN){
       cP++;
-      score += 100 + CYAN_ADV[r] + ct*3;
+      score+=100+CYAN_ADV[r]+ct*3;
       if(r===0) score+=10;
       if(c===0||c===7) score+=2;
       if(ok(r-1,c-1)&&(g[r-1][c-1]===CYAN||g[r-1][c-1]===CK)) score+=6;
       if(ok(r-1,c+1)&&(g[r-1][c+1]===CYAN||g[r-1][c+1]===CK)) score+=6;
     } else if(p===CK){
       cP++;
-      score += 180 + ct*5;
+      score+=180+ct*5;
       if(c===0||c===7) score-=5;
     } else if(p===RED){
       rP++;
-      score -= 100 + RED_ADV[r] + ct*3;
+      score-=100+RED_ADV[r]+ct*3;
       if(r===7) score-=10;
       if(c===0||c===7) score-=2;
       if(ok(r+1,c-1)&&(g[r+1][c-1]===RED||g[r+1][c-1]===RK)) score-=6;
       if(ok(r+1,c+1)&&(g[r+1][c+1]===RED||g[r+1][c+1]===RK)) score-=6;
     } else if(p===RK){
       rP++;
-      score -= 180 + ct*5;
+      score-=180+ct*5;
       if(c===0||c===7) score+=5;
     }
   }
 
-  // FIX: Removed self-sabotage amplifier. Now uses flat material bonus
-  // that stays proportional whether winning or losing.
-  const matDiff = cP - rP;
-  score += matDiff * 20;
+  // Flat material bonus — no self-sabotage amplifier
+  const matDiff=cP-rP;
+  score+=matDiff*20;
 
-  // When losing, value mobility highly — keep fighting, don't give up
-  const cMoves = allMovesG(g,CYAN).length;
-  const rMoves = allMovesG(g,RED).length;
-  if(matDiff < 0){
-    // We're behind — mobility is crucial for comeback
-    score += cMoves * 8;
-    score -= rMoves * 4;
+  // When losing, prioritise mobility for comeback attempts
+  const cMoves=allMovesG(g,CYAN).length;
+  const rMoves=allMovesG(g,RED).length;
+  if(matDiff<0){
+    score+=cMoves*8;
+    score-=rMoves*4;
   } else {
-    score += (cMoves - rMoves) * 3;
+    score+=(cMoves-rMoves)*3;
   }
 
   // Endgame king hunt
-  if(rP<=4 && countG(g,CYAN)>0){
+  if(rP<=4&&cP>0){
     for(let r=0;r<8;r++) for(let c=0;c<8;c++){
       if(g[r][c]===CK){
         let minD=99;
         for(let r2=0;r2<8;r2++) for(let c2=0;c2<8;c2++){
           if(g[r2][c2]===RED||g[r2][c2]===RK){
-            const d=Math.abs(r-r2)+Math.abs(c-c2); if(d<minD) minD=d;
+            const d=Math.abs(r-r2)+Math.abs(c-c2);
+            if(d<minD) minD=d;
           }
         }
         score+=Math.max(0,(14-minD)*4);
       }
     }
   }
-
   return score;
 }
 
 function quiesce(g,alpha,beta,t){
-  const stand = t===CYAN ? evalG(g) : -evalG(g);
+  const stand=t===CYAN?evalG(g):-evalG(g);
   if(stand>=beta) return beta;
   if(stand>alpha) alpha=stand;
   const caps=allMovesG(g,t).filter(m=>m.captures.length>0);
@@ -677,11 +749,11 @@ function quiesce(g,alpha,beta,t){
 function nm(g,depth,alpha,beta,t){
   if(Date.now()>aiDeadline) throw 'timeout';
   const rc=countG(g,RED), cc=countG(g,CYAN);
-  if(!cc) return t===CYAN ? INF : -INF;
-  if(!rc) return t===CYAN ? -INF : INF;
+  if(!cc) return t===CYAN?INF:-INF;
+  if(!rc) return t===CYAN?-INF:INF;
   const moves=allMovesG(g,t);
   if(!moves.length) return -INF;
-  if(depth<=0) return t===CYAN ? quiesce(g,alpha,beta,t) : -quiesce(g,-beta,-alpha,t===RED?CYAN:RED);
+  if(depth<=0) return t===CYAN?quiesce(g,alpha,beta,t):-quiesce(g,-beta,-alpha,t===RED?CYAN:RED);
   moves.sort((a,b)=>b.captures.length-a.captures.length);
   const nt=t===RED?CYAN:RED;
   let best=-INF;
@@ -699,12 +771,17 @@ function nm(g,depth,alpha,beta,t){
 function aiPickMove(g){
   const moves=allMovesG(g,CYAN);
   if(!moves.length) return null;
-  if(moves.length===1) return moves[0];
+  if(moves.length===1){
+    recordMoveToHistory(g,moves[0]);
+    return moves[0];
+  }
 
+  // Skill ramp: depth grows with games played
+  const maxDepth=getAIDepth();
   aiDeadline=Date.now()+TIME_LIMIT;
   let bestMove=moves[0];
 
-  for(let depth=1;depth<=16;depth++){
+  for(let depth=1;depth<=maxDepth;depth++){
     moves.sort((a,b)=>((b._score||0)-(a._score||0)));
     let alpha=-INF, iterBest=null, timedOut=false;
     try{
@@ -712,11 +789,8 @@ function aiPickMove(g){
         const u=applyG(g,m);
         let s=-nm(g,depth-1,-INF,-alpha,RED);
         undoG(g,m,u);
-
-        // Apply memory penalty — subtract learned penalty from this move's score
-        const penalty=getMemoryPenalty(g,m);
-        s -= penalty;
-
+        // Apply memory penalty
+        s-=getMemoryPenalty(g,m);
         m._score=s;
         if(s>alpha){ alpha=s; iterBest=m; }
       }
@@ -726,20 +800,21 @@ function aiPickMove(g){
     if(alpha>=INF*0.9) break;
   }
 
-  // Record move to history for learning
-  recordMoveToHistory(g, bestMove);
+  recordMoveToHistory(g,bestMove);
   return bestMove;
 }
 
 function cpuGo(){
   if(gameState!=='playing'){ cpuBusy=false; return; }
+  // Two rAF yields so the turn UI text paints before we block
   requestAnimationFrame(()=>{
     requestAnimationFrame(()=>{
-      const g=clone(G);
+      if(gameState!=='playing'){ cpuBusy=false; return; }
+      const g=cloneG(G);
       const mv=aiPickMove(g);
-      cpuBusy=false;
-      if(!mv||gameState!=='playing') return;
+      if(!mv||gameState!=='playing'){ cpuBusy=false; return; }
       selected={r:mv.fromR,c:mv.fromC};
+      cpuBusy=false; // reset BEFORE doMove to prevent re-entry
       doMove(mv);
     });
   });
@@ -748,18 +823,21 @@ function cpuGo(){
 /* ═══════════════════════ UI / FLOW ══════════════════════════ */
 function updateTurnUI(){
   const el=document.getElementById('turn-text');
+  const depth=vsPC?getAIDepth():0;
   if(vsPC&&turn===CYAN){
-    el.textContent='· CPU thinking (up to 3s) ·';
+    el.textContent=`· CPU thinking · depth ${depth} ·`;
     el.style.color='rgba(0,255,204,.5)';
   } else {
     el.textContent=`· ${turn===RED?'Red':'Cyan'}'s turn${mustCap?' — must capture':''} ·`;
     el.style.color=turn===RED?'rgba(255,51,102,.55)':'rgba(0,255,204,.55)';
   }
 }
+
 function updateCapsUI(){
   document.getElementById('cap-red').textContent=caps.r;
   document.getElementById('cap-cyan').textContent=caps.c;
 }
+
 function updateScoreUI(){
   document.getElementById('score-red').textContent=scores.r;
   document.getElementById('score-cyan').textContent=scores.c;
@@ -777,9 +855,10 @@ function initGrid(){
 }
 
 function startGame(){
-  initGrid(); turn=RED; selected=null; validMoves=[]; chain=null;
-  cpuBusy=false; dragging=false; caps={r:0,c:0}; mustCap=false;
-  gameState='playing'; gameHistory=[];
+  initGrid();
+  turn=RED; selected=null; validMoves=[]; chain=null;
+  cpuBusy=false; dragging=false; caps={r:0,c:0};
+  mustCap=false; gameState='playing'; gameHistory=[];
   hideGhost(); buildSquares(); resize();
   updateCapsUI(); updateTurnUI(); updateScoreUI();
   document.getElementById('overlay').style.display='none';
@@ -789,41 +868,37 @@ function endGame(w){
   gameState='over';
   if(w===RED) scores.r++; else scores.c++;
   updateScoreUI();
-
-  // Learning — only learn when playing vs CPU
   if(vsPC){
-    if(w===RED){
-      // CPU lost — learn from this loss
-      learnFromLoss();
-    } else {
-      // CPU won — reinforce slightly
-      learnFromWin();
-    }
+    if(w===RED) learnFromLoss();
+    else learnFromWin();
+  } else {
+    gameHistory=[];
   }
-
   setTimeout(()=>showEnd(w),500);
 }
 
 function showEnd(w){
   const ov=document.getElementById('overlay'); ov.innerHTML='';
-  const h=document.createElement('h1'); h.textContent=w===RED?'RED WINS!':'CYAN WINS!';
+  const h=document.createElement('h1');
+  h.textContent=w===RED?'RED WINS!':'CYAN WINS!';
   const r=document.createElement('div');
   r.className='result-text '+(w===RED?'red-win':'cyan-win');
-
   const memCount=Object.keys(cpuMemory).length;
   r.textContent=vsPC
     ?(w===RED
       ?`You beat the CPU! (${memCount} patterns learned)`
       :'CPU wins this round')
     :(w===RED?'Red takes it':'Cyan takes it');
-
-  const s=document.createElement('div'); s.className='sub'; s.textContent='Tap to play again';
-  ov.appendChild(h); ov.appendChild(r); ov.appendChild(s); ov.style.display='flex';
+  const s=document.createElement('div');
+  s.className='sub';
+  s.textContent='Tap to play again';
+  ov.appendChild(h); ov.appendChild(r); ov.appendChild(s);
+  ov.style.display='flex';
 }
 
 const ov=document.getElementById('overlay');
-ov.addEventListener('click',()=>{if(gameState==='idle'||gameState==='over')startGame();});
-ov.addEventListener('touchend',e=>{e.preventDefault();if(gameState==='idle'||gameState==='over')startGame();},{passive:false});
+ov.addEventListener('click',()=>{if(gameState==='idle'||gameState==='over') startGame();});
+ov.addEventListener('touchend',e=>{e.preventDefault();if(gameState==='idle'||gameState==='over') startGame();},{passive:false});
 
 document.getElementById('btn-2p').addEventListener('click',()=>setMode(false));
 document.getElementById('btn-cpu').addEventListener('click',()=>setMode(true));
@@ -835,7 +910,7 @@ function setMode(cpu){
 }
 
 document.getElementById('wipe-btn').addEventListener('click',()=>{
-  if(confirm('Wipe all CPU memory? It will forget everything it has learned.')){
+  if(confirm('Wipe all CPU memory? It will forget everything and reset to depth 1.')){
     wipeMemory();
   }
 });
