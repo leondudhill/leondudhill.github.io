@@ -564,3 +564,11 @@ footer {
   opacity: 0.9;
   transform: scale(1.1);
 }
+
+/* ===== GAME PREVIEW IMAGE ===== */
+.gp-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
