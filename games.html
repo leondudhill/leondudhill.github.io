@@ -66,11 +66,20 @@
 
     .games-hero-overlay h2 {
       font-family: var(--font-display);
-      font-size: 3.5rem;
+      font-size: 7rem;
       letter-spacing: 0.05em;
       line-height: 1;
       color: #fff;
       text-shadow: 0 2px 12px rgba(0,0,0,0.8);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .games-hero-card:hover .games-hero-overlay h2,
+    .games-hero-card:active .games-hero-overlay h2 {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     .games-hero-overlay .games-hero-award {
@@ -84,7 +93,7 @@
 
     @media (max-width: 640px) {
       .games-hero-card { height: 220px; }
-      .games-hero-overlay h2 { font-size: 2.2rem; }
+      .games-hero-overlay h2 { font-size: 4rem; }
       .games-hero-overlay .games-hero-award { font-size: 0.65rem; }
     }
   </style>
@@ -111,7 +120,7 @@
   <div class="page-header">
     <span class="tag">🎮 Play</span>
     <h1>Games</h1>
-    <p>My original games, click & play.</p>
+    <p>Games built from scratch. Pick one and play.</p>
   </div>
 
   <div class="page-content">
