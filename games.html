@@ -6,10 +6,133 @@
   <title>Games – Leon Dudhill</title>
   <link rel="icon" href="favicon.png" type="image/png" />
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .games-hero-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .games-hero-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: flex;
+      flex-direction: row;
+      height: 160px;
+      transition: border-color 0.25s, transform 0.25s;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .games-hero-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+    }
+
+    .games-hero-preview {
+      width: 260px;
+      min-width: 260px;
+      position: relative;
+      overflow: hidden;
+      border-right: 1px solid var(--border);
+    }
+
+    .games-hero-image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .games-hero-emoji {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+      opacity: 0.6;
+      filter: drop-shadow(0 0 12px rgba(0,255,204,0.4));
+      transition: opacity 0.25s, transform 0.25s;
+    }
+
+    .games-hero-card:hover .games-hero-emoji {
+      opacity: 0.9;
+      transform: scale(1.1);
+    }
+
+    .games-hero-info {
+      padding: 1.6rem 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.5rem;
+      flex: 1;
+    }
+
+    .games-hero-info h2 {
+      font-family: var(--font-display);
+      font-size: 2.8rem;
+      letter-spacing: 0.05em;
+      line-height: 1;
+    }
+
+    .games-hero-info p {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 520px;
+    }
+
+    .games-hero-meta {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .games-hero-tag {
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid rgba(232,255,71,0.3);
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+    }
+
+    .games-hero-btn {
+      margin-top: 0.4rem;
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    @media (max-width: 640px) {
+      .games-hero-card {
+        flex-direction: column;
+        height: auto;
+      }
+      .games-hero-preview {
+        width: 100%;
+        min-width: unset;
+        height: 130px;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+      .games-hero-info h2 {
+        font-size: 2rem;
+      }
+    }
+  </style>
 </head>
 <body>
-
-    <header>
+  <header>
     <a href="index.html" class="logo">LD</a>
     <button class="nav-toggle" id="navToggle" aria-label="Menu">
       <span></span><span></span><span></span>
@@ -34,10 +157,53 @@
   </div>
 
   <div class="page-content">
-    <div class="empty-state">
-      <div class="big">🎮</div>
-      <h2>Coming soon</h2>
-      <p>New games in progress — check back soon. In the meantime, try <a href="retrogames.html" style="color:var(--accent)">Retro Games</a>.</p>
+    <div class="games-hero-grid">
+
+      <a href="crushendo.html" class="games-hero-card">
+        <div class="games-hero-preview" style="background: radial-gradient(ellipse at 50% 50%, rgba(255,80,80,0.2) 0%, #0a0000 70%);">
+          <img src="images/crushendo.jpg" alt="Crushendo" class="games-hero-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <div class="games-hero-emoji" style="display:none;">💥</div>
+        </div>
+        <div class="games-hero-info">
+          <div class="games-hero-meta">
+            <span class="games-hero-tag">Action</span>
+          </div>
+          <h2>Crushendo</h2>
+          <p>Coming soon.</p>
+          <span class="games-hero-btn">Play →</span>
+        </div>
+      </a>
+
+      <a href="clay-verse.html" class="games-hero-card">
+        <div class="games-hero-preview" style="background: radial-gradient(ellipse at 50% 50%, rgba(80,160,255,0.2) 0%, #00050a 70%);">
+          <img src="images/clay-verse.jpg" alt="Clay-Verse" class="games-hero-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <div class="games-hero-emoji" style="display:none;">🌍</div>
+        </div>
+        <div class="games-hero-info">
+          <div class="games-hero-meta">
+            <span class="games-hero-tag">Adventure</span>
+          </div>
+          <h2>Clay-Verse</h2>
+          <p>Coming soon.</p>
+          <span class="games-hero-btn">Play →</span>
+        </div>
+      </a>
+
+      <a href="trash.html" class="games-hero-card">
+        <div class="games-hero-preview" style="background: radial-gradient(ellipse at 50% 50%, rgba(0,255,100,0.15) 0%, #000a02 70%);">
+          <img src="images/trash.jpg" alt="Trash" class="games-hero-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <div class="games-hero-emoji" style="display:none;">🗑️</div>
+        </div>
+        <div class="games-hero-info">
+          <div class="games-hero-meta">
+            <span class="games-hero-tag">Puzzle</span>
+          </div>
+          <h2>Trash</h2>
+          <p>Coming soon.</p>
+          <span class="games-hero-btn">Play →</span>
+        </div>
+      </a>
+
     </div>
   </div>
 
